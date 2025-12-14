@@ -8,11 +8,7 @@ let nextId = 1;
 
 // 預設的初始成員資料 (新增 imageURL 欄位)
 const defaultMembers = [
-    { name: "班長", id: 1, imageURL: null },
-    { name: "もも", id: 2, imageURL: null },
-    { name: "俊齊", id: 3, imageURL: null },
-    { name: "章仁", id: 4, imageURL: null },
-    { name: "光庭", id: 5, imageURL: null }
+    
 ];
 
 
@@ -201,4 +197,5 @@ function initialize() {
 }
 
 // 啟動程式
+
 initialize();
