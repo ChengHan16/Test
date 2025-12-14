@@ -42,7 +42,7 @@ const addMemberForm = document.getElementById('addMemberForm');
 
 
 // =========================================================
-// 3. Firebase 認證與 UI 邏輯 (Authentication)
+// 3. Firebase 認證與 UI 邏輯
 // =========================================================
 
 /** 處理登入 */
@@ -66,6 +66,9 @@ window.logout = function() {
 /** 監聽 Firebase 登入狀態變化，更新 UI */
 auth.onAuthStateChanged((user) => {
     currentUser = user;
+    
+    // 無論登入與否，都要確保資料正在載入 (loadMembers 在頁面啟動時已觸發)
+    
     if (user) {
         // 已登入 (管理員)
         authMessage.textContent = `狀態：管理員已登入 (${user.email})`;
@@ -77,11 +80,17 @@ auth.onAuthStateChanged((user) => {
         // 未登入 (訪客)
         authMessage.textContent = '狀態：訪客模式 (未登入)';
         managementArea.style.display = 'none'; // 隱藏管理區
-        loginForm.style.display = 'none'; // 預設隱藏登入表單
+        loginForm.style.display = 'none';
         logoutButton.style.display = 'none';
-        editButton.textContent = '編輯 / 登入管理員'; // 按鈕導向登入
+        editButton.textContent = '編輯 / 登入管理員'; 
         addMemberForm.style.display = 'none'; // 隱藏新增表單
+        
+        // 確保退出編輯模式後，管理區也關閉
+        editButton.textContent = '編輯 / 登入管理員'; 
     }
+    
+    // 每次狀態改變時，重新渲染卡片，確保編輯按鈕的顯示/隱藏是正確的
+    renderMembers();
 });
 
 /** 切換編輯模式的 UI 顯示 */
@@ -108,6 +117,7 @@ window.toggleEditMode = function() {
 
 /** 從 Firestore 載入成員資料並設定即時監聽。 */
 function loadMembers() {
+    // 所有人都可以讀取，所以不需要登入驗證
     membersCollection.orderBy('id').onSnapshot(snapshot => {
         members = snapshot.docs.map(doc => ({
             docId: doc.id,
@@ -120,7 +130,7 @@ function loadMembers() {
         const maxId = members.reduce((max, member) => Math.max(max, member.id), 0);
         nextId = maxId + 1;
         
-        renderMembers(); 
+        renderMembers(); // 資料更新後立即渲染卡片
         
         if (managementArea.style.display === 'block') {
              renderControlList();
@@ -131,10 +141,11 @@ function loadMembers() {
     });
 }
 
-/** 渲染主頁面成員卡片 */
+/** 渲染主頁面成員卡片 (重點修正 adminControls) */
 window.renderMembers = function() {
     container.innerHTML = ''; 
 
+    // 過濾出 isVisible: true 的成員
     const visibleMembers = members.filter(member => member.isVisible === true);
 
     visibleMembers.forEach((member, index) => { 
@@ -148,7 +159,7 @@ window.renderMembers = function() {
             ? `<img src="${member.imageURL}" alt="${member.name} 的頭像">`
             : `<span class="member-placeholder">👤</span>`;
 
-        // 只有登入用戶才能看到刪除和編輯圖片按鈕
+        // 關鍵修正：只有登入用戶才能看到刪除和編輯圖片按鈕
         const adminControls = currentUser ? 
             `
             <button class="edit-btn" onclick="document.getElementById('file-input-${member.id}').click()">編輯圖片</button>
@@ -173,7 +184,7 @@ window.renderMembers = function() {
 
 // =========================================================
 // 5. 檔案處理函式 (Base64)
-// =========================================================
+// ... (readFileAsBase64 函式保持不變) ...
 
 function readFileAsBase64(file) {
     return new Promise((resolve, reject) => {
@@ -185,14 +196,13 @@ function readFileAsBase64(file) {
     });
 }
 
-
 // =========================================================
-// 6. CRUD 事件處理 (需登入)
+// 6. CRUD 事件處理 (需登入驗證)
 // =========================================================
 
 /** 處理新增成員的邏輯 (寫入 Firestore)。 */
 window.addMember = async function() {
-    if (!currentUser) { alert("請先登入才能新增成員！"); return; }
+    if (!currentUser) { alert("操作失敗：請先登入管理員！"); return; } // 寫入前再次驗證
     
     const nameInput = document.getElementById('memberName');
     const imageInput = document.getElementById('memberImageFile'); 
@@ -219,7 +229,7 @@ window.addMember = async function() {
 
 /** 處理刪除成員的邏輯 (刪除 Firestore 資料)。 */
 window.deleteMember = function(id) {
-    if (!currentUser) { alert("請先登入才能刪除成員！"); return; }
+    if (!currentUser) { alert("操作失敗：請先登入管理員！"); return; } // 寫入前再次驗證
     if (confirm("確定要永久刪除此成員嗎?")) {
         membersCollection.doc(id.toString()).delete()
             .then(() => console.log(`成員 ID ${id} 已從 Firestore 刪除`))
@@ -229,7 +239,7 @@ window.deleteMember = function(id) {
 
 /** 處理編輯現有成員圖片的邏輯 (更新 Firestore)。 */
 window.editImage = async function(id, file) {
-    if (!currentUser) { alert("請先登入才能編輯圖片！"); return; }
+    if (!currentUser) { alert("操作失敗：請先登入管理員！"); return; } // 寫入前再次驗證
     if (!file) return;
     
     const newImageBase64 = await readFileAsBase64(file);
@@ -242,7 +252,7 @@ window.editImage = async function(id, file) {
 
 // =========================================================
 // 7. 編輯模式與顯示控制邏輯
-// =========================================================
+// ... (renderControlList, toggleControlState, saveControlState 函式保持不變) ...
 
 /** 渲染控制清單。 */
 function renderControlList() {
@@ -284,12 +294,11 @@ window.toggleControlState = function(id, isChecked) {
 
 /** 最終將控制狀態批量儲存到 Firestore。 */
 window.saveControlState = async function() {
-    if (!currentUser) { alert("請先登入才能儲存控制狀態！"); return; }
+    if (!currentUser) { alert("操作失敗：請先登入管理員！"); return; }
     
     const batch = db.batch(); 
     
     members.forEach(member => {
-        // 更新 isVisible 欄位
         const docRef = membersCollection.doc(member.id.toString());
         batch.update(docRef, { isVisible: member.isVisible });
     });
@@ -310,7 +319,7 @@ window.saveControlState = async function() {
 // =========================================================
 
 function initialize() {
-    loadMembers(); // 啟動 Firebase 監聽
+    loadMembers(); // 啟動 Firebase 監聽，讓所有訪客都能看到資料
 }
 
 initialize();
