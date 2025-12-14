@@ -35,6 +35,13 @@ body {
     align-items: center;
 }
 
+/* 圖片顯示 (確保圖片正確縮放) */
+.member-avatar-ring img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 確保圖片填滿圓形容器，不會超大 */
+}
+
 /* 替代表圖片的 Placeholder */
 .member-placeholder {
     font-size: 50px;
@@ -78,17 +85,12 @@ body {
     border-radius: 3px;
     cursor: pointer;
     font-size: 0.8em;
+    display: block; /* 讓它獨立一行 */
+    width: 90%;
+    margin: 5px auto 0 auto;
 }
 .delete-btn:hover {
     background-color: #c82333;
-}
-/* ... (保留所有舊的樣式) ... */
-
-/* 圖片顯示 */
-.member-avatar-ring img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* 確保圖片填滿圓形容器 */
 }
 
 /* 編輯圖片按鈕樣式 */
@@ -101,9 +103,34 @@ body {
     cursor: pointer;
     font-size: 0.8em;
     margin-bottom: 5px; /* 與刪除按鈕間隔 */
+    display: block; /* 讓它獨立一行 */
+    width: 90%;
+    margin: 0px auto 5px auto;
 }
 .edit-btn:hover {
     background-color: #0056b3;
 }
 
-/* ... (保留所有舊的樣式，包括 delete-btn) ... */
+/* 控制清單樣式 */
+.control-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 15px;
+}
+.control-list li {
+    padding: 8px 15px;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: calc(33% - 10px); /* 每行顯示三個 */
+    box-sizing: border-box;
+}
+.control-list li input[type="checkbox"] {
+    margin-left: 10px;
+}
