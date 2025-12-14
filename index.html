@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>動態成員卡片範例 (含圖片)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>成員列表：</h1>
+
+    <div class="add-member-form">
+        <h3>新增成員</h3>
+        <input type="text" id="memberName" placeholder="輸入成員名稱 (必填)">
+        <input type="file" id="memberImageFile" accept="image/*">
+        <button onclick="addMember()">新增卡片</button>
+    </div>
+
+    <hr>
+
+    <div id="membersContainer" class="members-grid">
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
