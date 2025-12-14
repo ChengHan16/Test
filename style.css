@@ -1,0 +1,109 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+/* 網格佈局 */
+.members-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+/* 單一成員卡片容器的樣式 */
+.member-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 120px;
+    text-align: center;
+    padding-bottom: 10px; /* 增加底部空間給按鈕 */
+}
+
+/* 圓形頭像容器 */
+.member-avatar-ring {
+    width: 100px;
+    height: 100px;
+    border: 4px solid #0056b3;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 10px;
+    background-color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 替代表圖片的 Placeholder */
+.member-placeholder {
+    font-size: 50px;
+    color: white;
+}
+
+/* 名稱和職位樣式 */
+.member-position {
+    color: #666;
+    font-size: 0.9em;
+    margin-bottom: 5px;
+}
+
+.member-name {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 5px;
+}
+
+/* 新增表單樣式 */
+.add-member-form input, .add-member-form button {
+    padding: 8px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.add-member-form button {
+    background-color: #28a745;
+    color: white;
+    cursor: pointer;
+    border: none;
+}
+
+/* 刪除按鈕樣式 */
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8em;
+}
+.delete-btn:hover {
+    background-color: #c82333;
+}
+/* ... (保留所有舊的樣式) ... */
+
+/* 圖片顯示 */
+.member-avatar-ring img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 確保圖片填滿圓形容器 */
+}
+
+/* 編輯圖片按鈕樣式 */
+.edit-btn {
+    background-color: #007bff; /* 藍色 */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8em;
+    margin-bottom: 5px; /* 與刪除按鈕間隔 */
+}
+.edit-btn:hover {
+    background-color: #0056b3;
+}
+
+/* ... (保留所有舊的樣式，包括 delete-btn) ... */
