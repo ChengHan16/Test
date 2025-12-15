@@ -1,53 +1,3 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <title>GitHub Pages Firebase 範例</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        #public-display, #edit-section {
-            border: 1px solid #ccc;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-        }
-        #public-display { background-color: #f9f9f9; }
-        #edit-section { background-color: #e6f7ff; display: none; }
-        .hidden { display: none !important; }
-        input, textarea, button { padding: 8px; margin-top: 5px; display: block; width: 100%; box-sizing: border-box; }
-        label { margin-top: 10px; display: block; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <h1>公開內容顯示區</h1>
-    <p>任何人都能看到的最新內容。</p>
-    <div id="public-display">
-        <p>載入中...</p>
-    </div>
-
-    <hr>
-
-    <h2>管理員登入</h2>
-    <div id="login-section">
-        <input type="email" id="email" placeholder="管理員 Email">
-        <input type="password" id="password" placeholder="密碼">
-        <button onclick="signIn()">登入</button>
-        <p id="login-message" style="color: red;"></p>
-    </div>
-
-    <div id="edit-section" class="hidden">
-        <h3>編輯內容 (<span id="user-email"></span>)</h3>
-        <label for="editor-text">編輯器：</label>
-        <textarea id="editor-text" rows="5"></textarea>
-        <button onclick="saveContent()">儲存內容</button>
-        <button onclick="signOut()">登出</button>
-        <p id="save-message" style="color: green;"></p>
-    </div>
-</div>
-
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -63,6 +13,9 @@
         appId: "1:940345852074:web:7a30cca5a6d997a92350d3",
         measurementId: "G-KWL4ZE3D18"
     };
+
+    // ** 新增：私人頁面網址 **
+    const PRIVATE_PAGE_URL = 'private.html'; 
 
     // 初始化 Firebase
     const app = firebase.initializeApp(firebaseConfig);
@@ -87,39 +40,49 @@
         loginMessage.textContent = '';
         try {
             await auth.signInWithEmailAndPassword(email, password);
-            // 登入成功後，onAuthStateChanged 會處理 UI 變更
+            // 登入成功後，onAuthStateChanged 會處理 UI 變更 (跳轉)
         } catch (error) {
             loginMessage.textContent = `登入失敗: ${error.message}`;
         }
     }
 
     function signOut() {
+        // 登出後，onAuthStateChanged 會將使用者導回 login.html/index.html
         auth.signOut();
     }
 
-    // ** 3. 監聽登入狀態與 UI 切換 **
+    // ** 3. 監聽登入狀態與 UI 切換 (修正跳轉邏輯) **
     auth.onAuthStateChanged(user => {
         if (user) {
             // 已登入
+            
+            // 如果使用者仍在登入頁面 (index.html)，則自動跳轉到編輯頁面 (private.html)
+            if (window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/')) {
+                window.location.href = PRIVATE_PAGE_URL;
+            }
+            // 由於已跳轉，以下同頁面切換可以省略，但保留亦可。
             loginSection.classList.add('hidden');
             editSection.classList.remove('hidden');
             userEmailSpan.textContent = user.email;
+
         } else {
             // 未登入
             loginSection.classList.remove('hidden');
             editSection.classList.add('hidden');
-            loginMessage.textContent = ''; // 清除登入訊息
+            userEmailSpan.textContent = '';
+            loginMessage.textContent = ''; 
         }
     });
 
     // ** 4. 讀取公開內容 (即時監聽) **
+    // 由於登入後會跳轉，這段代碼的即時監聽功能主要服務於未登入的訪客
     PUBLIC_CONTENT_DOC_REF.onSnapshot((doc) => {
         if (doc.exists) {
             const data = doc.data();
             // 更新公開顯示區域
             publicDisplay.innerHTML = `<pre>${data.text || '目前沒有內容。'}</pre>`;
 
-            // 如果使用者已登入，將內容同步到編輯器中
+            // 如果使用者已登入，將內容同步到編輯器中 (這在跳轉後幾乎不執行，因為編輯器在 private.html)
             if (auth.currentUser) {
                 editorTextarea.value = data.text || '';
             }
@@ -133,7 +96,10 @@
 
 
     // ** 5. 儲存/編輯內容 (需登入授權) **
+    // 由於登入後會跳轉，這段儲存代碼也只在同頁面編輯時有效。
+    // 在您的架構中，編輯功能主要應放置於 private.html 中。
     async function saveContent() {
+        // ... (保持原樣，但在新架構中主要由 private.html 負責)
         if (!auth.currentUser) {
             alert('您必須登入才能儲存！');
             return;
@@ -149,7 +115,7 @@
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
             saveMessage.textContent = '儲存成功！';
-            setTimeout(() => saveMessage.textContent = '', 3000); // 3秒後清除訊息
+            setTimeout(() => saveMessage.textContent = '', 3000); 
 
         } catch (error) {
             console.error("寫入 Firestore 錯誤: ", error);
@@ -158,6 +124,3 @@
     }
 
 </script>
-
-</body>
-</html>
