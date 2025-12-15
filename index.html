@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase 圖文網格編輯範例 (可左右移動順序)</title>
+    <title>Firebase 圖文網格編輯範例 (可移動順序)</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -47,7 +47,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            position: relative; /* 🚨 讓 li 成為按鈕定位的基準 🚨 */
+            position: relative; 
         }
 
         /* --- 圖片/頭像樣式 --- */
@@ -81,7 +81,7 @@
             padding-bottom: 5px;
         }
 
-        /* 🚨 刪除/移動按鈕基本樣式 🚨 */
+        /* 刪除/修改按鈕樣式 */
         .action-btn {
             color: white; 
             border: none; 
@@ -90,51 +90,39 @@
             cursor: pointer; 
             transition: background-color 0.2s;
             flex-shrink: 0;
-            margin: 5px auto 0 auto !important; /* 確保刪除按鈕依然置中 */
+            display: block; 
+            margin: 5px auto 0 auto !important;
         }
-        
-        /* 刪除按鈕 */
+
+        /* 🚨 刪除按鈕 (維持 80px 寬度並置中) 🚨 */
         .action-btn.delete-btn {
             background-color: #f44336; 
             padding: 5px 10px; 
             width: 80px; 
-            display: block; 
+            margin-bottom: 0 !important;
         }
         .action-btn.delete-btn:hover {
             background-color: #d32f2f;
         }
 
-        /* 🚨 移動按鈕 (左右箭頭) 🚨 */
+        /* 🚨 移動按鈕容器 (讓左右箭頭並排且置中) 🚨 */
+        .move-btn-container {
+            display: flex;
+            justify-content: space-between;
+            width: 80px; /* 寬度與刪除按鈕對齊 */
+            margin: 0 auto 5px auto; /* 底部間距 */
+        }
+
+        /* 🚨 移動按鈕 (細長設計) 🚨 */
         .action-btn.move-btn {
-            background-color: rgba(0, 0, 0, 0.4); /* 半透明背景 */
-            padding: 10px 0; /* 細長垂直 */
-            position: absolute; /* 絕對定位 */
-            top: 50%;
-            transform: translateY(-50%); /* 垂直居中 */
-            width: 20px;
-            z-index: 10;
+            background-color: #007bff; /* 藍色 */
+            padding: 4px 6px; /* 縮小 Padding 實現更細長的按鈕 */
+            width: 38px; /* 設定單個按鈕寬度 */
+            margin: 0 !important; /* 移除原本的 margin-auto */
+            font-size: 0.75em; /* 縮小字體 */
         }
-        
-        /* 左移按鈕 (Move Left) */
-        .action-btn.move-btn.left {
-            left: 0;
-            border-top-left-radius: 50%;
-            border-bottom-left-radius: 50%;
-            padding-left: 3px;
-            padding-right: 0;
-        }
-        
-        /* 右移按鈕 (Move Right) */
-        .action-btn.move-btn.right {
-            right: 0;
-            border-top-right-radius: 50%;
-            border-bottom-right-radius: 50%;
-            padding-right: 3px;
-            padding-left: 0;
-        }
-        
         .action-btn.move-btn:hover {
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: #0056b3;
         }
 
         /* --- 2. 編輯區/登入區 (樣式保持不變) --- */
@@ -320,19 +308,22 @@
                 // 渲染成成員卡片的結構
                 html += `
                     <li>
-                        ${isLoggedIn && currentOrder > 1 ? 
-                            `<button class="action-btn move-btn left" onclick="moveContent('${docId}', 'up', ${index})">
-                                <i class="fas fa-angle-left"></i> 
-                            </button>` : ''}
-                            
-                        ${isLoggedIn && currentOrder < totalItems ? 
-                            `<button class="action-btn move-btn right" onclick="moveContent('${docId}', 'down', ${index})">
-                                <i class="fas fa-angle-right"></i>
-                            </button>` : ''}
-
                         <p class="member-id">成員 ${currentOrder}</p> ${imageHtml}
                         <p class="member-name">${nickname}</p>
                         
+                        ${isLoggedIn ? 
+                            `<div style="display: flex; justify-content: space-around; width: 100%;">
+                                ${currentOrder > 1 ? 
+                                    `<button class="action-btn move-btn" onclick="moveContent('${docId}', 'up', ${index})">
+                                        <i class="fas fa-angle-left"></i> 
+                                    </button>` : `<div style="width: 80px; margin: 0 5px 0 0;"></div>`}
+                                    
+                                ${currentOrder < totalItems ? 
+                                    `<button class="action-btn move-btn" onclick="moveContent('${docId}', 'down', ${index})">
+                                        <i class="fas fa-angle-right"></i>
+                                    </button>` : `<div style="width: 80px; margin: 0 0 0 5px;"></div>`}
+                            </div>` : ''}
+
                         ${isLoggedIn ? 
                             `<button class="action-btn delete-btn" onclick="deleteContent('${docId}', '${data.imageUrl || ''}')">
                                 <i class="fas fa-trash-alt"></i> 刪除
@@ -452,7 +443,7 @@
         const targetIndex = currentIndex + moveDirection;
 
         if (targetIndex < 0 || targetIndex >= docs.length) {
-            return; // 已經在頂部或底部，不能移動
+            return; // 已經在邊緣，不能移動
         }
 
         // 取得目標項目的 document ID 和 timestamp
