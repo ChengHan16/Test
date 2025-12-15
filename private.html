@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>私人管理與編輯頁面</title>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --color-primary-dark: #1a237e;
+            --color-primary-light: #004d99;
+            --color-accent: #ffcc00;
+            --color-success: #4CAF50;
+            --color-error: #f44336;
+        }
+        body {
+            font-family: "Noto Sans TC", "Arial", sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f9; /* 淺灰色背景 */
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 { color: var(--color-primary-dark); border-bottom: 2px solid var(--color-accent); padding-bottom: 10px; }
+        h2 { color: var(--color-primary-light); margin-top: 30px; }
+        
+        /* 編輯區樣式 */
+        #editor-section {
+            background-color: #e6f7ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        #saveBtn {
+            background-color: var(--color-success);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        #saveBtn:hover { background-color: #3e8e41; }
+
+        /* 顯示區樣式 */
+        #public-display {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+        }
+        #public-display img {
+            max-width: 100%;
+            height: auto;
+            max-height: 250px;
+            border-radius: 8px;
+            margin-top: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .user-info p { margin: 5px 0; font-size: 1.1em; }
+
+        /* 狀態與登出 */
+        #status-message {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        #signOutBtn {
+            background-color: var(--color-error);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        #signOutBtn:hover { background-color: #d32f2f; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="loading-area">
+        <h1>正在驗證身份...</h1>
+    </div>
+
+    <div id="private-area" class="hidden">
+        <h1><i class="fas fa-user-shield"></i> 管理員編輯區</h1>
+        <p>您已登入為：<strong id="user-email-display"></strong></p>
+
+        <div id="editor-section">
+            <h2>編輯公開資訊</h2>
+            <label for="nameInput">名稱 (公開顯示)：</label>
+            <input type="text" id="nameInput" placeholder="請輸入要公開顯示的名稱" maxlength="50">
+            
+            <label for="imageUrlInput">圖片網址 (公開顯示)：</label>
+            <input type="text" id="imageUrlInput" placeholder="請輸入圖片的公開網址 (例如 Imgur, Cloudinary 等)" >
+
+            <button id="saveBtn"><i class="fas fa-save"></i> 儲存並公開</button>
+            <div id="status-message"></div>
+        </div>
+
+        <button id="signOutBtn"><i class="fas fa-sign-out-alt"></i> 登出</button>
+
+        <hr style="margin: 30px 0;">
+
+        <h2><i class="fas fa-globe-asia"></i> 當前公開資訊預覽</h2>
+        <div id="public-display">
+            <div class="user-info">
+                <p><strong>公開名稱：</strong> <span id="displayed-name">---</span></p>
+                <p><strong>圖片網址：</strong> <span id="displayed-url">---</span></p>
+            </div>
+            <img id="displayed-image" src="" alt="公開圖片" onerror="this.style.display='none'">
+        </div>
+    </div>
+</div>
+
+<script>
+    // 🚨 步驟 1: 配置您的 Firebase 設定 (必須與登入頁一致) 🚨
+    const firebaseConfig = {
+        apiKey: "AIzaSyACnoimIASfb1rb59SbgLDkUmyYR6ODbUU",
+        authDomain: "llwb-ed686.firebaseapp.com",
+        projectId: "llwb-ed686",
+        // ... 其他配置項目
+    };
+    
+    // 初始化 Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = app.auth();
+    const db = app.firestore();
+    
+    // 定義 Firestore 中儲存資料的文件路徑
+    const PUBLIC_CONTENT_DOC_REF = db.collection("content").doc("main_info");
+
+    // 獲取 DOM 元素
+    const privateArea = document.getElementById('private-area');
+    const loadingArea = document.getElementById('loading-area');
+    const userEmailDisplay = document.getElementById('user-email-display');
+    const nameInput = document.getElementById('nameInput');
+    const imageUrlInput = document.getElementById('imageUrlInput');
+    const saveBtn = document.getElementById('saveBtn');
+    const signOutBtn = document.getElementById('signOutBtn');
+    const statusMessageDiv = document.getElementById('status-message');
+
+    const displayedName = document.getElementById('displayed-name');
+    const displayedUrl = document.getElementById('displayed-url');
+    const displayedImage = document.getElementById('displayed-image');
+
+    // --- 輔助函數：顯示狀態訊息 ---
+    function showStatus(message, isError = false) {
+        statusMessageDiv.textContent = message;
+        statusMessageDiv.style.color = isError ? var(--color-error) : var(--color-success);
+        setTimeout(() => statusMessageDiv.textContent = '', 4000); // 4秒後清除訊息
+    }
+
+    // --- 登出功能 ---
+    signOutBtn.addEventListener('click', () => {
+        auth.signOut().then(() => {
+            // 登出成功，onAuthStateChanged 將會觸發重定向回登入頁面
+        }).catch((error) => {
+            console.error("登出失敗:", error);
+            alert("登出失敗，請檢查網路。");
+        });
+    });
+
+    // --- 儲存/編輯功能 (寫入 Firestore) ---
+    saveBtn.addEventListener('click', async () => {
+        if (!auth.currentUser) {
+            showStatus('身份驗證失敗，請重新登入！', true);
+            return;
+        }
+
+        const name = nameInput.value.trim();
+        const imageUrl = imageUrlInput.value.trim();
+
+        if (!name) {
+            showStatus('名稱欄位不可為空！', true);
+            return;
+        }
+
+        showStatus('正在儲存中...');
+        try {
+            await PUBLIC_CONTENT_DOC_REF.set({
+                name: name,
+                imageUrl: imageUrl,
+                updatedBy: auth.currentUser.email,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            showStatus('儲存成功，內容已公開！');
+        } catch (error) {
+            console.error("寫入 Firestore 錯誤:", error);
+            showStatus(`儲存失敗: ${error.message}`, true);
+        }
+    });
+
+    // --- 狀態監聽 (核心邏輯) ---
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            // 1. 已登入: 顯示管理介面
+            loadingArea.classList.add('hidden');
+            privateArea.classList.remove('hidden');
+            userEmailDisplay.textContent = user.email;
+
+            // 2. 啟動 Firestore 即時監聽，讀取內容
+            startFirestoreListener();
+
+        } else {
+            // 3. 未登入: 導回登入頁面 (安全網，以防直接訪問)
+            window.location.href = 'index.html'; // 假設您的登入頁是 index.html
+        }
+    });
+
+    // --- Firestore 即時監聽 (讀取公開內容並同步到編輯器) ---
+    function startFirestoreListener() {
+        PUBLIC_CONTENT_DOC_REF.onSnapshot((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                
+                // A. 更新公開顯示區 (所有人可見)
+                displayedName.textContent = data.name || '--- (未設定名稱)';
+                displayedUrl.textContent = data.imageUrl || '--- (無圖片網址)';
+                
+                // 處理圖片顯示
+                if (data.imageUrl) {
+                    displayedImage.src = data.imageUrl;
+                    displayedImage.style.display = 'block';
+                } else {
+                    displayedImage.style.display = 'none';
+                }
+
+                // B. 如果在編輯頁面且已登入，將最新資料同步到編輯欄位
+                if (auth.currentUser) {
+                    nameInput.value = data.name || '';
+                    imageUrlInput.value = data.imageUrl || '';
+                }
+
+            } else {
+                // 資料庫文件不存在時的預設處理
+                displayedName.textContent = '--- 尚未有公開內容 ---';
+                displayedUrl.textContent = '';
+                displayedImage.style.display = 'none';
+            }
+        }, (error) => {
+            console.error("即時監聽 Firestore 錯誤:", error);
+            alert("讀取公開資料發生錯誤！");
+        });
+    }
+
+</script>
+
+</body>
+</html>
