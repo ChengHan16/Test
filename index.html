@@ -1,61 +1,163 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>動態成員卡片管理 (Firebase)</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <title>GitHub Pages Firebase 範例</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        #public-display, #edit-section {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        #public-display { background-color: #f9f9f9; }
+        #edit-section { background-color: #e6f7ff; display: none; }
+        .hidden { display: none !important; }
+        input, textarea, button { padding: 8px; margin-top: 5px; display: block; width: 100%; box-sizing: border-box; }
+        label { margin-top: 10px; display: block; }
+    </style>
 </head>
 <body>
-    
-    <div id="authStatus" style="margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 15px;">
-        <span id="authMessage" style="margin-right: 15px; font-size: 0.9em; color: #555;">狀態：載入中...</span>
-        
-        <button id="editButton" style="display:block; margin-top: 10px;" onclick="toggleEditMode()">
-            編輯 / 登入管理員
-        </button>
-        <button id="logoutButton" style="display:none;" onclick="logout()">
-            登出
-        </button>
-        
-        <div id="loginForm" style="display:none; border: 1px solid #ccc; padding: 15px; margin-top: 10px; max-width: 300px; background: #fff;">
-            <h4>管理員登入</h4>
-            <input type="email" id="loginEmail" placeholder="Email" style="margin-bottom: 5px; padding: 5px; display: block; width: 90%;">
-            <input type="password" id="loginPassword" placeholder="密碼" style="margin-bottom: 10px; padding: 5px; display: block; width: 90%;">
-            <button onclick="login()" style="padding: 5px 10px; background-color: #1a237e; color: white; border: none; border-radius: 4px;">登入</button>
-            <p id="loginError" style="color:red; font-size: 0.9em; margin-top: 10px;"></p>
-        </div>
-    </div>
-    
-    <div class="add-member-form" id="addMemberForm" style="display:none;">
-        <h3>新增成員</h3>
-        <input type="text" id="memberName" placeholder="輸入成員名稱 (必填)">
-        <input type="file" id="memberImageFile" accept="image/*">
-        <button onclick="addMember()">新增卡片</button>
-    </div>
 
-    <div id="managementArea" style="display:none; padding: 20px; border: 1px dashed #0056b3; margin-bottom: 20px;">
-        <h2>卡片顯示控制</h2>
-        <p>勾選以決定是否公開呈現 (需點擊下方儲存按鈕生效)：</p>
-        <ul id="controlList" class="control-list">
-            </ul>
-        <button onclick="saveControlState()" style="padding: 8px 15px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 15px;">
-            儲存控制狀態
-        </button>
+<div class="container">
+    <h1>公開內容顯示區</h1>
+    <p>任何人都能看到的最新內容。</p>
+    <div id="public-display">
+        <p>載入中...</p>
     </div>
 
     <hr>
-    <h1>成員列表：</h1>
-    <p style="font-size: 0.9em; color: #777;">您當前看到的是所有用戶同步的資料。</p>
 
-    <div id="membersContainer" class="members-grid">
+    <h2>管理員登入</h2>
+    <div id="login-section">
+        <input type="email" id="email" placeholder="管理員 Email">
+        <input type="password" id="password" placeholder="密碼">
+        <button onclick="signIn()">登入</button>
+        <p id="login-message" style="color: red;"></p>
     </div>
 
-    <script src="script.js"></script>
+    <div id="edit-section" class="hidden">
+        <h3>編輯內容 (<span id="user-email"></span>)</h3>
+        <label for="editor-text">編輯器：</label>
+        <textarea id="editor-text" rows="5"></textarea>
+        <button onclick="saveContent()">儲存內容</button>
+        <button onclick="signOut()">登出</button>
+        <p id="save-message" style="color: green;"></p>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+<script>
+    // ** 1. 替換為您的 Firebase 配置 **
+    const firebaseConfig = {
+        apiKey: "AIzaSyACnoimIASfb1rb59SbgLDkUmyYR6ODbUU",
+        authDomain: "llwb-ed686.firebaseapp.com",
+        projectId: "llwb-ed686",
+        storageBucket: "llwb-ed686.firebasestorage.app",
+        messagingSenderId: "940345852074",
+        appId: "1:940345852074:web:7a30cca5a6d997a92350d3",
+        measurementId: "G-KWL4ZE3D18"
+    };
+
+    // 初始化 Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = app.auth();
+    const db = app.firestore();
+
+    const PUBLIC_CONTENT_DOC_REF = db.collection("content").doc("main_data");
+
+    // HTML 元素
+    const publicDisplay = document.getElementById('public-display');
+    const loginSection = document.getElementById('login-section');
+    const editSection = document.getElementById('edit-section');
+    const editorTextarea = document.getElementById('editor-text');
+    const loginMessage = document.getElementById('login-message');
+    const saveMessage = document.getElementById('save-message');
+    const userEmailSpan = document.getElementById('user-email');
+
+    // ** 2. 登入/登出功能 **
+    async function signIn() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        loginMessage.textContent = '';
+        try {
+            await auth.signInWithEmailAndPassword(email, password);
+            // 登入成功後，onAuthStateChanged 會處理 UI 變更
+        } catch (error) {
+            loginMessage.textContent = `登入失敗: ${error.message}`;
+        }
+    }
+
+    function signOut() {
+        auth.signOut();
+    }
+
+    // ** 3. 監聽登入狀態與 UI 切換 **
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            // 已登入
+            loginSection.classList.add('hidden');
+            editSection.classList.remove('hidden');
+            userEmailSpan.textContent = user.email;
+        } else {
+            // 未登入
+            loginSection.classList.remove('hidden');
+            editSection.classList.add('hidden');
+            loginMessage.textContent = ''; // 清除登入訊息
+        }
+    });
+
+    // ** 4. 讀取公開內容 (即時監聽) **
+    PUBLIC_CONTENT_DOC_REF.onSnapshot((doc) => {
+        if (doc.exists) {
+            const data = doc.data();
+            // 更新公開顯示區域
+            publicDisplay.innerHTML = `<pre>${data.text || '目前沒有內容。'}</pre>`;
+
+            // 如果使用者已登入，將內容同步到編輯器中
+            if (auth.currentUser) {
+                editorTextarea.value = data.text || '';
+            }
+        } else {
+            publicDisplay.textContent = '資料庫中尚未建立內容。';
+        }
+    }, (error) => {
+        console.error("讀取 Firestore 錯誤: ", error);
+        publicDisplay.textContent = '資料讀取錯誤。';
+    });
+
+
+    // ** 5. 儲存/編輯內容 (需登入授權) **
+    async function saveContent() {
+        if (!auth.currentUser) {
+            alert('您必須登入才能儲存！');
+            return;
+        }
+
+        const newContent = editorTextarea.value;
+        saveMessage.textContent = '儲存中...';
+
+        try {
+            // 寫入資料到 Firestore
+            await PUBLIC_CONTENT_DOC_REF.set({
+                text: newContent,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            saveMessage.textContent = '儲存成功！';
+            setTimeout(() => saveMessage.textContent = '', 3000); // 3秒後清除訊息
+
+        } catch (error) {
+            console.error("寫入 Firestore 錯誤: ", error);
+            saveMessage.textContent = `儲存失敗: ${error.message}`;
+        }
+    }
+
+</script>
+
 </body>
 </html>
