@@ -2,13 +2,15 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>GitHub Pages Firebase 編輯範例</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase 圖文網格編輯範例</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
+        /* --- 基礎設定 --- */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; background-color: #f0f2f5; }
         .container { 
-            max-width: 700px; 
+            max-width: 800px; 
             margin: 0 auto; 
             background-color: #fff; 
             padding: 25px; 
@@ -18,71 +20,101 @@
         h1 { color: #1a237e; border-bottom: 2px solid #ffcc00; padding-bottom: 10px; }
         h2 { color: #004d99; margin-top: 25px; }
         
-        /* 公開顯示區 */
+        /* --- 1. 公開顯示區：網格佈局 --- */
         #public-display {
-            background-color: #e8f5e9;
-            border: 2px solid #4caf50;
-            padding: 20px;
-            margin-bottom: 25px;
-            border-radius: 8px;
-            font-size: 1.1em;
+            background-color: transparent; 
+            border: none;
+            padding: 20px 0; 
+            margin: 0;
+            /* 實現類似圖例的多列佈局 */
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* 每列最小 100px */
+            gap: 20px 10px; /* 行與列的間距 */
+            justify-content: center; /* 網格置中 */
+        }
+        
+        /* 移除 ul li 預設樣式，讓 li 成為網格項目 */
+        #public-display ul {
+            list-style: none; 
+            padding: 0; 
+            margin: 0;
+            display: contents; /* 讓 li 項目直接作為 grid item */
+        }
+        #public-display ul li {
+            padding: 0; 
+            margin: 0; 
+            text-align: center;
+            overflow: hidden; 
         }
 
-        /* 登入區 */
-        #login-section {
-            padding: 20px;
-            background-color: #f5f5f5;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        /* --- 圖片/頭像樣式 --- */
+        #public-display ul li img {
+            width: 100px;       /* 固定圖片寬度 */
+            height: 100px;      /* 固定圖片高度 */
+            max-width: 100%;
+            display: block;
+            margin: 0 auto 5px auto; 
+            border-radius: 50%; /* 圓形頭像 */
+            border: 3px solid #1a237e; /* 藍色邊框 (可調整) */
+            object-fit: cover; /* 確保圖片填滿容器並保持比例 */
         }
-        
-        /* 編輯區 */
-        #edit-section { 
-            background-color: #e6f7ff; 
-            padding: 20px;
-            border-radius: 8px;
+
+        /* --- 文字樣式 --- */
+        #public-display .member-id {
+            font-size: 0.8em; 
+            color: #666; 
+            margin-bottom: 3px;
         }
+        #public-display .member-name {
+            font-weight: bold; 
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        /* --- 2. 編輯區/登入區 --- */
+        #login-section { padding: 20px; background-color: #f5f5f5; border-radius: 8px; margin-bottom: 20px; }
+        #edit-section { background-color: #e6f7ff; padding: 20px; border-radius: 8px; }
         .hidden { display: none !important; }
         
-        input[type="email"], input[type="password"], textarea, button { 
-            padding: 10px; 
-            margin-top: 10px; 
-            display: block; 
-            width: 100%; 
-            box-sizing: border-box; 
-            border-radius: 5px;
+        input[type="email"], input[type="password"], textarea, input[type="file"], button { 
+            padding: 10px; margin-top: 10px; display: block; width: 100%; box-sizing: border-box; border-radius: 5px;
         }
         input, textarea { border: 1px solid #ccc; }
         label { margin-top: 15px; display: block; font-weight: bold; }
         
-        button { 
-            border: none; 
-            cursor: pointer; 
-            font-weight: bold; 
-            transition: background-color 0.3s; 
-            margin-top: 15px;
-        }
+        button { border: none; cursor: pointer; font-weight: bold; transition: background-color 0.3s; margin-top: 15px; }
         #loginBtn { background-color: #004d99; color: white; }
         #loginBtn:hover { background-color: #1a237e; }
         #saveBtn { background-color: #4caf50; color: white; }
         #saveBtn:hover { background-color: #3e8e41; }
         #signOutBtn { background-color: #f44336; color: white; }
         #signOutBtn:hover { background-color: #d32f2f; }
+
+        /* 圖片預覽區樣式 */
+        #image-preview img {
+            max-width: 100px; 
+            height: 100px;
+            display: block;
+            border-radius: 50%; 
+            object-fit: cover;
+            border: 3px solid #1a237e; 
+            margin-bottom: 10px;
+        } 
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1><i class="fas fa-globe-asia"></i> 公開內容顯示區</h1>
-    <p>以下內容由管理員編輯並儲存在雲端，任何人都能即時看到最新版本。</p>
+    <h1><i class="fas fa-globe-asia"></i> 公開內容展示</h1>
+    <p>以下為成員圖文列表，由管理員新增，任何人都能即時看到最新版本。</p>
     
     <div id="public-display">
-        <p>載入中...</p>
+        <p style="text-align: center;">載入中...</p>
     </div>
 
     <hr>
 
-    <h2><i class="fas fa-lock"></i> 管理員登入</h2>
+    <h2><i class="fas fa-lock"></i> 管理員編輯區</h2>
     
     <div id="login-section">
         <input type="email" id="email" placeholder="管理員 Email" required>
@@ -92,9 +124,16 @@
     </div>
 
     <div id="edit-section" class="hidden">
-        <h3><i class="fas fa-user-edit"></i> 新增公開訊息 (<span id="user-email"></span>)</h3>
-        <label for="editor-text">輸入新訊息：</label>
-        <textarea id="editor-text" rows="5" placeholder="請輸入您要新增的訊息..."></textarea>
+        <h3><i class="fas fa-user-edit"></i> 新增成員/訊息 (<span id="user-email"></span>)</h3>
+        
+        <label for="editor-text">輸入暱稱/職稱：</label>
+        <textarea id="editor-text" rows="2" placeholder="請輸入成員的暱稱或職稱... (例如: 班長、もも)"></textarea>
+
+        <label for="image-upload">上傳頭像 (必選)：</label>
+        <input type="file" id="image-upload" accept="image/*" required>
+        <div id="image-preview" style="margin-top: 10px; max-width: 100%;">
+            <img src="" alt="圖片預覽" class="hidden">
+        </div>
         
         <button id="saveBtn" onclick="saveContent()"><i class="fas fa-save"></i> 儲存並公開</button>
         <button id="signOutBtn" onclick="signOut()"><i class="fas fa-sign-out-alt"></i> 登出</button>
@@ -106,18 +145,15 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
 
 <script>
-    // ** 1. 您的 Firebase 配置 (保持不變) **
+    // ** 1. 您的 Firebase 配置 **
     const firebaseConfig = {
         apiKey: "AIzaSyACnoimIASfb1rb59SbgLDkUmyYR6ODbUU",
         authDomain: "llwb-ed686.firebaseapp.com",
         projectId: "llwb-ed686",
-        storageBucket: "llwb-ed686.firebasestorage.app",
+        storageBucket: "llwb-ed686.firebasestorage.app", 
         messagingSenderId: "940345852074",
         appId: "1:940345852074:web:7a30cca5a6d997a92350d3",
         measurementId: "G-KWL4ZE3D18"
@@ -127,11 +163,12 @@
     const app = firebase.initializeApp(firebaseConfig);
     const auth = app.auth();
     const db = app.firestore();
+    const storage = app.storage(); 
 
-    // 🚨 變更：現在指向 Collection (集合) 而不是 Document (文件)
+    // 定義 Firestore 集合路徑
     const PUBLIC_CONTENT_COLLECTION_REF = db.collection("content"); 
     
-    // HTML 元素快取 (保持不變)
+    // HTML 元素快取
     const publicDisplay = document.getElementById('public-display');
     const loginSection = document.getElementById('login-section');
     const editSection = document.getElementById('edit-section');
@@ -139,8 +176,26 @@
     const loginMessage = document.getElementById('login-message');
     const saveMessage = document.getElementById('save-message');
     const userEmailSpan = document.getElementById('user-email');
+    const imageUploadInput = document.getElementById('image-upload');
+    const imagePreview = document.querySelector('#image-preview img');
 
-    // ** 2. 登入/登出功能 (保持不變) **
+    // 圖片預覽功能
+    imageUploadInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+                imagePreview.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        } else {
+            imagePreview.src = '';
+            imagePreview.classList.add('hidden');
+        }
+    });
+
+    // ** 2. 登入/登出功能 **
     async function signIn() {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
@@ -156,14 +211,15 @@
         auth.signOut();
     }
 
-    // ** 3. 監聽登入狀態與 UI 切換 (保持不變) **
+    // ** 3. 監聽登入狀態與 UI 切換 **
     auth.onAuthStateChanged(user => {
         if (user) {
             loginSection.classList.add('hidden');
             editSection.classList.remove('hidden');
             userEmailSpan.textContent = user.email;
-            // 登入時清除輸入框，準備新增訊息
             editorTextarea.value = '';
+            imageUploadInput.value = '';
+            imagePreview.classList.add('hidden');
         } else {
             loginSection.classList.remove('hidden');
             editSection.classList.add('hidden');
@@ -172,32 +228,34 @@
         }
     });
 
-    // ** 4. 讀取公開內容 (即時監聽：讀取整個集合並顯示) **
-    // 🚨 變更：使用 orderBy 排序，並遍歷 snapshot 中的所有文件
+    // ** 4. 讀取公開內容 (即時監聽：網格渲染) **
     PUBLIC_CONTENT_COLLECTION_REF
-        .orderBy("timestamp", "desc") // 按時間戳記降序排列 (最新在最上)
-        .limit(20) // 限制最多顯示 20 條訊息
+        .orderBy("timestamp", "desc") 
+        .limit(20) 
         .onSnapshot((snapshot) => {
+            // 使用 ul 包裝列表
             let html = '<ul style="list-style: none; padding: 0;">';
             
             if (snapshot.empty) {
-                publicDisplay.innerHTML = '<p>目前沒有任何公開訊息。</p>';
+                publicDisplay.innerHTML = '<p style="text-align: center;">目前沒有任何公開訊息。</p>';
                 return;
             }
 
-            // 遍歷集合中的每個文件 (每條訊息)
-            snapshot.docs.forEach(doc => {
+            snapshot.docs.forEach((doc, index) => { 
                 const data = doc.data();
-                const date = data.timestamp ? data.timestamp.toDate().toLocaleString('zh-TW', { dateStyle: 'short', timeStyle: 'short' }) : '時間未知';
+                const nickname = data.text.trim() || '未命名'; 
                 
+                // 圖片 (如果沒有圖片，則使用預設圖標佔位)
+                const imageHtml = data.imageUrl ? 
+                    `<img src="${data.imageUrl}" alt="${nickname}">` : 
+                    // 預設佔位圖標，保持圓形和尺寸
+                    `<div style="width: 100px; height: 100px; border-radius: 50%; background-color: #aaa; margin: 0 auto 5px auto; display: flex; align-items: center; justify-content: center; color: white; font-size: 2em; border: 3px solid #1a237e;"><i class="fas fa-user"></i></div>`;
+                
+                // 渲染成類似成員卡片的結構
                 html += `
-                    <li style="border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 5px; background-color: #fff;">
-                        <p style="margin: 0; font-size: 0.9em; color: #666;">
-                            [${date}] 由 <strong>${data.author || '匿名編輯者'}</strong> 新增
-                        </p>
-                        <p style="white-space: pre-wrap; margin-top: 10px; font-size: 1.1em;">
-                            ${data.text}
-                        </p>
+                    <li>
+                        <p class="member-id">成員 ${snapshot.size - index}</p> ${imageHtml}
+                        <p class="member-name">${nickname}</p>
                     </li>
                 `;
             });
@@ -209,36 +267,55 @@
         });
 
 
-    // ** 5. 儲存/編輯內容 (新增文件到集合) **
+    // ** 5. 儲存/編輯內容 (新增文件到集合 - 處理圖片上傳) **
     async function saveContent() {
         if (!auth.currentUser) {
             alert('您必須登入才能儲存！');
             return;
         }
 
-        const newContent = editorTextarea.value.trim(); // 移除前後空白
+        const newContent = editorTextarea.value.trim();
+        const imageFile = imageUploadInput.files[0];
+        
+        // 必須有文字或圖片 (為了卡片排版，建議至少有暱稱/文字)
         if (newContent.length === 0) {
-            alert('訊息內容不可為空！');
+            alert('暱稱/職稱欄位不可為空！');
+            return;
+        }
+        if (!imageFile) {
+             alert('請上傳頭像圖片！');
             return;
         }
         
         saveMessage.textContent = '儲存中...';
+        let imageUrl = null;
 
         try {
-            // 🚨 變更：使用 add() 方法，新增一個新的文件到集合中
+            // 🚨 步驟 A: 上傳圖片到 Cloud Storage
+            if (imageFile) {
+                const storageRef = storage.ref(`images/${Date.now()}_${imageFile.name}`);
+                const snapshot = await storageRef.put(imageFile);
+                imageUrl = await snapshot.ref.getDownloadURL(); 
+                saveMessage.textContent = '圖片上傳成功，正在寫入資料庫...';
+            }
+
+            // 🚨 步驟 B: 將文字和圖片 URL 寫入 Firestore
             await PUBLIC_CONTENT_COLLECTION_REF.add({
-                text: newContent,
+                text: newContent, // 儲存暱稱/職稱
+                imageUrl: imageUrl, 
                 timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                 author: auth.currentUser.email
             });
             
-            // 新增成功後，清除輸入框
+            // 儲存成功後，清除輸入框和圖片
             editorTextarea.value = '';
-            saveMessage.textContent = '訊息新增成功！公開列表已更新。';
+            imageUploadInput.value = '';
+            imagePreview.classList.add('hidden');
+            saveMessage.textContent = '成員新增成功！公開列表已更新。';
             setTimeout(() => saveMessage.textContent = '', 3000); 
 
         } catch (error) {
-            console.error("寫入 Firestore 錯誤: ", error);
+            console.error("寫入或上傳錯誤: ", error);
             saveMessage.textContent = `儲存失敗: ${error.message}`;
         }
     }
