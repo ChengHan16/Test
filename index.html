@@ -2,34 +2,114 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D 物體尺寸模擬器 (AutoCAD 風格)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3D 物體尺寸模擬器 (立法院深藍版)</title>
     <style>
-        body { margin: 0; display: flex; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; }
-        #sidebar { width: 320px; padding: 20px; background: white; box-shadow: 2px 0 5px rgba(0,0,0,0.1); z-index: 10; height: 100vh; overflow-y: auto; }
-        #canvas-container { flex-grow: 1; height: 100vh; overflow: hidden; position: relative; }
-        h2 { font-size: 1.2rem; color: #333; margin-top: 0; }
+        body { 
+            margin: 0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f0f4f8; 
+            overflow: hidden; /* 防止整個頁面滾動 */
+        }
+        
+        /* 3D 畫布全螢幕滿版 */
+        #canvas-container { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100vw; 
+            height: 100vh; 
+            z-index: 1; 
+        }
+
+        /* 控制面板設計 (預設電腦版靠左) */
+        #sidebar { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 320px; 
+            height: 100vh; 
+            padding: 25px; 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px); /* 毛玻璃效果 */
+            box-shadow: 2px 0 15px rgba(0,0,0,0.1); 
+            z-index: 10; 
+            overflow-y: auto; 
+            box-sizing: border-box;
+            border-right: 4px solid #004b97; /* 立法院深藍邊框 */
+        }
+
+        h2 { font-size: 1.3rem; color: #004b97; margin-top: 0; font-weight: bold; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
+        
         .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: #555; }
-        input[type="number"], select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .btn { display: block; width: 100%; padding: 10px; margin-top: 10px; background-color: #0078D7; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn:hover { background-color: #005a9e; }
-        .btn-danger { background-color: #d13438; }
+        label { display: block; margin-bottom: 6px; font-size: 0.9rem; color: #444; font-weight: 500;}
+        
+        /* 加大輸入框與按鈕，方便手機觸控 */
+        input[type="number"], select { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ccc; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            font-size: 1rem;
+        }
+        
+        .btn { 
+            display: block; 
+            width: 100%; 
+            padding: 14px; 
+            margin-top: 15px; 
+            background-color: #004b97; /* 立法院藍 */
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+        .btn:hover { background-color: #003366; }
+        .btn-danger { background-color: #d13438; margin-top: 10px; }
         .btn-danger:hover { background-color: #a80000; }
-        .btn-secondary { background-color: #6c757d; margin-top: 5px; }
-        .btn-secondary:hover { background-color: #5a6268; }
-        .converter { background: #e9ecef; padding: 10px; border-radius: 4px; margin-top: 20px; font-size: 0.85rem; }
-        .converter input { width: 45%; display: inline-block; }
+        
+        .converter { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 6px; 
+            margin-top: 25px; 
+            font-size: 0.9rem; 
+            border-left: 4px solid #004b97;
+        }
+        .converter input { width: 42%; display: inline-block; padding: 8px; }
+
+        /* 手機版響應式設計 (寬度小於 768px 時觸發) */
+        @media (max-width: 768px) {
+            #sidebar { 
+                width: 100%; 
+                height: 45vh; /* 佔據螢幕下半部 */
+                top: auto; 
+                bottom: 0; 
+                border-right: none;
+                border-top: 4px solid #004b97; 
+                border-radius: 20px 20px 0 0; 
+                box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+            }
+            #canvas-container { 
+                height: 55vh; /* 畫布佔據上半部，避免被擋住 */
+            }
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
 
+    <div id="canvas-container"></div>
+
     <div id="sidebar">
-        <h2>新增物體</h2>
+        <h2>物件尺寸設定</h2>
         <div class="input-group">
-            <label for="unit">輸入單位</label>
+            <label for="unit">測量單位</label>
             <select id="unit">
                 <option value="mm">毫米 (mm)</option>
                 <option value="cm">公分 (cm)</option>
@@ -47,51 +127,51 @@
             <label for="height">高度 (Y軸)</label>
             <input type="number" id="height" value="61" step="0.1">
         </div>
-        <button class="btn" onclick="addObject()">加入場景</button>
+        <button class="btn" onclick="addObject()">加入比較</button>
         <button class="btn btn-danger" onclick="clearScene()">清除全部</button>
 
         <div class="converter">
-            <strong>📐 快速單位轉換工具</strong><br><br>
+            <strong>📐 單位快速換算</strong><br><br>
             <input type="number" id="conv-cm" placeholder="cm" oninput="convert('cm')"> cm = 
             <input type="number" id="conv-mm" placeholder="mm" oninput="convert('mm')"> mm
         </div>
     </div>
 
-    <div id="canvas-container"></div>
-
     <script>
-        // --- 初始化 Three.js 場景 ---
+        // --- 1. 初始化 Three.js 場景 ---
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xf4f7f6); // AutoCAD 風格淺灰背景
+        scene.background = new THREE.Color(0xeef2f5); // 更清爽的背景色
 
         const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 1, 10000);
-        camera.position.set(500, 400, 500);
+        camera.position.set(400, 300, 400);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio); // 提升手機版畫質
         container.appendChild(renderer.domElement);
 
+        // 控制器 (支援手機雙指縮放、單指旋轉)
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
 
-        // 加入網格線 (AutoCAD 風格)
-        const gridHelper = new THREE.GridHelper(2000, 100, 0x888888, 0xcccccc);
+        // --- 2. 場景裝飾 (網格與光源) ---
+        // 淺灰色網格，不會搶走主體的視覺
+        const gridHelper = new THREE.GridHelper(2000, 100, 0xaaaaaa, 0xdddddd);
         scene.add(gridHelper);
 
-        // 加入光源
-        const ambientLight = new THREE.AmbientLight(0x404040, 1.5);
+        // 增強光源以突顯透明材質的反射質感
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         scene.add(ambientLight);
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(1, 1, 1).normalize();
+        directionalLight.position.set(200, 500, 300);
         scene.add(directionalLight);
 
-        // --- 全域變數 ---
+        // --- 3. 核心功能邏輯 ---
         let objects = [];
-        let currentXOffset = 0; // 用於並排顯示物體
+        let currentXOffset = 0; 
 
-        // --- 功能：加入物體 ---
         function addObject() {
             const unit = document.getElementById('unit').value;
             let l = parseFloat(document.getElementById('length').value);
@@ -103,45 +183,40 @@
                 return;
             }
 
-            // 統一將內部運算單位轉為 mm
-            if (unit === 'cm') {
-                l *= 10;
-                w *= 10;
-                h *= 10;
-            }
+            if (unit === 'cm') { l *= 10; w *= 10; h *= 10; }
 
-            // 建立幾何體
-            const geometry = new THREE.BoxGeometry(l, h, w); // Three.js 中 Y 是高度
+            const geometry = new THREE.BoxGeometry(l, h, w); 
             
-            // 建立材質 (半透明藍色，類似 AutoCAD 概念圖)
-            const material = new THREE.MeshPhongMaterial({ 
-                color: 0x82b1ff, 
+            // 【升級】使用 MeshPhysicalMaterial 打造立法院深藍色透明質感
+            const material = new THREE.MeshPhysicalMaterial({ 
+                color: 0x004b97,       // 立法院皇家深藍
                 transparent: true, 
-                opacity: 0.6,
-                shininess: 30
+                opacity: 0.75,         // 透明度
+                roughness: 0.1,        // 表面光滑度
+                transmission: 0.5,     // 玻璃般的透光感
+                thickness: 0.5,        // 折射厚度
+                clearcoat: 1.0,        // 表面反光塗層
+                clearcoatRoughness: 0.1
             });
             const cube = new THREE.Mesh(geometry, material);
 
-            // 建立邊線 (黑線框，增強工程圖感)
+            // 邊線 (深色框線，保留工程圖的精確感)
             const edges = new THREE.EdgesGeometry(geometry);
-            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 }));
-            cube.add(line); // 將線框綁定在方塊上
+            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x002244, linewidth: 2 }));
+            cube.add(line); 
 
-            // 設定位置 (將物體底部貼齊網格，並依照 currentXOffset 往右排列)
+            // 排列邏輯
             cube.position.y = h / 2; 
             cube.position.x = currentXOffset + (l / 2);
-            
-            // 更新下一個物體的起始 X 座標 (保留 50mm 的間距)
-            currentXOffset += l + 50; 
+            currentXOffset += l + 50; // 間距 50mm
 
             scene.add(cube);
             objects.push(cube);
 
-            // 調整攝影機焦點
-            controls.target.set(currentXOffset / 2, 0, 0);
+            // 自動將視角對準新加入的物體
+            controls.target.set(cube.position.x, 0, 0);
         }
 
-        // --- 功能：清除場景 ---
         function clearScene() {
             objects.forEach(obj => scene.remove(obj));
             objects = [];
@@ -149,7 +224,6 @@
             controls.target.set(0, 0, 0);
         }
 
-        // --- 功能：單位轉換小工具 ---
         function convert(from) {
             const cmInput = document.getElementById('conv-cm');
             const mmInput = document.getElementById('conv-mm');
@@ -160,7 +234,7 @@
             }
         }
 
-        // --- 渲染迴圈 ---
+        // --- 4. 渲染迴圈與響應式視窗 ---
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
@@ -168,7 +242,6 @@
         }
         animate();
 
-        // --- 視窗縮放適應 ---
         window.addEventListener('resize', () => {
             camera.aspect = container.clientWidth / container.clientHeight;
             camera.updateProjectionMatrix();
