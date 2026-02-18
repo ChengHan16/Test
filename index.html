@@ -3,108 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D 物體尺寸模擬器 (立法院深藍版)</title>
+    <title>3D 物體尺寸模擬器 (立法院深藍進階版)</title>
     <style>
         body { 
             margin: 0; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             background-color: #f0f4f8; 
-            overflow: hidden; /* 防止整個頁面滾動 */
+            overflow: hidden; 
         }
         
-        /* 3D 畫布全螢幕滿版 */
         #canvas-container { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100vw; 
-            height: 100vh; 
-            z-index: 1; 
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; 
         }
 
-        /* 控制面板設計 (預設電腦版靠左) */
+        /* --- 側邊欄 (物件尺寸設定) --- */
         #sidebar { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 320px; 
-            height: 100vh; 
-            padding: 25px; 
-            background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(10px); /* 毛玻璃效果 */
-            box-shadow: 2px 0 15px rgba(0,0,0,0.1); 
-            z-index: 10; 
-            overflow-y: auto; 
-            box-sizing: border-box;
-            border-right: 4px solid #004b97; /* 立法院深藍邊框 */
+            position: absolute; top: 0; left: 0; width: 320px; height: 100vh; 
+            padding: 25px; background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px); box-shadow: 2px 0 15px rgba(0,0,0,0.1); 
+            z-index: 10; overflow-y: auto; box-sizing: border-box;
+            border-right: 4px solid #004b97; 
+            transition: transform 0.3s ease; /* 摺疊動畫 */
         }
-
-        h2 { font-size: 1.3rem; color: #004b97; margin-top: 0; font-weight: bold; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
+        #sidebar.collapsed {
+            transform: translateX(-100%); /* 往左收起 */
+        }
         
+        h2 { font-size: 1.3rem; color: #004b97; margin-top: 0; font-weight: bold; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
         .input-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 6px; font-size: 0.9rem; color: #444; font-weight: 500;}
+        input[type="number"], select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
         
-        /* 加大輸入框與按鈕，方便手機觸控 */
-        input[type="number"], select { 
-            width: 100%; 
-            padding: 12px; 
-            border: 1px solid #ccc; 
-            border-radius: 6px; 
-            box-sizing: border-box; 
-            font-size: 1rem;
-        }
-        
-        .btn { 
-            display: block; 
-            width: 100%; 
-            padding: 14px; 
-            margin-top: 15px; 
-            background-color: #004b97; /* 立法院藍 */
-            color: white; 
-            border: none; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 1rem;
-            transition: background 0.2s;
-        }
+        .btn { display: block; width: 100%; padding: 14px; margin-top: 15px; background-color: #004b97; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: background 0.2s; }
         .btn:hover { background-color: #003366; }
         .btn-danger { background-color: #d13438; margin-top: 10px; }
         .btn-danger:hover { background-color: #a80000; }
-        
-        .converter { 
-            background: #f8f9fa; 
-            padding: 15px; 
-            border-radius: 6px; 
-            margin-top: 25px; 
-            font-size: 0.9rem; 
-            border-left: 4px solid #004b97;
+        .btn-collapse { background-color: #e0e0e0; color: #333; margin-top: 25px; }
+        .btn-collapse:hover { background-color: #ccc; }
+
+        /* 展開側邊欄的按鈕 (平時隱藏，側邊欄收起時顯示) */
+        #expand-sidebar-btn {
+            position: absolute; top: 20px; left: 20px; z-index: 9;
+            background: #004b97; color: white; padding: 10px 15px; border: none; border-radius: 6px;
+            cursor: pointer; font-weight: bold; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
+
+        .converter { background: #f8f9fa; padding: 15px; border-radius: 6px; margin-top: 25px; font-size: 0.9rem; border-left: 4px solid #004b97; }
         .converter input { width: 42%; display: inline-block; padding: 8px; }
 
-        /* 手機版響應式設計 (寬度小於 768px 時觸發) */
+        /* --- 可拖移懸浮工具列 --- */
+        #floating-toolbar {
+            position: absolute; top: 20px; right: 20px; z-index: 20;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px);
+            border: 2px solid #004b97; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            width: 160px; overflow: hidden;
+        }
+        #toolbar-header {
+            background: #004b97; color: white; padding: 8px; text-align: center;
+            font-size: 0.85rem; font-weight: bold; cursor: move; user-select: none;
+            touch-action: none; /* 讓手機拖曳更順暢 */
+        }
+        .toolbar-body { padding: 10px; }
+        .toolbar-btn {
+            width: 100%; padding: 10px 5px; margin-bottom: 8px; font-size: 0.9rem;
+            background: #f0f4f8; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;
+            color: #333; font-weight: bold; transition: all 0.2s;
+        }
+        .toolbar-btn.active { background: #004b97; color: white; border-color: #004b97; }
+        .toolbar-btn:last-child { margin-bottom: 0; }
+
+        /* --- 尺寸標註文字樣式 (CSS2D) --- */
+        .dim-label {
+            color: #000; font-family: sans-serif; font-size: 12px; font-weight: bold;
+            padding: 2px 4px; background: rgba(255, 255, 255, 0.8);
+            border: 1px solid #004b97; border-radius: 3px; pointer-events: none;
+            white-space: nowrap; margin-top: -10px;
+        }
+
+        /* 手機版響應式設計 */
         @media (max-width: 768px) {
             #sidebar { 
-                width: 100%; 
-                height: 45vh; /* 佔據螢幕下半部 */
-                top: auto; 
-                bottom: 0; 
-                border-right: none;
-                border-top: 4px solid #004b97; 
+                width: 100%; height: 50vh; top: auto; bottom: 0; 
+                border-right: none; border-top: 4px solid #004b97; 
                 border-radius: 20px 20px 0 0; 
-                box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
             }
-            #canvas-container { 
-                height: 55vh; /* 畫布佔據上半部，避免被擋住 */
+            #sidebar.collapsed {
+                transform: translateY(100%); /* 往下方收起 */
             }
+            #expand-sidebar-btn { top: auto; bottom: 20px; }
+            #floating-toolbar { top: 10px; right: 10px; width: 140px; }
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS2DRenderer.js"></script>
 </head>
 <body>
 
+    <button id="expand-sidebar-btn" onclick="toggleSidebar(false)">⚙️ 展開設定</button>
+
     <div id="canvas-container"></div>
+
+    <div id="floating-toolbar">
+        <div id="toolbar-header">✥ 拖移工具區</div>
+        <div class="toolbar-body">
+            <button class="toolbar-btn active" id="btn-dimension" onclick="toggleDimensions()">📐 顯示尺寸</button>
+            <button class="toolbar-btn" id="btn-overlap" onclick="toggleOverlap()">🧱 重疊 / 並排</button>
+        </div>
+    </div>
 
     <div id="sidebar">
         <h2>物件尺寸設定</h2>
@@ -127,50 +133,67 @@
             <label for="height">高度 (Y軸)</label>
             <input type="number" id="height" value="61" step="0.1">
         </div>
-        <button class="btn" onclick="addObject()">加入比較</button>
+        <button class="btn" onclick="addObject()">加入場景</button>
         <button class="btn btn-danger" onclick="clearScene()">清除全部</button>
-
+        
         <div class="converter">
             <strong>📐 單位快速換算</strong><br><br>
             <input type="number" id="conv-cm" placeholder="cm" oninput="convert('cm')"> cm = 
             <input type="number" id="conv-mm" placeholder="mm" oninput="convert('mm')"> mm
         </div>
+
+        <button class="btn btn-collapse" onclick="toggleSidebar(true)">⬇ 收起面板</button>
     </div>
 
     <script>
-        // --- 1. 初始化 Three.js 場景 ---
+        // --- 1. 初始化 WebGL 與 CSS2D 渲染器 ---
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xeef2f5); // 更清爽的背景色
+        scene.background = new THREE.Color(0xeef2f5);
 
-        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 1, 10000);
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
         camera.position.set(400, 300, 400);
 
+        // 主 3D 渲染器
         const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.setPixelRatio(window.devicePixelRatio); // 提升手機版畫質
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
         container.appendChild(renderer.domElement);
 
-        // 控制器 (支援手機雙指縮放、單指旋轉)
+        // CSS2D 渲染器 (專門用來畫文字標籤，覆蓋在畫布上)
+        const labelRenderer = new THREE.CSS2DRenderer();
+        labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        labelRenderer.domElement.style.position = 'absolute';
+        labelRenderer.domElement.style.top = '0px';
+        labelRenderer.domElement.style.pointerEvents = 'none'; // 避免擋住滑鼠操作
+        document.body.appendChild(labelRenderer.domElement);
+
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
 
-        // --- 2. 場景裝飾 (網格與光源) ---
-        // 淺灰色網格，不會搶走主體的視覺
+        // 場景裝飾
         const gridHelper = new THREE.GridHelper(2000, 100, 0xaaaaaa, 0xdddddd);
         scene.add(gridHelper);
-
-        // 增強光源以突顯透明材質的反射質感
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        scene.add(ambientLight);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
         directionalLight.position.set(200, 500, 300);
         scene.add(directionalLight);
 
-        // --- 3. 核心功能邏輯 ---
-        let objects = [];
-        let currentXOffset = 0; 
+        // --- 2. 核心邏輯與狀態管理 ---
+        let objectsData = []; // 儲存物體及其屬性資料
+        let isOverlapMode = false;
+        let isDimensionsVisible = true;
+
+        // 建立尺寸標籤的函數
+        function createLabel(text, position) {
+            const div = document.createElement('div');
+            div.className = 'dim-label';
+            div.textContent = text;
+            const label = new THREE.CSS2DObject(div);
+            label.position.copy(position);
+            return label;
+        }
 
         function addObject() {
             const unit = document.getElementById('unit').value;
@@ -178,74 +201,189 @@
             let w = parseFloat(document.getElementById('width').value);
             let h = parseFloat(document.getElementById('height').value);
 
-            if (isNaN(l) || isNaN(w) || isNaN(h)) {
-                alert("請輸入有效的數字！");
-                return;
-            }
+            if (isNaN(l) || isNaN(w) || isNaN(h)) return alert("請輸入有效的數字！");
+            
+            // 原始輸入值(用於顯示標籤)
+            const displayL = `${l}${unit}`;
+            const displayW = `${w}${unit}`;
+            const displayH = `${h}${unit}`;
 
             if (unit === 'cm') { l *= 10; w *= 10; h *= 10; }
 
-            const geometry = new THREE.BoxGeometry(l, h, w); 
-            
-            // 【升級】使用 MeshPhysicalMaterial 打造立法院深藍色透明質感
-            const material = new THREE.MeshPhysicalMaterial({ 
-                color: 0x004b97,       // 立法院皇家深藍
-                transparent: true, 
-                opacity: 0.75,         // 透明度
-                roughness: 0.1,        // 表面光滑度
-                transmission: 0.5,     // 玻璃般的透光感
-                thickness: 0.5,        // 折射厚度
-                clearcoat: 1.0,        // 表面反光塗層
-                clearcoatRoughness: 0.1
-            });
-            const cube = new THREE.Mesh(geometry, material);
+            // 群組：用來包裝 3D模型、框線與文字標籤
+            const group = new THREE.Group();
 
-            // 邊線 (深色框線，保留工程圖的精確感)
+            // 建立 3D 實體 (立法院藍材質)
+            const geometry = new THREE.BoxGeometry(l, h, w); 
+            const material = new THREE.MeshPhysicalMaterial({ 
+                color: 0x004b97, transparent: true, opacity: 0.75, 
+                roughness: 0.1, transmission: 0.5, clearcoat: 1.0 
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            group.add(mesh);
+
+            // 黑藍色邊線
             const edges = new THREE.EdgesGeometry(geometry);
             const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x002244, linewidth: 2 }));
-            cube.add(line); 
+            group.add(line); 
 
-            // 排列邏輯
-            cube.position.y = h / 2; 
-            cube.position.x = currentXOffset + (l / 2);
-            currentXOffset += l + 50; // 間距 50mm
+            // 加入尺寸標籤 (X長度, Z寬度, Y高度)
+            const labelL = createLabel(`長: ${displayL}`, new THREE.Vector3(0, -h/2 - 10, w/2));
+            const labelW = createLabel(`寬: ${displayW}`, new THREE.Vector3(l/2 + 10, -h/2, 0));
+            const labelH = createLabel(`高: ${displayH}`, new THREE.Vector3(-l/2 - 10, 0, w/2));
+            
+            labelL.visible = isDimensionsVisible;
+            labelW.visible = isDimensionsVisible;
+            labelH.visible = isDimensionsVisible;
 
-            scene.add(cube);
-            objects.push(cube);
+            group.add(labelL); group.add(labelW); group.add(labelH);
 
-            // 自動將視角對準新加入的物體
-            controls.target.set(cube.position.x, 0, 0);
+            // 儲存資料以便後續重新排列
+            const objRecord = { group: group, length: l, labels: [labelL, labelW, labelH] };
+            objectsData.push(objRecord);
+            scene.add(group);
+
+            rearrangeObjects(); // 重新計算位置
+
+            // 視角對準最新物體
+            controls.target.set(group.position.x, 0, 0);
+        }
+
+        // 重新排列物體 (處理並排或重疊)
+        function rearrangeObjects() {
+            let currentXOffset = 0;
+            objectsData.forEach((objRecord) => {
+                const { group, length } = objRecord;
+                
+                // 設定高度 (貼齊底網格)
+                // geometry 的中心點在正中間，所以 Y 軸要提高 h/2。我們直接從 BoxGeometry 抓高度
+                const h = group.children[0].geometry.parameters.height; 
+                group.position.y = h / 2;
+
+                if (isOverlapMode) {
+                    // 重疊模式：全部放在原點
+                    group.position.x = 0;
+                    group.position.z = 0;
+                } else {
+                    // 並排模式：依序往右排
+                    group.position.x = currentXOffset + (length / 2);
+                    group.position.z = 0;
+                    currentXOffset += length + 50; // 50mm 間距
+                }
+            });
         }
 
         function clearScene() {
-            objects.forEach(obj => scene.remove(obj));
-            objects = [];
-            currentXOffset = 0;
+            objectsData.forEach(record => scene.remove(record.group));
+            objectsData = [];
             controls.target.set(0, 0, 0);
         }
 
-        function convert(from) {
-            const cmInput = document.getElementById('conv-cm');
-            const mmInput = document.getElementById('conv-mm');
-            if (from === 'cm') {
-                mmInput.value = (parseFloat(cmInput.value) * 10) || '';
+        // --- 3. 工具列功能與介面互動 ---
+
+        // 切換重疊/並排
+        function toggleOverlap() {
+            isOverlapMode = !isOverlapMode;
+            const btn = document.getElementById('btn-overlap');
+            if (isOverlapMode) {
+                btn.classList.add('active');
+                btn.innerHTML = "🧱 解除重疊";
             } else {
-                cmInput.value = (parseFloat(mmInput.value) / 10) || '';
+                btn.classList.remove('active');
+                btn.innerHTML = "🧱 重疊 / 並排";
+            }
+            rearrangeObjects();
+        }
+
+        // 切換尺寸顯示
+        function toggleDimensions() {
+            isDimensionsVisible = !isDimensionsVisible;
+            const btn = document.getElementById('btn-dimension');
+            if (isDimensionsVisible) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+            // 更新所有現存標籤
+            objectsData.forEach(record => {
+                record.labels.forEach(lbl => lbl.visible = isDimensionsVisible);
+            });
+        }
+
+        // 側邊欄收起/展開
+        function toggleSidebar(collapse) {
+            const sidebar = document.getElementById('sidebar');
+            const expandBtn = document.getElementById('expand-sidebar-btn');
+            if (collapse) {
+                sidebar.classList.add('collapsed');
+                expandBtn.style.display = 'block';
+            } else {
+                sidebar.classList.remove('collapsed');
+                expandBtn.style.display = 'none';
             }
         }
 
-        // --- 4. 渲染迴圈與響應式視窗 ---
+        // 單位轉換器
+        function convert(from) {
+            const cm = document.getElementById('conv-cm'), mm = document.getElementById('conv-mm');
+            if (from === 'cm') mm.value = (parseFloat(cm.value) * 10) || '';
+            else cm.value = (parseFloat(mm.value) / 10) || '';
+        }
+
+        // --- 4. 實作可拖移懸浮工具列 ---
+        const toolbar = document.getElementById("floating-toolbar");
+        const header = document.getElementById("toolbar-header");
+        let isDragging = false, currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
+
+        header.addEventListener("mousedown", dragStart);
+        header.addEventListener("touchstart", dragStart, {passive: false});
+        document.addEventListener("mouseup", dragEnd);
+        document.addEventListener("touchend", dragEnd);
+        document.addEventListener("mousemove", drag);
+        document.addEventListener("touchmove", drag, {passive: false});
+
+        function dragStart(e) {
+            if (e.type === "touchstart") {
+                initialX = e.touches[0].clientX - xOffset;
+                initialY = e.touches[0].clientY - yOffset;
+            } else {
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+            }
+            if (e.target === header) isDragging = true;
+        }
+        function dragEnd() {
+            initialX = currentX; initialY = currentY; isDragging = false;
+        }
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                if (e.type === "touchmove") {
+                    currentX = e.touches[0].clientX - initialX;
+                    currentY = e.touches[0].clientY - initialY;
+                } else {
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+                }
+                xOffset = currentX; yOffset = currentY;
+                toolbar.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+            }
+        }
+
+        // --- 5. 渲染迴圈與視窗適應 ---
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
             renderer.render(scene, camera);
+            labelRenderer.render(scene, camera); // 同步渲染 CSS2D 標籤
         }
         animate();
 
         window.addEventListener('resize', () => {
-            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            labelRenderer.setSize(window.innerWidth, window.innerHeight);
         });
     </script>
 </body>
