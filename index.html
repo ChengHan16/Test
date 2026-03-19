@@ -1,464 +1,200 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>3D 物體尺寸模擬器 (立法院深藍 圖紙比對版)</title>
-    <style>
-        /* --- 鎖定畫面，解決鍵盤空白與亂滑動的問題 --- */
-        html, body { 
-            margin: 0; padding: 0; width: 100%; height: 100%; 
-            overflow: hidden; position: fixed; overscroll-behavior: none; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: #f0f4f8; 
-        }
-        
-        #canvas-container { 
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
-            z-index: 1; touch-action: none; 
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>左右滑動行事曆</title>
+  <style>
+    /* 基本重置與背景 */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f7f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
 
-        /* --- 側邊欄 / 底部面板 --- */
-        #sidebar { 
-            position: absolute; top: 0; left: 0; width: 320px; height: 100%; 
-            padding: 15px 25px; background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(10px); box-shadow: 2px 0 15px rgba(0,0,0,0.15); 
-            z-index: 10; box-sizing: border-box; border-right: 4px solid #004b97; 
-            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
-            display: flex; flex-direction: column;
-        }
-        
-        /* 升級：拖曳把手變寬、變高，增加點擊觸控範圍 */
-        #drag-handle-container {
-            width: 100%; padding: 10px 0 15px 0; cursor: grab; touch-action: none;
-            display: flex; justify-content: center; align-items: center;
-        }
-        #drag-handle-container:active { cursor: grabbing; }
-        #drag-handle {
-            width: 100px; height: 8px; background: #bbb; border-radius: 6px;
-            transition: background 0.2s;
-        }
-        #drag-handle-container:hover #drag-handle, #drag-handle-container:active #drag-handle { 
-            background: #004b97; 
-        }
+    /* 行事曆外框 (限制可視範圍) */
+    .calendar-wrapper {
+      width: 100%;
+      max-width: 400px;
+      background: #ffffff;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
 
-        .sidebar-content { flex-grow: 1; overflow-y: auto; overscroll-behavior: contain; padding-bottom: 20px; }
-        #sidebar.collapsed { transform: translateX(-100%); }
-        
-        h2 { font-size: 1.3rem; color: #004b97; margin-top: 0; font-weight: bold; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 6px; font-size: 0.9rem; color: #444; font-weight: 500;}
-        input[type="number"], select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
-        
-        .btn { display: block; width: 100%; padding: 14px; margin-top: 15px; background-color: #004b97; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: background 0.2s; }
-        .btn:hover { background-color: #003366; }
-        .btn-danger { background-color: #d13438; margin-top: 10px; }
-        .btn-danger:hover { background-color: #a80000; }
-        
-        #expand-sidebar-btn {
-            position: absolute; top: 20px; left: 20px; z-index: 9;
-            background: #004b97; color: white; padding: 12px 18px; border: none; border-radius: 6px;
-            cursor: pointer; font-weight: bold; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
+    /* 滾動容器設定 */
+    .calendar-scroll {
+      display: flex;
+      overflow-x: auto;
+      /* 關鍵 CSS：設定橫向滾動捕捉 */
+      scroll-snap-type: x mandatory;
+      /* 隱藏卷軸讓畫面更乾淨 */
+      scrollbar-width: none; 
+      -ms-overflow-style: none; 
+    }
+    
+    .calendar-scroll::-webkit-scrollbar {
+      display: none;
+    }
 
-        .converter { background: #f8f9fa; padding: 15px; border-radius: 6px; margin-top: 25px; font-size: 0.9rem; border-left: 4px solid #004b97; }
-        .converter input { width: 42%; display: inline-block; padding: 8px; }
+    /* 單一月份容器 */
+    .month {
+      /* 確保每個月份剛好佔滿整個視窗寬度 */
+      flex: 0 0 100%;
+      scroll-snap-align: start;
+      padding: 20px;
+      box-sizing: border-box;
+    }
 
-        /* --- 可拖移懸浮工具列 --- */
-        #floating-toolbar {
-            position: absolute; top: 20px; right: 20px; z-index: 20;
-            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px);
-            border: 2px solid #004b97; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            width: 170px; /* 變寬以容納新按鈕 */ overflow: hidden;
-        }
-        /* 升級：工具列頂部把手加大 */
-        #toolbar-header {
-            background: #004b97; color: white; padding: 12px 10px; text-align: center;
-            font-size: 0.95rem; font-weight: bold; cursor: grab; user-select: none; touch-action: none; 
-            letter-spacing: 1px;
-        }
-        #toolbar-header:active { cursor: grabbing; background: #003366; }
-        .toolbar-body { padding: 10px; }
-        .toolbar-btn {
-            width: 100%; padding: 12px 5px; margin-bottom: 8px; font-size: 0.9rem;
-            background: #f0f4f8; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;
-            color: #333; font-weight: bold; transition: all 0.2s;
-        }
-        .toolbar-btn.active { background: #004b97; color: white; border-color: #004b97; }
-        .toolbar-btn.action { background: #e0f0ff; color: #004b97; border-color: #004b97; }
-        .toolbar-btn.action:hover { background: #cce0ff; }
-        .toolbar-btn:last-child { margin-bottom: 0; }
+    /* 標題與星期 */
+    .month-title {
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 20px;
+    }
 
-        /* --- 尺寸標註文字 --- */
-        .dim-label {
-            color: #000; font-family: sans-serif; font-size: 12px; font-weight: bold;
-            padding: 3px 6px; background: rgba(255, 255, 255, 0.9);
-            border: 1px solid #004b97; border-radius: 4px; pointer-events: none;
-            white-space: nowrap; margin-top: -10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .paper-label { border-color: #666; color: #333; background: rgba(255,255,255,0.7); }
+    .weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-weight: bold;
+      color: #888;
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+    }
 
-        #selection-hint {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7); color: white; padding: 8px 15px;
-            border-radius: 20px; font-size: 0.85rem; z-index: 9; pointer-events: none;
-            opacity: 0.8; transition: opacity 0.3s;
-        }
+    /* 日期網格 */
+    .days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
 
-        @media (max-width: 768px) {
-            #sidebar { 
-                width: 100%; height: 60%; top: auto; bottom: 0; 
-                border-right: none; border-top: 4px solid #004b97; 
-                border-radius: 20px 20px 0 0; padding-top: 5px;
-            }
-            #sidebar.collapsed { transform: translateY(100%); }
-            #expand-sidebar-btn { top: auto; bottom: 20px; left: 50%; transform: translateX(-50%); }
-            #floating-toolbar { top: 10px; right: 10px; width: 150px; }
-            #selection-hint { bottom: 65%; }
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS2DRenderer.js"></script>
+    .day {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      aspect-ratio: 1 / 1; /* 讓格子保持正方形 */
+      border-radius: 50%;
+      color: #444;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .day:hover:not(.empty) {
+      background-color: #e0e0e0;
+    }
+
+    .day.empty {
+      cursor: default;
+    }
+
+    /* 當天日期高亮 */
+    .day.today {
+      background-color: #007bff;
+      color: white;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
+    }
+  </style>
 </head>
 <body>
 
-    <button id="expand-sidebar-btn" onclick="toggleSidebar(false)">⚙️ 展開設定面板</button>
-    <div id="selection-hint">💡 點擊 3D 物體可選取，並透過工具列轉向</div>
+  <div class="calendar-wrapper">
+    <div class="calendar-scroll" id="calendar-scroll">
+      </div>
+  </div>
 
-    <div id="canvas-container"></div>
+  <script>
+    const scrollContainer = document.getElementById('calendar-scroll');
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
 
-    <div id="floating-toolbar">
-        <div id="toolbar-header">✥ 拖移區</div>
-        <div class="toolbar-body">
-            <button class="toolbar-btn action" id="btn-papers" onclick="togglePaperSizes()">📄 圖紙比例尺</button>
-            <button class="toolbar-btn action" id="btn-rotate" onclick="toggleOrientation()">🔄 轉向 (垂直/水平)</button>
-            <button class="toolbar-btn active" id="btn-dimension" onclick="toggleDimensions()">📐 顯示尺寸</button>
-            <button class="toolbar-btn" id="btn-overlap" onclick="toggleOverlap()">🧱 重疊 / 並排</button>
-        </div>
-    </div>
+    // 建立單一月份的 DOM 元素
+    function createMonthElement(year, month) {
+      // 處理跨年月份的計算
+      const date = new Date(year, month, 1);
+      const actualYear = date.getFullYear();
+      const actualMonth = date.getMonth();
 
-    <div id="sidebar">
-        <div id="drag-handle-container">
-            <div id="drag-handle"></div>
-        </div>
-        <div class="sidebar-content">
-            <h2>物件尺寸設定</h2>
-            <div class="input-group">
-                <label for="unit">測量單位</label>
-                <select id="unit">
-                    <option value="mm">毫米 (mm)</option>
-                    <option value="cm">公分 (cm)</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label for="length">長度 / 深度 (X軸)</label>
-                <input type="number" id="length" value="240" step="0.1">
-            </div>
-            <div class="input-group">
-                <label for="width">寬度 (Z軸)</label>
-                <input type="number" id="width" value="140" step="0.1">
-            </div>
-            <div class="input-group">
-                <label for="height">高度 (Y軸)</label>
-                <input type="number" id="height" value="61" step="0.1">
-            </div>
-            <button class="btn" onclick="addObject()">加入場景</button>
-            <button class="btn btn-danger" onclick="clearScene()">清除全部</button>
-            
-            <div class="converter">
-                <strong>📐 單位快速換算</strong><br><br>
-                <input type="number" id="conv-cm" placeholder="cm" oninput="convert('cm')"> cm = 
-                <input type="number" id="conv-mm" placeholder="mm" oninput="convert('mm')"> mm
-            </div>
-        </div>
-    </div>
+      const monthDiv = document.createElement('div');
+      monthDiv.className = 'month';
 
-    <script>
-        // --- 1. Three.js 場景設定 ---
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xeef2f5);
+      // 加入月份標題
+      const title = document.createElement('div');
+      title.className = 'month-title';
+      title.innerText = `${actualYear}年 ${actualMonth + 1}月`;
+      monthDiv.appendChild(title);
 
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
-        camera.position.set(400, 400, 500);
+      // 加入星期標題
+      const weekdaysDiv = document.createElement('div');
+      weekdaysDiv.className = 'weekdays';
+      const daysOfWeek = ['日', '一', '二', '三', '四', '五', '六'];
+      daysOfWeek.forEach(d => {
+        const span = document.createElement('div');
+        span.innerText = d;
+        weekdaysDiv.appendChild(span);
+      });
+      monthDiv.appendChild(weekdaysDiv);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
-        container.appendChild(renderer.domElement);
+      // 產生日期網格
+      const daysDiv = document.createElement('div');
+      daysDiv.className = 'days';
 
-        const labelRenderer = new THREE.CSS2DRenderer();
-        labelRenderer.setSize(window.innerWidth, window.innerHeight);
-        labelRenderer.domElement.style.position = 'absolute';
-        labelRenderer.domElement.style.top = '0px';
-        labelRenderer.domElement.style.pointerEvents = 'none'; 
-        document.body.appendChild(labelRenderer.domElement);
+      const firstDayIndex = date.getDay(); // 該月第一天是星期幾
+      const daysInMonth = new Date(actualYear, actualMonth + 1, 0).getDate(); // 該月總天數
 
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true; controls.dampingFactor = 0.05;
+      // 填充第一天前面的空白格子
+      for(let i = 0; i < firstDayIndex; i++) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'day empty';
+        daysDiv.appendChild(emptyDiv);
+      }
 
-        scene.add(new THREE.GridHelper(2000, 100, 0xaaaaaa, 0xdddddd));
-        scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        dirLight.position.set(200, 500, 300); scene.add(dirLight);
-
-        // --- 2. 核心邏輯 ---
-        let objectsData = [];
-        let isOverlapMode = false;
-        let isDimensionsVisible = true;
-        let isPapersVisible = false;
-        let selectedObjectData = null;
-
-        function createLabel(text, position, isPaper = false) {
-            const div = document.createElement('div');
-            div.className = isPaper ? 'dim-label paper-label' : 'dim-label'; 
-            div.textContent = text;
-            const label = new THREE.CSS2DObject(div);
-            label.position.copy(position); return label;
-        }
-
-        function addObject() {
-            const unit = document.getElementById('unit').value;
-            let l = parseFloat(document.getElementById('length').value);
-            let w = parseFloat(document.getElementById('width').value);
-            let h = parseFloat(document.getElementById('height').value);
-
-            if (isNaN(l) || isNaN(w) || isNaN(h)) return alert("請輸入有效的數字！");
-            const displayL = `${l}${unit}`, displayW = `${w}${unit}`, displayH = `${h}${unit}`;
-            if (unit === 'cm') { l *= 10; w *= 10; h *= 10; }
-
-            const group = new THREE.Group();
-            const geometry = new THREE.BoxGeometry(l, h, w); 
-            const material = new THREE.MeshPhysicalMaterial({ 
-                color: 0x004b97, transparent: true, opacity: 0.75, 
-                roughness: 0.1, transmission: 0.5, clearcoat: 1.0 
-            });
-            const mesh = new THREE.Mesh(geometry, material); group.add(mesh);
-
-            const edges = new THREE.EdgesGeometry(geometry);
-            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x002244, linewidth: 2 }));
-            group.add(line);
-
-            const labelL = createLabel(`長: ${displayL}`, new THREE.Vector3(0, -h/2 - 10, w/2));
-            const labelW = createLabel(`寬: ${displayW}`, new THREE.Vector3(l/2 + 10, -h/2, 0));
-            const labelH = createLabel(`高: ${displayH}`, new THREE.Vector3(-l/2 - 10, 0, w/2));
-            
-            labelL.visible = isDimensionsVisible; labelW.visible = isDimensionsVisible; labelH.visible = isDimensionsVisible;
-            group.add(labelL); group.add(labelW); group.add(labelH);
-
-            objectsData.push({ 
-                group: group, mesh: mesh, line: line, l: l, w: w, h: h, 
-                displayL: displayL, displayW: displayW, displayH: displayH,
-                labels: [labelL, labelW, labelH], isPaper: false
-            });
-            
-            scene.add(group); rearrangeObjects();
-            controls.target.set(group.position.x, 0, 0); document.activeElement.blur(); 
-        }
-
-        // --- 3. 新增：切換顯示常用圖紙 (A3, B4, A4 等) ---
-        function togglePaperSizes() {
-            const btn = document.getElementById('btn-papers');
-            if (isPapersVisible) {
-                // 清除所有圖紙
-                objectsData = objectsData.filter(obj => {
-                    if (obj.isPaper) {
-                        scene.remove(obj.group);
-                        obj.labels.forEach(lbl => { if (lbl.element && lbl.element.parentNode) lbl.element.parentNode.removeChild(lbl.element); });
-                        return false; 
-                    }
-                    return true;
-                });
-                isPapersVisible = false;
-                btn.classList.remove('active');
-            } else {
-                // 建立標準圖紙陣列 (單位 mm)
-                const papers = [
-                    { name: 'A3', l: 420, w: 297 },
-                    { name: 'B4', l: 364, w: 257 },
-                    { name: 'A4', l: 297, w: 210 },
-                    { name: 'B5', l: 257, w: 182 },
-                    { name: 'A5', l: 210, w: 148 }
-                ];
-
-                papers.forEach(p => {
-                    const h = 1.5; // 給圖紙一點點厚度以免跟網格破圖
-                    const group = new THREE.Group();
-                    const geometry = new THREE.BoxGeometry(p.l, h, p.w);
-                    // 半透明白色材質，看起來像紙
-                    const material = new THREE.MeshBasicMaterial({ 
-                        color: 0xffffff, transparent: true, opacity: 0.35
-                    });
-                    const mesh = new THREE.Mesh(geometry, material); group.add(mesh);
-                    
-                    const edges = new THREE.EdgesGeometry(geometry);
-                    const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x888888, linewidth: 1 }));
-                    group.add(line);
-
-                    // 只需要一個置中的標籤
-                    const label = createLabel(`📄 ${p.name} (${p.l}x${p.w})`, new THREE.Vector3(0, h/2 + 2, 0), true);
-                    label.visible = isDimensionsVisible;
-                    group.add(label);
-
-                    objectsData.push({ 
-                        group: group, mesh: mesh, line: line, l: p.l, w: p.w, h: h, 
-                        labels: [label], isPaper: true
-                    });
-                    scene.add(group);
-                });
-                isPapersVisible = true;
-                btn.classList.add('active');
-            }
-            rearrangeObjects();
-        }
-
-        function rearrangeObjects() {
-            let currentXOffset = 0;
-            objectsData.forEach((obj) => {
-                obj.group.position.y = obj.h / 2;
-                if (isOverlapMode) {
-                    obj.group.position.x = 0; obj.group.position.z = 0;
-                } else {
-                    obj.group.position.x = currentXOffset + (obj.l / 2); obj.group.position.z = 0;
-                    currentXOffset += obj.l + 50; 
-                }
-            });
-        }
-
-        function clearScene() {
-            objectsData.forEach(obj => {
-                scene.remove(obj.group);
-                obj.labels.forEach(lbl => { if (lbl.element && lbl.element.parentNode) lbl.element.parentNode.removeChild(lbl.element); });
-            });
-            objectsData = []; selectedObjectData = null; 
-            isPapersVisible = false; document.getElementById('btn-papers').classList.remove('active');
-            controls.target.set(0, 0, 0);
-        }
-
-        function toggleOverlap() {
-            isOverlapMode = !isOverlapMode;
-            const btn = document.getElementById('btn-overlap');
-            btn.classList.toggle('active', isOverlapMode);
-            btn.innerHTML = isOverlapMode ? "🧱 解除重疊" : "🧱 重疊 / 並排";
-            rearrangeObjects();
-        }
-
-        function toggleDimensions() {
-            isDimensionsVisible = !isDimensionsVisible;
-            document.getElementById('btn-dimension').classList.toggle('active', isDimensionsVisible);
-            objectsData.forEach(obj => obj.labels.forEach(lbl => lbl.visible = isDimensionsVisible));
-        }
-
-        function toggleOrientation() {
-            if (!selectedObjectData || selectedObjectData.isPaper) return alert("👉 請先點擊選取一個您建立的藍色物體！");
-            const tempL = selectedObjectData.l; selectedObjectData.l = selectedObjectData.h; selectedObjectData.h = tempL;
-            const tempDisplayL = selectedObjectData.displayL; selectedObjectData.displayL = selectedObjectData.displayH; selectedObjectData.displayH = tempDisplayL;
-
-            const newGeometry = new THREE.BoxGeometry(selectedObjectData.l, selectedObjectData.h, selectedObjectData.w);
-            selectedObjectData.mesh.geometry.dispose(); selectedObjectData.mesh.geometry = newGeometry;
-            const newEdges = new THREE.EdgesGeometry(newGeometry);
-            selectedObjectData.line.geometry.dispose(); selectedObjectData.line.geometry = newEdges;
-
-            const l = selectedObjectData.l, h = selectedObjectData.h, w = selectedObjectData.w;
-            selectedObjectData.labels[0].position.set(0, -h/2 - 10, w/2); selectedObjectData.labels[0].element.textContent = `長: ${selectedObjectData.displayL}`;
-            selectedObjectData.labels[1].position.set(l/2 + 10, -h/2, 0);
-            selectedObjectData.labels[2].position.set(-l/2 - 10, 0, w/2); selectedObjectData.labels[2].element.textContent = `高: ${selectedObjectData.displayH}`;
-            rearrangeObjects();
-        }
-
-        function convert(from) {
-            const cm = document.getElementById('conv-cm'), mm = document.getElementById('conv-mm');
-            if (from === 'cm') mm.value = (parseFloat(cm.value) * 10) || '';
-            else cm.value = (parseFloat(mm.value) / 10) || '';
-        }
-
-        // --- 4. 點擊選取系統 ---
-        const raycaster = new THREE.Raycaster(); const mouse = new THREE.Vector2();
-        let pointerDownPos = { x: 0, y: 0 };
-        container.addEventListener('pointerdown', (e) => { pointerDownPos.x = e.clientX; pointerDownPos.y = e.clientY; });
-        container.addEventListener('pointerup', (e) => {
-            if (Math.hypot(e.clientX - pointerDownPos.x, e.clientY - pointerDownPos.y) < 5) {
-                mouse.x = (e.clientX / window.innerWidth) * 2 - 1; mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-                raycaster.setFromCamera(mouse, camera);
-                const meshes = objectsData.filter(obj => !obj.isPaper).map(obj => obj.mesh); // 排除圖紙被選取
-                const intersects = raycaster.intersectObjects(meshes);
-
-                if (selectedObjectData) selectedObjectData.line.material.color.setHex(0x002244);
-                selectedObjectData = null;
-                if (intersects.length > 0) {
-                    selectedObjectData = objectsData.find(obj => obj.mesh === intersects[0].object);
-                    selectedObjectData.line.material.color.setHex(0xff3333); 
-                }
-            }
-        });
-
-        // --- 5. 拖拉把手邏輯 ---
-        const sidebar = document.getElementById('sidebar');
-        const dragContainer = document.getElementById('drag-handle-container');
-        const expandBtn = document.getElementById('expand-sidebar-btn');
-        let sbStartY = 0, isPanelDragging = false;
-
-        function toggleSidebar(collapse) {
-            if (collapse) { sidebar.classList.add('collapsed'); expandBtn.style.display = 'block'; sidebar.style.transform = ''; } 
-            else { sidebar.classList.remove('collapsed'); expandBtn.style.display = 'none'; }
-        }
-
-        dragContainer.addEventListener('touchstart', (e) => { sbStartY = e.touches[0].clientY; isPanelDragging = true; sidebar.style.transition = 'none'; }, {passive: true});
-        dragContainer.addEventListener('mousedown', (e) => { sbStartY = e.clientY; isPanelDragging = true; sidebar.style.transition = 'none'; });
-
-        document.addEventListener('touchmove', (e) => {
-            if (!isPanelDragging) return; const deltaY = e.touches[0].clientY - sbStartY;
-            if (window.innerWidth <= 768 && deltaY > 0) sidebar.style.transform = `translateY(${deltaY}px)`;
-        }, {passive: false});
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isPanelDragging) return; const deltaY = e.clientY - sbStartY;
-            if (window.innerWidth > 768) { const deltaX = e.clientX - sbStartY; if(deltaX < 0) sidebar.style.transform = `translateX(${deltaX}px)`; } 
-            else if (deltaY > 0) sidebar.style.transform = `translateY(${deltaY}px)`;
-        });
-
-        const endDrag = (e) => {
-            if (!isPanelDragging) return; isPanelDragging = false;
-            sidebar.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
-            const endY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
-            const endX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
-            if (window.innerWidth <= 768 && (endY - sbStartY) > 80) toggleSidebar(true);
-            else if (window.innerWidth > 768 && (endX - sbStartY) < -80) toggleSidebar(true);
-            else sidebar.style.transform = ''; 
-        };
-        document.addEventListener('touchend', endDrag); document.addEventListener('mouseup', endDrag);
-
-        // --- 6. 工具列拖移邏輯 ---
-        const toolbar = document.getElementById("floating-toolbar");
-        const header = document.getElementById("toolbar-header");
-        let isToolDragging = false, toolInitialX, toolInitialY, toolXOffset = 0, toolYOffset = 0;
-
-        header.addEventListener("mousedown", (e) => { toolInitialX = e.clientX - toolXOffset; toolInitialY = e.clientY - toolYOffset; isToolDragging = true; });
-        header.addEventListener("touchstart", (e) => { toolInitialX = e.touches[0].clientX - toolXOffset; toolInitialY = e.touches[0].clientY - toolYOffset; isToolDragging = true; }, {passive: false});
-        document.addEventListener("mouseup", () => isToolDragging = false); document.addEventListener("touchend", () => isToolDragging = false);
+      // 填充實際日期
+      for(let i = 1; i <= daysInMonth; i++) {
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'day';
+        dayDiv.innerText = i;
         
-        document.addEventListener("mousemove", (e) => {
-            if (isToolDragging) { e.preventDefault(); toolXOffset = e.clientX - toolInitialX; toolYOffset = e.clientY - toolInitialY; toolbar.style.transform = `translate3d(${toolXOffset}px, ${toolYOffset}px, 0)`; }
-        });
-        document.addEventListener("touchmove", (e) => {
-            if (isToolDragging) { e.preventDefault(); toolXOffset = e.touches[0].clientX - toolInitialX; toolYOffset = e.touches[0].clientY - toolInitialY; toolbar.style.transform = `translate3d(${toolXOffset}px, ${toolYOffset}px, 0)`; }
-        }, {passive: false});
-
-        document.querySelectorAll('input, select').forEach(input => {
-            input.addEventListener('focus', function() { setTimeout(() => { this.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300); });
-        });
-
-        function animate() {
-            requestAnimationFrame(animate); controls.update();
-            renderer.render(scene, camera); labelRenderer.render(scene, camera);
+        // 標記今天
+        if (actualYear === today.getFullYear() && 
+            actualMonth === today.getMonth() && 
+            i === today.getDate()) {
+          dayDiv.classList.add('today');
         }
-        animate();
+        daysDiv.appendChild(dayDiv);
+      }
 
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight); labelRenderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    </script>
+      monthDiv.appendChild(daysDiv);
+      return monthDiv;
+    }
+
+    // 初始化：預先載入過去與未來的月份
+    // 設定 range = 12 代表載入過去 12 個月、當月、未來 12 個月 (共 25 個月)
+    const range = 12; 
+    
+    for (let i = -range; i <= range; i++) {
+      const m = createMonthElement(currentYear, currentMonth + i);
+      scrollContainer.appendChild(m);
+    }
+
+    // 頁面載入後，自動將卷軸滾動到「當前月份」(也就是正中間的那一個)
+    window.addEventListener('load', () => {
+      // 取得單一月份的寬度
+      const monthWidth = scrollContainer.clientWidth;
+      // 將卷軸水平位移到正確的月份
+      scrollContainer.scrollLeft = monthWidth * range;
+    });
+  </script>
+
 </body>
 </html>
