@@ -1,231 +1,374 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+
+<html>
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>滿版左右滑動行事曆</title>
-  <style>
-    /* 基本重置，讓網頁貼齊手機螢幕邊緣 */
-    body, html {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #ffffff;
-      overflow: hidden; /* 防止整個網頁上下滾動 */
-    }
 
-    /* 整個 App 的外框設定為滿版彈性容器 */
-    .calendar-app {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      height: 100%;
-    }
+<meta charset="UTF-8">
 
-    /* 固定的頂部標題 (年份與月份) */
-    .fixed-header {
-      flex-shrink: 0;
-      text-align: center;
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: #333;
-      padding: 20px 0 15px 0;
-      background-color: #ffffff;
-      border-bottom: 1px solid #f0f0f0;
-      z-index: 10;
-    }
+<title>日本租屋搜尋工具</title>
 
-    /* 滾動容器設定 (佔滿下方所有剩餘空間) */
-    .calendar-scroll {
-      flex-grow: 1;
-      display: flex;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      scrollbar-width: none; /* Firefox 隱藏卷軸 */
-      -ms-overflow-style: none; /* IE 隱藏卷軸 */
-    }
-    
-    .calendar-scroll::-webkit-scrollbar {
-      display: none; /* Chrome/Safari 隱藏卷軸 */
-    }
+<style>
 
-    /* 單一月份容器 (包含星期與日期) */
-    .month {
-      flex: 0 0 100%; /* 確保每個月份剛好佔滿整個視窗寬度 */
-      scroll-snap-align: start;
-      display: flex;
-      flex-direction: column;
-      padding: 15px;
-      box-sizing: border-box;
-    }
+body{
 
-    /* 星期標題 (跟著月份一起滑動) */
-    .weekdays {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      text-align: center;
-      font-weight: bold;
-      color: #888;
-      margin-bottom: 15px;
-      font-size: 0.9rem;
-    }
+font-family:Arial;
 
-    /* 日期網格 */
-    .days {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 8px; /* 加大一點間距讓手機更好點擊 */
-      align-content: start; /* 讓日期靠上對齊 */
-    }
+background:#eef2f7;
 
-    .day {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      aspect-ratio: 1 / 1;
-      border-radius: 50%;
-      color: #333;
-      font-size: 1.1rem;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent; /* 移除手機點擊的預設灰底 */
-    }
+text-align:center;
 
-    .day:active:not(.empty) {
-      background-color: #f0f0f0; /* 手機點擊時的反饋 */
-    }
+}
 
-    .day.empty {
-      cursor: default;
-    }
+.container{
 
-    /* 當天日期高亮 */
-    .day.today {
-      background-color: #007bff;
-      color: white;
-      font-weight: bold;
-      box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
-    }
-  </style>
+width:900px;
+
+margin:auto;
+
+background:white;
+
+padding:30px;
+
+margin-top:50px;
+
+border-radius:15px;
+
+box-shadow:0 10px 30px rgba(0,0,0,0.1);
+
+}
+
+input{
+
+width:600px;
+
+padding:12px;
+
+margin:10px;
+
+border-radius:8px;
+
+border:1px solid #ccc;
+
+}
+
+select{
+
+padding:10px;
+
+}
+
+button{
+
+padding:12px 25px;
+
+background:#2563eb;
+
+color:white;
+
+border:none;
+
+border-radius:8px;
+
+cursor:pointer;
+
+}
+
+img{
+
+width:220px;
+
+margin:10px;
+
+border-radius:10px;
+
+box-shadow:0 5px 15px rgba(0,0,0,0.2);
+
+}
+
+.card{
+
+background:#f8fafc;
+
+padding:15px;
+
+margin:20px;
+
+border-radius:10px;
+
+}
+
+</style>
+
 </head>
+
 <body>
 
-  <div class="calendar-app">
-    <div class="fixed-header" id="current-month-header">
-      載入中...
-    </div>
+<div class="container">
 
-    <div class="calendar-scroll" id="calendar-scroll">
-      </div>
-  </div>
+<h2>
 
-  <script>
-    const scrollContainer = document.getElementById('calendar-scroll');
-    const header = document.getElementById('current-month-header');
-    
-    const today = new Date();
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth();
+日本不動產圖片抓取工具
 
-    // 建立單一月份的 DOM 元素
-    function createMonthElement(year, month) {
-      const date = new Date(year, month, 1);
-      const actualYear = date.getFullYear();
-      const actualMonth = date.getMonth();
+</h2>
 
-      const monthDiv = document.createElement('div');
-      monthDiv.className = 'month';
-      
-      // 將年月資訊綁在 DOM 上，方便後續被 Observer 讀取
-      monthDiv.dataset.year = actualYear;
-      monthDiv.dataset.month = actualMonth;
+<select id="mode">
 
-      // 建立星期標題
-      const weekdaysDiv = document.createElement('div');
-      weekdaysDiv.className = 'weekdays';
-      const daysOfWeek = ['日', '一', '二', '三', '四', '五', '六'];
-      daysOfWeek.forEach(d => {
-        const span = document.createElement('div');
-        span.innerText = d;
-        weekdaysDiv.appendChild(span);
-      });
-      monthDiv.appendChild(weekdaysDiv);
+<option value="url">
 
-      // 產生日期網格
-      const daysDiv = document.createElement('div');
-      daysDiv.className = 'days';
+物件URL
 
-      const firstDayIndex = date.getDay(); 
-      const daysInMonth = new Date(actualYear, actualMonth + 1, 0).getDate(); 
+</option>
 
-      // 填充第一天前面的空白格子
-      for(let i = 0; i < firstDayIndex; i++) {
-        const emptyDiv = document.createElement('div');
-        emptyDiv.className = 'day empty';
-        daysDiv.appendChild(emptyDiv);
-      }
+<option value="keyword">
 
-      // 填充實際日期
-      for(let i = 1; i <= daysInMonth; i++) {
-        const dayDiv = document.createElement('div');
-        dayDiv.className = 'day';
-        dayDiv.innerText = i;
-        
-        // 標記今天
-        if (actualYear === today.getFullYear() && 
-            actualMonth === today.getMonth() && 
-            i === today.getDate()) {
-          dayDiv.classList.add('today');
-        }
-        daysDiv.appendChild(dayDiv);
-      }
+關鍵字
 
-      monthDiv.appendChild(daysDiv);
-      return monthDiv;
-    }
+</option>
 
-    // 初始化：載入過去 12 個月到未來 12 個月
-    const range = 12; 
-    for (let i = -range; i <= range; i++) {
-      const m = createMonthElement(currentYear, currentMonth + i);
-      scrollContainer.appendChild(m);
-    }
+</select>
 
-    // ★ 關鍵：設定 Intersection Observer 來監聽哪個月份進入畫面
-    const observerOptions = {
-      root: scrollContainer,
-      rootMargin: '0px',
-      threshold: 0.5 // 當該月份區塊有 50% 進入畫面時觸發
-    };
+<br>
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          // 取得目前顯示月份的 dataset
-          const year = entry.target.dataset.year;
-          const month = parseInt(entry.target.dataset.month) + 1; // JS 的月份是 0-11，所以要 +1
-          // 更新上方固定標題
-          header.innerText = `${year}年 ${month}月`;
-        }
-      });
-    }, observerOptions);
+<input id="search"
+placeholder="輸入URL或關鍵字">
 
-    // 將所有產生出來的月份加入觀察清單
-    document.querySelectorAll('.month').forEach(monthDiv => {
-      observer.observe(monthDiv);
-    });
+<br>
 
-    // 頁面載入後，自動滾動到「當前月份」
-    window.addEventListener('load', () => {
-      const monthWidth = scrollContainer.clientWidth;
-      // 取消滾動動畫，瞬間切換到當月
-      scrollContainer.style.scrollBehavior = 'auto'; 
-      scrollContainer.scrollLeft = monthWidth * range;
-      // 恢復平滑滾動屬性 (供使用者自己滑動時使用，如果瀏覽器支援的話)
-      scrollContainer.style.scrollBehavior = 'smooth';
-    });
-  </script>
+<button onclick="start()">
+
+搜尋
+
+</button>
+
+<button onclick="loadCache()">
+
+讀取歷史圖片
+
+</button>
+
+<div id="result">
+
+</div>
+
+</div>
+
+<script>
+
+async function start(){
+
+let mode=
+
+document.getElementById(
+
+"mode"
+
+).value;
+
+let text=
+
+document.getElementById(
+
+"search"
+
+).value;
+
+if(mode=="url"){
+
+crawl(text);
+
+}
+
+else{
+
+alert(
+
+"純HTML無法直接搜尋網站\n請貼物件URL"
+
+);
+
+}
+
+}
+
+async function crawl(url){
+
+let proxy=
+
+"https://api.allorigins.win/raw?url="
+
++encodeURIComponent(url);
+
+let res=
+
+await fetch(proxy);
+
+let html=
+
+await res.text();
+
+let parser=
+
+new DOMParser();
+
+let doc=
+
+parser.parseFromString(
+
+html,
+
+"text/html"
+
+);
+
+let imgs=
+
+doc.querySelectorAll("img");
+
+let list=[];
+
+imgs.forEach(
+
+img=>{
+
+let src=
+
+img.src;
+
+if(src){
+
+list.push(src);
+
+}
+
+}
+
+);
+
+show(list);
+
+saveCache(
+
+url,
+
+list
+
+);
+
+}
+
+function show(images){
+
+let html="";
+
+images.forEach(
+
+img=>{
+
+html+=
+
+`<img src="${img}">`;
+
+}
+
+);
+
+document
+
+.getElementById(
+
+"result"
+
+).innerHTML=
+
+html;
+
+}
+
+function saveCache(
+
+url,
+
+images
+
+){
+
+let data={
+
+url:url,
+
+images:images,
+
+time:
+
+new Date()
+
+};
+
+localStorage.setItem(
+
+url,
+
+JSON.stringify(data)
+
+);
+
+}
+
+function loadCache(){
+
+let html="";
+
+for(let i=0;
+
+i<localStorage.length;
+
+i++){
+
+let key=
+
+localStorage.key(i);
+
+let data=
+
+JSON.parse(
+
+localStorage.getItem(
+
+key
+
+)
+
+);
+
+data.images.forEach(
+
+img=>{
+
+html+=
+
+`<img src="${img}">`;
+
+}
+
+);
+
+}
+
+document
+
+.getElementById(
+
+"result"
+
+).innerHTML=
+
+html;
+
+}
+
+</script>
 
 </body>
+
 </html>
