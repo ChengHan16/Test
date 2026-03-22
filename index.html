@@ -1,374 +1,158 @@
 <!DOCTYPE html>
-
-<html>
-
+<html lang="zh-TW">
 <head>
-
-<meta charset="UTF-8">
-
-<title>日本租屋搜尋工具</title>
-
-<style>
-
-body{
-
-font-family:Arial;
-
-background:#eef2f7;
-
-text-align:center;
-
-}
-
-.container{
-
-width:900px;
-
-margin:auto;
-
-background:white;
-
-padding:30px;
-
-margin-top:50px;
-
-border-radius:15px;
-
-box-shadow:0 10px 30px rgba(0,0,0,0.1);
-
-}
-
-input{
-
-width:600px;
-
-padding:12px;
-
-margin:10px;
-
-border-radius:8px;
-
-border:1px solid #ccc;
-
-}
-
-select{
-
-padding:10px;
-
-}
-
-button{
-
-padding:12px 25px;
-
-background:#2563eb;
-
-color:white;
-
-border:none;
-
-border-radius:8px;
-
-cursor:pointer;
-
-}
-
-img{
-
-width:220px;
-
-margin:10px;
-
-border-radius:10px;
-
-box-shadow:0 5px 15px rgba(0,0,0,0.2);
-
-}
-
-.card{
-
-background:#f8fafc;
-
-padding:15px;
-
-margin:20px;
-
-border-radius:10px;
-
-}
-
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>平面圖測量工具</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f5f5f5; }
+        .controls { margin-bottom: 20px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        canvas { border: 1px solid #ccc; cursor: crosshair; max-width: 100%; background: white; }
+        .info { color: #d9534f; font-weight: bold; }
+        button { padding: 8px 15px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #0056b3; }
+        input[type="number"] { width: 80px; padding: 5px; }
+    </style>
 </head>
-
 <body>
 
-<div class="container">
-
-<h2>
-
-日本不動產圖片抓取工具
-
-</h2>
-
-<select id="mode">
-
-<option value="url">
-
-物件URL
-
-</option>
-
-<option value="keyword">
-
-關鍵字
-
-</option>
-
-</select>
-
-<br>
-
-<input id="search"
-placeholder="輸入URL或關鍵字">
-
-<br>
-
-<button onclick="start()">
-
-搜尋
-
-</button>
-
-<button onclick="loadCache()">
-
-讀取歷史圖片
-
-</button>
-
-<div id="result">
-
-</div>
-
-</div>
-
-<script>
-
-async function start(){
-
-let mode=
-
-document.getElementById(
-
-"mode"
-
-).value;
-
-let text=
-
-document.getElementById(
-
-"search"
-
-).value;
-
-if(mode=="url"){
-
-crawl(text);
-
-}
-
-else{
-
-alert(
-
-"純HTML無法直接搜尋網站\n請貼物件URL"
-
-);
-
-}
-
-}
-
-async function crawl(url){
-
-let proxy=
-
-"https://api.allorigins.win/raw?url="
-
-+encodeURIComponent(url);
-
-let res=
-
-await fetch(proxy);
-
-let html=
-
-await res.text();
-
-let parser=
-
-new DOMParser();
-
-let doc=
-
-parser.parseFromString(
-
-html,
-
-"text/html"
-
-);
-
-let imgs=
-
-doc.querySelectorAll("img");
-
-let list=[];
-
-imgs.forEach(
-
-img=>{
-
-let src=
-
-img.src;
-
-if(src){
-
-list.push(src);
-
-}
-
-}
-
-);
-
-show(list);
-
-saveCache(
-
-url,
-
-list
-
-);
-
-}
-
-function show(images){
-
-let html="";
-
-images.forEach(
-
-img=>{
-
-html+=
-
-`<img src="${img}">`;
-
-}
-
-);
-
-document
-
-.getElementById(
-
-"result"
-
-).innerHTML=
-
-html;
-
-}
-
-function saveCache(
-
-url,
-
-images
-
-){
-
-let data={
-
-url:url,
-
-images:images,
-
-time:
-
-new Date()
-
-};
-
-localStorage.setItem(
-
-url,
-
-JSON.stringify(data)
-
-);
-
-}
-
-function loadCache(){
-
-let html="";
-
-for(let i=0;
-
-i<localStorage.length;
-
-i++){
-
-let key=
-
-localStorage.key(i);
-
-let data=
-
-JSON.parse(
-
-localStorage.getItem(
-
-key
-
-)
-
-);
-
-data.images.forEach(
-
-img=>{
-
-html+=
-
-`<img src="${img}">`;
-
-}
-
-);
-
-}
-
-document
-
-.getElementById(
-
-"result"
-
-).innerHTML=
-
-html;
-
-}
-
-</script>
-
+    <div class="controls">
+        <h2>平面圖測量工具</h2>
+        <p>1. 上傳您的平面圖：<input type="file" id="imageLoader" accept="image/*"></p>
+        <hr>
+        <p><b>步驟一：設定基準比例</b><br>
+           請在圖上點擊兩點（例如門的寬度），然後輸入這段距離的實際長度：<br>
+           實際長度：<input type="number" id="referenceLength" placeholder="例如: 80"> 
+           單位：<input type="text" id="unit" value="公分" style="width: 50px;">
+           <button id="setReferenceBtn">設定為基準比例</button>
+           <span id="scaleInfo" class="info">尚未設定比例</span>
+        </p>
+        <hr>
+        <p><b>步驟二：開始測量</b><br>
+           設定完基準後，在圖上點擊任意兩點測量距離：<br>
+           目前的測量結果：<span id="result" style="font-size: 1.2em; color: #28a745; font-weight: bold;">0</span> <span class="unitDisplay">公分</span>
+        </p>
+        <button id="clearBtn">清除畫線</button>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const imageLoader = document.getElementById('imageLoader');
+        const resultText = document.getElementById('result');
+        const scaleInfo = document.getElementById('scaleInfo');
+        
+        let img = new Image();
+        let clicks = [];
+        let pixelsPerUnit = 0; // 多少像素等於1單位(公分)
+
+        // 載入圖片
+        imageLoader.addEventListener('change', function(e){
+            const reader = new FileReader();
+            reader.onload = function(event){
+                img.onload = function(){
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    drawCanvas();
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(e.target.files[0]);
+        });
+
+        // 點擊畫布
+        canvas.addEventListener('mousedown', function(e) {
+            const rect = canvas.getBoundingClientRect();
+            // 考慮畫布縮放比例
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+
+            if(clicks.length === 2) clicks = []; // 第三次點擊時重置
+            clicks.push({x, y});
+
+            drawCanvas();
+
+            if(clicks.length === 2) {
+                calculateDistance();
+            }
+        });
+
+        // 畫圖與畫線
+        function drawCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if(img.src) ctx.drawImage(img, 0, 0);
+
+            if(clicks.length > 0) {
+                ctx.fillStyle = 'red';
+                ctx.beginPath();
+                ctx.arc(clicks[0].x, clicks[0].y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            if(clicks.length === 2) {
+                ctx.beginPath();
+                ctx.arc(clicks[1].x, clicks[1].y, 5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = 'red';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(clicks[0].x, clicks[0].y);
+                ctx.lineTo(clicks[1].x, clicks[1].y);
+                ctx.stroke();
+            }
+        }
+
+        // 計算像素距離
+        function getPixelDistance() {
+            if(clicks.length !== 2) return 0;
+            const dx = clicks[1].x - clicks[0].x;
+            const dy = clicks[1].y - clicks[0].y;
+            return Math.sqrt(dx*dx + dy*dy);
+        }
+
+        // 設定基準比例
+        document.getElementById('setReferenceBtn').addEventListener('click', function() {
+            if(clicks.length !== 2) {
+                alert("請先在圖上點擊兩點畫出基準線！");
+                return;
+            }
+            const refLen = parseFloat(document.getElementById('referenceLength').value);
+            const unit = document.getElementById('unit').value;
+            if(!refLen || refLen <= 0) {
+                alert("請輸入有效的實際長度！");
+                return;
+            }
+            const pxDist = getPixelDistance();
+            pixelsPerUnit = pxDist / refLen;
+            scaleInfo.innerText = `比例已設定：1 ${unit} = ${pixelsPerUnit.toFixed(2)} 像素`;
+            
+            // 更新畫面上的單位文字
+            document.querySelectorAll('.unitDisplay').forEach(el => el.innerText = unit);
+            calculateDistance(); // 重新計算目前線段
+        });
+
+        // 顯示測量結果
+        function calculateDistance() {
+            const pxDist = getPixelDistance();
+            if(pixelsPerUnit > 0) {
+                const realDist = pxDist / pixelsPerUnit;
+                resultText.innerText = realDist.toFixed(1);
+            } else {
+                resultText.innerText = `(未設定比例) 像素距離: ${pxDist.toFixed(0)}`;
+            }
+        }
+
+        // 清除按鈕
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            clicks = [];
+            drawCanvas();
+            resultText.innerText = "0";
+        });
+    </script>
 </body>
-
 </html>
