@@ -3,156 +3,294 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>平面圖測量工具</title>
+    <title>通用房仲物件擷取器</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background-color: #f5f5f5; }
-        .controls { margin-bottom: 20px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        canvas { border: 1px solid #ccc; cursor: crosshair; max-width: 100%; background: white; }
-        .info { color: #d9534f; font-weight: bold; }
-        button { padding: 8px 15px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
-        button:hover { background: #0056b3; }
-        input[type="number"] { width: 80px; padding: 5px; }
+        /* 基本全域設定 */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #f4f4f9; color: #333; }
+        
+        /* 操作面板區塊 */
+        .controls { margin-bottom: 20px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .controls h2 { margin-top: 0; color: #2c3e50; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 10px; }
+        input[type="text"] { flex-grow: 1; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; transition: border-color 0.3s; }
+        input[type="text"]:focus { outline: none; border-color: #0078d7; }
+        button { padding: 12px 24px; font-size: 16px; font-weight: bold; cursor: pointer; background: #0078d7; color: white; border: none; border-radius: 6px; transition: background 0.3s; }
+        button:hover { background: #005a9e; }
+        button:disabled { background: #cccccc; cursor: not-allowed; }
+        #status { font-size: 14px; color: #666; font-weight: bold; min-height: 20px; }
+        
+        /* 匯出按鈕區塊 */
+        .export-btns { margin-top: 15px; display: flex; gap: 10px; padding-top: 15px; border-top: 1px solid #eee; }
+        .btn-green { background: #28a745; }
+        .btn-green:hover { background: #218838; }
+        .btn-red { background: #dc3545; }
+        .btn-red:hover { background: #c82333; }
+        
+        /* 呈現物件資料的卡片區塊 */
+        #result-card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: none; }
+        #title { margin-top: 0; color: #2c3e50; font-size: 24px; border-bottom: 2px solid #0078d7; padding-bottom: 10px; }
+        
+        /* 表格排版 */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 15px; }
+        th, td { border: 1px solid #e0e0e0; padding: 12px 15px; text-align: left; }
+        th { background-color: #f8f9fa; width: 25%; color: #555; font-weight: 600; }
+        td { background-color: #fff; }
+
+        /* 照片網格排版 */
+        .photo-section-title { margin-top: 30px; border-left: 4px solid #0078d7; padding-left: 10px; color: #2c3e50; }
+        .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin-top: 15px; }
+        .photo-grid img { width: 100%; height: 200px; border-radius: 6px; object-fit: cover; border: 1px solid #eee; }
+
+        /* 列印 / 匯出 PDF 時的排版設定 (這會讓匯出的 PDF 是向量字體) */
+        @media print {
+            body { background: white; padding: 0; }
+            .controls { display: none; } /* 列印時隱藏操作介面 */
+            #result-card { box-shadow: none; display: block; padding: 0; }
+            table { font-size: 12pt; page-break-inside: avoid; }
+            th, td { padding: 8pt; }
+            .photo-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+            .photo-grid img { height: 180px; page-break-inside: avoid; }
+        }
     </style>
 </head>
 <body>
 
     <div class="controls">
-        <h2>平面圖測量工具</h2>
-        <p>1. 上傳您的平面圖：<input type="file" id="imageLoader" accept="image/*"></p>
-        <hr>
-        <p><b>步驟一：設定基準比例</b><br>
-           請在圖上點擊兩點（例如門的寬度），然後輸入這段距離的實際長度：<br>
-           實際長度：<input type="number" id="referenceLength" placeholder="例如: 80"> 
-           單位：<input type="text" id="unit" value="公分" style="width: 50px;">
-           <button id="setReferenceBtn">設定為基準比例</button>
-           <span id="scaleInfo" class="info">尚未設定比例</span>
-        </p>
-        <hr>
-        <p><b>步驟二：開始測量</b><br>
-           設定完基準後，在圖上點擊任意兩點測量距離：<br>
-           目前的測量結果：<span id="result" style="font-size: 1.2em; color: #28a745; font-weight: bold;">0</span> <span class="unitDisplay">公分</span>
-        </p>
-        <button id="clearBtn">清除畫線</button>
+        <h2>🏠 通用房仲物件擷取器</h2>
+        <div class="input-group">
+            <input type="text" id="urlInput" placeholder="請貼上 HOMES 或 SUUMO/Nifty 物件網址...">
+            <button id="fetchBtn" onclick="fetchData()">開始抓取</button>
+        </div>
+        <div id="status"></div>
+
+        <div class="export-btns" id="exportBtns" style="display: none;">
+            <button class="btn-green" onclick="exportText()">📄 下載文字彙整檔</button>
+            <button class="btn-red" onclick="window.print()">🖨️ 匯出高解析向量圖 (存為 PDF)</button>
+        </div>
     </div>
 
-    <canvas id="canvas"></canvas>
+    <div id="result-card">
+        <h1 id="title"></h1>
+        <table>
+            <tbody id="infoTable">
+                </tbody>
+        </table>
+        
+        <h3 class="photo-section-title">📷 物件照片</h3>
+        <div class="photo-grid" id="photoGrid"></div>
+    </div>
 
     <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const imageLoader = document.getElementById('imageLoader');
-        const resultText = document.getElementById('result');
-        const scaleInfo = document.getElementById('scaleInfo');
-        
-        let img = new Image();
-        let clicks = [];
-        let pixelsPerUnit = 0; // 多少像素等於1單位(公分)
+        let currentData = {};
 
-        // 載入圖片
-        imageLoader.addEventListener('change', function(e){
-            const reader = new FileReader();
-            reader.onload = function(event){
-                img.onload = function(){
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    drawCanvas();
-                }
-                img.src = event.target.result;
-            }
-            reader.readAsDataURL(e.target.files[0]);
-        });
+        async function fetchData() {
+            const targetUrl = document.getElementById('urlInput').value.trim();
+            const statusEl = document.getElementById('status');
+            const resultCard = document.getElementById('result-card');
+            const exportBtns = document.getElementById('exportBtns');
+            const fetchBtn = document.getElementById('fetchBtn');
 
-        // 點擊畫布
-        canvas.addEventListener('mousedown', function(e) {
-            const rect = canvas.getBoundingClientRect();
-            // 考慮畫布縮放比例
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            
-            const x = (e.clientX - rect.left) * scaleX;
-            const y = (e.clientY - rect.top) * scaleY;
+            if (!targetUrl) return alert("請輸入網址！");
 
-            if(clicks.length === 2) clicks = []; // 第三次點擊時重置
-            clicks.push({x, y});
+            // UI 狀態更新
+            fetchBtn.disabled = true;
+            statusEl.innerText = "⏳ 正在透過 Proxy 抓取網頁資料，這可能需要幾秒鐘...";
+            statusEl.style.color = "#0078d7";
+            resultCard.style.display = "none";
+            exportBtns.style.display = "none";
 
-            drawCanvas();
-
-            if(clicks.length === 2) {
-                calculateDistance();
-            }
-        });
-
-        // 畫圖與畫線
-        function drawCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if(img.src) ctx.drawImage(img, 0, 0);
-
-            if(clicks.length > 0) {
-                ctx.fillStyle = 'red';
-                ctx.beginPath();
-                ctx.arc(clicks[0].x, clicks[0].y, 5, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            if(clicks.length === 2) {
-                ctx.beginPath();
-                ctx.arc(clicks[1].x, clicks[1].y, 5, 0, Math.PI * 2);
-                ctx.fill();
+            try {
+                // 使用免費的 allorigins proxy 繞過 CORS 限制
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+                const response = await fetch(proxyUrl);
                 
-                ctx.strokeStyle = 'red';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.moveTo(clicks[0].x, clicks[0].y);
-                ctx.lineTo(clicks[1].x, clicks[1].y);
-                ctx.stroke();
+                if (!response.ok) throw new Error("網路請求失敗，請檢查網址或稍後再試。");
+                const data = await response.json();
+                
+                // 解析 HTML 字串為 DOM
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data.contents, "text/html");
+
+                // 執行萃取邏輯
+                parsePropertyData(doc, targetUrl);
+
+                // UI 狀態更新
+                statusEl.innerText = "✅ 抓取完成！點擊下方按鈕即可匯出。";
+                statusEl.style.color = "#28a745";
+                resultCard.style.display = "block";
+                exportBtns.style.display = "flex";
+
+            } catch (error) {
+                statusEl.innerText = "❌ 抓取失敗：" + error.message;
+                statusEl.style.color = "#dc3545";
+                console.error(error);
+            } finally {
+                fetchBtn.disabled = false;
             }
         }
 
-        // 計算像素距離
-        function getPixelDistance() {
-            if(clicks.length !== 2) return 0;
-            const dx = clicks[1].x - clicks[0].x;
-            const dy = clicks[1].y - clicks[0].y;
-            return Math.sqrt(dx*dx + dy*dy);
-        }
+        function parsePropertyData(doc, url) {
+            let site = "unknown";
+            if (url.includes("homes.co.jp")) site = "homes";
+            else if (url.includes("myhome.nifty.com") || url.includes("suumo.jp")) site = "nifty";
 
-        // 設定基準比例
-        document.getElementById('setReferenceBtn').addEventListener('click', function() {
-            if(clicks.length !== 2) {
-                alert("請先在圖上點擊兩點畫出基準線！");
-                return;
+            // 1. 抓取標題
+            let title = doc.title;
+            const h1 = doc.querySelector('h1');
+            if (h1 && h1.innerText.trim().length > 0) {
+                title = h1.innerText.trim();
             }
-            const refLen = parseFloat(document.getElementById('referenceLength').value);
-            const unit = document.getElementById('unit').value;
-            if(!refLen || refLen <= 0) {
-                alert("請輸入有效的實際長度！");
-                return;
+
+            // 🏆 核心通用萃取引擎：關鍵字比對法
+            function findValueByKeyword(keywords) {
+                // 掃描各種可能作為標題的標籤
+                const labels = doc.querySelectorAll('th, dt, td, span, div, p');
+                for (let el of labels) {
+                    const text = el.innerText.trim();
+                    // 如果文字包含關鍵字，且長度合理(排除整句敘述)
+                    if (text.length > 0 && text.length < 20 && keywords.some(k => text.includes(k))) {
+                        
+                        let extractedValue = null;
+
+                        // 策略A：找下一個兄弟節點 (常見於 <dt> <dd>)
+                        let nextEl = el.nextElementSibling;
+                        if (nextEl) {
+                            extractedValue = nextEl.innerText.trim().replace(/\s+/g, ' ');
+                            if (extractedValue) return extractedValue;
+                        }
+                        
+                        // 策略B：如果在表格內，找它後面的 td
+                        const tr = el.closest('tr');
+                        if (tr) {
+                            const tds = tr.querySelectorAll('td, th');
+                            let foundSelf = false;
+                            for (let cell of tds) {
+                                if (foundSelf && cell.innerText.trim() !== '') {
+                                    return cell.innerText.trim().replace(/\s+/g, ' ');
+                                }
+                                if (cell === el) foundSelf = true;
+                            }
+                        }
+
+                        // 策略C：找父節點的下一個元素 (常見於手機版 div 排版)
+                        const parentNext = el.parentElement && el.parentElement.nextElementSibling;
+                        if (parentNext) {
+                            extractedValue = parentNext.innerText.trim().replace(/\s+/g, ' ');
+                            if (extractedValue) return extractedValue;
+                        }
+                    }
+                }
+                return "未取得，需手動確認";
             }
-            const pxDist = getPixelDistance();
-            pixelsPerUnit = pxDist / refLen;
-            scaleInfo.innerText = `比例已設定：1 ${unit} = ${pixelsPerUnit.toFixed(2)} 像素`;
+
+            // 2. 彙整欄位資料
+            currentData = {
+                "物件名稱": title,
+                "資料來源": url,
+                "賃料 (租金)": findValueByKeyword(["賃料", "家賃", "租金", "価格"]),
+                "管理費 / 共益費": findValueByKeyword(["管理費", "共益費"]),
+                "敷金 / 禮金": findValueByKeyword(["敷金", "礼金", "保証金"]), 
+                "間取り (格局)": findValueByKeyword(["間取り"]),
+                "專有面積": findValueByKeyword(["面積", "専有面積"]),
+                "樓層 / 總樓層": findValueByKeyword(["階", "所在階"]),
+                "採光方位": findValueByKeyword(["向き", "方位"]),
+                "築年数": findValueByKeyword(["築年月", "築年数"]),
+                "構造": findValueByKeyword(["構造", "建物種別"]),
+                "交通 / 車站": findValueByKeyword(["交通", "沿線", "最寄り駅"]),
+                "入居時期": findValueByKeyword(["入居", "引渡"]),
+                "設備與條件": findValueByKeyword(["設備", "特徴", "条件"])
+            };
+
+            // 3. 抓取物件照片
+            const images = [];
+            const imgNodes = doc.querySelectorAll('img');
+
+            imgNodes.forEach(img => {
+                // 處理懶加載圖片
+                let src = img.getAttribute('data-src') || img.getAttribute('data-original') || img.src;
+                
+                if (src && src.startsWith('http')) {
+                    const srcLower = src.toLowerCase();
+                    // 過濾非物件照片 (Logo, 按鈕, 追蹤像素等)
+                    if (!srcLower.includes('icon') && 
+                        !srcLower.includes('pixel') && 
+                        !srcLower.includes('logo') && 
+                        !srcLower.includes('btn') && 
+                        !srcLower.includes('blank') &&
+                        !srcLower.includes('qr')) {
+                        
+                        // 嘗試移除圖片縮圖參數，獲取大圖 (針對 nifty / suumo)
+                        let cleanSrc = src;
+                        if (cleanSrc.includes('?')) {
+                            cleanSrc = cleanSrc.split('?')[0];
+                        }
+                        images.push(cleanSrc);
+                    }
+                }
+            });
             
-            // 更新畫面上的單位文字
-            document.querySelectorAll('.unitDisplay').forEach(el => el.innerText = unit);
-            calculateDistance(); // 重新計算目前線段
-        });
+            // 圖片去重，並限制數量 (避免檔案過大，取前 18 張)
+            currentData.photos = [...new Set(images)].slice(0, 18);
 
-        // 顯示測量結果
-        function calculateDistance() {
-            const pxDist = getPixelDistance();
-            if(pixelsPerUnit > 0) {
-                const realDist = pxDist / pixelsPerUnit;
-                resultText.innerText = realDist.toFixed(1);
+            // 4. 渲染至畫面
+            renderUI();
+        }
+
+        function renderUI() {
+            document.getElementById('title').innerText = currentData["物件名稱"];
+            
+            // 渲染表格
+            const tbody = document.getElementById('infoTable');
+            tbody.innerHTML = '';
+            for (const [key, value] of Object.entries(currentData)) {
+                if (key === 'photos' || key === '物件名稱') continue;
+                // 讓網址變成可點擊的連結
+                let displayValue = value;
+                if (key === '資料來源') {
+                    displayValue = `<a href="${value}" target="_blank" style="color: #0078d7; word-break: break-all;">${value}</a>`;
+                }
+                tbody.innerHTML += `<tr><th>${key}</th><td>${displayValue}</td></tr>`;
+            }
+
+            // 渲染圖片
+            const photoGrid = document.getElementById('photoGrid');
+            photoGrid.innerHTML = '';
+            if (currentData.photos.length === 0) {
+                photoGrid.innerHTML = '<p style="color: #666;">無法自動抓取照片，可能受到網站防爬機制限制。</p>';
             } else {
-                resultText.innerText = `(未設定比例) 像素距離: ${pxDist.toFixed(0)}`;
+                currentData.photos.forEach(src => {
+                    // 加入 crossorigin 屬性，幫助在列印 PDF 時順利載入圖片
+                    photoGrid.innerHTML += `<img src="${src}" crossorigin="anonymous" alt="物件照片" loading="lazy">`;
+                });
             }
         }
 
-        // 清除按鈕
-        document.getElementById('clearBtn').addEventListener('click', function() {
-            clicks = [];
-            drawCanvas();
-            resultText.innerText = "0";
-        });
+        function exportText() {
+            let textContent = `【日本租屋/買賣 物件資訊彙整】\n`;
+            textContent += `=====================================\n\n`;
+            
+            for (const [key, value] of Object.entries(currentData)) {
+                if (key !== 'photos') {
+                    textContent += `[${key}]\n${value}\n\n`;
+                }
+            }
+            
+            textContent += `=====================================\n`;
+            textContent += `共擷取 ${currentData.photos.length} 張照片連結：\n`;
+            currentData.photos.forEach((url, index) => {
+                textContent += `${index + 1}. ${url}\n`;
+            });
+            
+            const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `物件資訊_${new Date().getTime()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
     </script>
 </body>
 </html>
