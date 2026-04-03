@@ -10,7 +10,7 @@
 
 <style>
     :root {
-        /* ⭐ 更新配色：深海軍藍與香檳金 */
+        /* 深海軍藍與香檳金 配色 */
         --primary-dark: #163450;      
         --primary-gold: #c1a13a;      
         
@@ -34,7 +34,7 @@
 
     * { box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
 
-    /* ⭐ 確保 Body 滿版，才能把橫幅推到底部 */
+    /* 確保 Body 滿版，橫幅推到底部，並移除多餘的 padding-bottom */
     body { margin: 0; background-color: var(--bg-light); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
 
     .header { background-color: var(--primary-dark); color: white; padding: 12px 20px; display: flex; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
@@ -98,11 +98,13 @@
 
     .guest-name-row { font-size: 1.25rem; font-weight: 700; margin-bottom: 2px; color: var(--text-main); }
     
-    /* ⭐ 修正：滿版欄位內的文字確實靠右對齊 */
+    /* ⭐ 詳細資訊網格 */
     .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border-color); font-size: 13px; color: var(--text-muted); }
     .detail-grid div { display: flex; justify-content: space-between; align-items: center; }
     .detail-grid b { color: var(--text-main); font-weight: 600; font-size: 12px; }
     .detail-grid span { text-align: right; }
+    
+    /* 備註需求維持滿版，證件號碼已改為正常排版對齊 */
     .detail-grid .full-width { grid-column: span 2; display: flex; justify-content: space-between; gap: 10px; }
     .detail-grid .full-width span { text-align: right; word-break: break-all; flex-grow: 1;}
     .detail-grid .highlight-note { color: #b45309; background: rgba(254, 243, 199, 0.5); padding: 6px; border-radius: 6px; align-items: flex-start; flex-direction: column; gap: 2px;}
@@ -111,40 +113,31 @@
     .rest-overlay-alert { margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.7); border: 1px solid #bbf7d0; border-radius: 8px; font-size: 12px; color: #166534; display: flex; flex-direction: column; gap: 4px; border-left: 4px solid #22c55e; }
     .rest-overlay-alert strong { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #15803d; margin-bottom: 2px;}
 
-    /* ⭐ 智慧型懸浮按鈕容器 (解決遮擋底部橫幅問題) */
+    /* ⭐ 智慧型懸浮按鈕容器 (解決遮擋橫幅與對齊問題) */
     .sticky-nav-container {
         position: sticky;
         bottom: 20px;
         display: flex;
         justify-content: space-between;
-        padding: 0 15px;
-        pointer-events: none; /* 讓點擊可以穿透中間空白處 */
+        margin-top: 20px; /* 捲到底部時的緩衝空間 */
+        pointer-events: none; /* 中間透明區域可點擊穿透 */
         z-index: 50;
-        max-width: 1100px;
-        margin: 0 auto;
         width: 100%;
     }
 
     .date-nav-btn {
-        pointer-events: auto; /* 恢復按鈕本身的點擊功能 */
+        pointer-events: auto; /* 恢復按鈕可點擊 */
         background: var(--primary-dark); color: var(--primary-gold); border: 1px solid rgba(255,255,255,0.1);
         padding: 12px 18px; border-radius: 30px; font-weight: 600; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
         cursor: pointer; transition: all 0.2s; font-size: 13px;
     }
     .date-nav-btn:active { transform: scale(0.95); }
 
-    /* ⭐ 修正：橫幅絕對水平置中 */
+    /* 底部橫幅置中設定 */
     .tech-support-banner {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 20px 15px;
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--text-muted);
-        background-color: #e2e8f0;
-        margin-top: auto; 
-        letter-spacing: 0.5px;
+        display: flex; justify-content: center; align-items: center;
+        padding: 20px 15px; font-size: 12px; font-weight: 600; color: var(--text-muted);
+        background-color: #e2e8f0; margin-top: auto; letter-spacing: 0.5px;
         box-shadow: inset 0 2px 5px rgba(0,0,0,0.03);
         padding-bottom: calc(20px + env(safe-area-inset-bottom));
     }
@@ -172,19 +165,8 @@
     .btn-outline { background: white; border: 1px solid var(--border-color); color: var(--text-main); }
     .btn-danger { background: #ef4444; color: white; }
 
-    /* ⭐ 唯讀檢視模式 (View Mode) 的 CSS 魔法 */
-    .modal.view-mode input, 
-    .modal.view-mode select, 
-    .modal.view-mode textarea {
-        background: transparent !important;
-        border-color: transparent !important;
-        color: var(--text-main) !important;
-        box-shadow: none !important;
-        padding: 0;
-        font-weight: 600;
-        appearance: none;
-        -webkit-appearance: none;
-    }
+    /* 唯讀檢視模式 CSS */
+    .modal.view-mode input, .modal.view-mode select, .modal.view-mode textarea { background: transparent !important; border-color: transparent !important; color: var(--text-main) !important; box-shadow: none !important; padding: 0; font-weight: 600; appearance: none; -webkit-appearance: none; }
     .modal.view-mode select { pointer-events: none; }
     .modal.view-mode textarea { resize: none; }
 
@@ -234,11 +216,12 @@
         </div>
 
         <div class="room-grid" id="roomGrid"></div>
-    </div>
+        
+        <div class="sticky-nav-container">
+            <button class="date-nav-btn prev-day-btn" onclick="changeDate(-1)">❮ 前一日</button>
+            <button class="date-nav-btn next-day-btn" onclick="changeDate(1)">後一日 ❯</button>
+        </div>
 
-    <div class="sticky-nav-container">
-        <button class="date-nav-btn prev-day-btn" onclick="changeDate(-1)">❮ 前一日</button>
-        <button class="date-nav-btn next-day-btn" onclick="changeDate(1)">後一日 ❯</button>
     </div>
 
     <div class="tech-support-banner">
@@ -359,7 +342,7 @@
         <div id="modalFooterEdit" class="modal-footer" style="display: none;">
             <button id="btnDelete" class="btn btn-danger" onclick="deleteBooking()" style="margin-right:auto;">刪除訂單</button>
             <button class="btn btn-outline" onclick="cancelEdit()">取消</button>
-            <button id="btnSaveBooking" class="btn btn-primary" onclick="save()">💾 儲存資料</button>
+            <button id="btnSaveBooking" class="btn btn-primary" onclick="save()">💾 儲存</button>
         </div>
     </div>
 
@@ -466,6 +449,20 @@ window.changeDate = function(days) {
     setTimeout(() => { grid.style.opacity = '1'; grid.style.transform = 'translateX(0)'; }, 150);
 };
 
+let touchstartX = 0, touchendX = 0, touchstartY = 0, touchendY = 0;
+const container = document.getElementById('mainContainer');
+container.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; touchstartY = e.changedTouches[0].screenY; }, {passive: true});
+container.addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; touchendY = e.changedTouches[0].screenY; handleSwipe(); }, {passive: true});
+function handleSwipe() {
+    const thresholdX = 50, thresholdY = 80;
+    let diffX = touchendX - touchstartX;
+    let diffY = Math.abs(touchendY - touchstartY);
+    if (diffY < thresholdY) {
+        if (diffX < -thresholdX) window.changeDate(1); 
+        else if (diffX > thresholdX) window.changeDate(-1); 
+    }
+}
+
 window.searchGuest = async function() {
     const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
     if(!keyword) { alert("請輸入關鍵字"); return; }
@@ -530,9 +527,8 @@ window.searchGuest = async function() {
 }
 
 window.closeSearch = function() { document.getElementById("modalOverlaySearch").style.display = "none"; document.getElementById("searchModal").style.display = "none"; document.body.classList.remove("no-scroll"); }
-window.showBookingForm = function() { openModal("NEW"); }
 
-// ⭐ 智慧檢視/編輯模式切換
+// 智慧切換檢視/編輯模式
 window.toggleEditMode = function(isEdit) {
     const modal = document.getElementById('formModal');
     if (isEdit) modal.classList.remove('view-mode');
@@ -540,18 +536,14 @@ window.toggleEditMode = function(isEdit) {
 
     const formFields = document.querySelectorAll('#formModal .modal-body input, #formModal .modal-body select, #formModal .modal-body textarea');
     formFields.forEach(field => {
-        if (field.id === 'balance') return; // 尾款永遠唯讀
-        if (field.id === 'bookingRoom' && currentRoom !== "") {
-            field.disabled = true; // 修改已有訂單時，禁止變更房號
-            return;
-        }
+        if (field.id === 'balance') return; 
+        if (field.id === 'bookingRoom' && currentRoom !== "") { field.disabled = true; return; }
         field.disabled = !isEdit;
     });
 
     document.getElementById('modalFooterView').style.display = isEdit ? 'none' : 'flex';
     document.getElementById('modalFooterEdit').style.display = isEdit ? 'flex' : 'none';
     
-    // 若為新增訂單，檢視模式時隱藏無用的入住退房按鈕
     if(!isEdit && currentRoom === "") {
         document.getElementById('btnCheckinView').style.display = 'none';
         document.getElementById('btnCheckoutView').style.display = 'none';
@@ -561,14 +553,13 @@ window.toggleEditMode = function(isEdit) {
     }
 }
 
-// ⭐ 取消編輯時的邏輯判斷
+// 取消編輯，回退到檢視狀態
 window.cancelEdit = function() {
-    if (currentRoom === "") {
-        closeModal(); // 新增到一半取消，直接關閉
-    } else {
-        openModal(currentRoom); // 修改到一半取消，重新載入資料並退回檢視模式
-    }
+    if (currentRoom === "") closeModal(); 
+    else openModal(currentRoom); 
 }
+
+window.showBookingForm = function() { openModal("NEW"); }
 
 function openModal(room) {
     const selectedDate = document.getElementById("selectedDate").value;
@@ -582,10 +573,10 @@ function openModal(room) {
 
     if (currentRoom) {
         roomSelect.value = currentRoom;
-        toggleEditMode(false); // ⭐ 點擊已有訂單，進入 View Mode
+        toggleEditMode(false); // 卡片點入，直接進入「檢視模式」
     } else {
         roomSelect.value = "";
-        toggleEditMode(true);  // ⭐ 點擊新增按鈕，直接進入 Edit Mode
+        toggleEditMode(true);  // 新增訂單，直接進入「編輯模式」
     }
 
     document.getElementById("modalOverlay").style.display = "block"; document.getElementById("formModal").style.display = "flex"; document.body.classList.add("no-scroll");
@@ -701,12 +692,12 @@ window.save = async function(){
             dayIndex++;
         }
 
-        saveBtn.innerText = "儲存"; saveBtn.disabled = false;
+        saveBtn.innerText = "💾 儲存"; saveBtn.disabled = false;
         updateUI(); closeModal();
     } catch(err) {
         console.error("儲存發生錯誤:", err);
         alert("儲存失敗: " + err.message);
-        document.getElementById("btnSaveBooking").innerText = "儲存"; 
+        document.getElementById("btnSaveBooking").innerText = "💾 儲存"; 
         document.getElementById("btnSaveBooking").disabled = false;
     }
 }
@@ -771,12 +762,14 @@ function updateUI() {
                 const nights = Math.round((checkout - checkin) / (1000*60*60*24));
                 
                 card.classList.add(`status-${bookingData.status || "booked"}`);
+                
                 let statusName = bookingData.status === 'checkedin' ? '入住中' : (bookingData.status === 'checkedout' ? '已退房' : (bookingData.status === 'stay' ? '續住中' : '已預訂'));
                 let badgeClass = bookingData.status === 'checkedin' ? 'badge-checkedin' : (bookingData.status === 'checkedout' ? 'badge-checkedout' : (bookingData.status === 'stay' ? 'badge-stay' : 'badge-booked'));
                 
                 html += `<span class="status-badge ${badgeClass}">${statusName}</span></div>`;
                 html += `<div class="guest-name-row">${bookingData.name || '未填寫'}</div>`;
                 
+                // ⭐ 移除了訂單編號與證件號碼的 class="full-width"，讓它自然對齊
                 html += `<div class="detail-grid">`;
                 html += `<div><b>聯絡電話</b><span>${bookingData.phone || '-'}</span></div>`;
                 html += `<div><b>入住人數</b><span>${bookingData.people || '-'}人</span></div>`;
@@ -784,8 +777,8 @@ function updateUI() {
                 html += `<div><b>旅客國籍</b><span>${bookingData.country || '台灣'}</span></div>`;
                 html += `<div><b>訂單總額</b><span>$${bookingData.total || 0}</span></div>`;
                 html += `<div><b>應收尾款</b><span style="color:#ef4444; font-weight:bold;">$${bookingData.balance || 0}</span></div>`;
-                if (bookingData.orderNumber) html += `<div class="full-width"><b>訂單編號</b><span>${bookingData.orderNumber}</span></div>`;
-                if (bookingData.idNumber) html += `<div class="full-width"><b>證件號碼</b><span>${bookingData.idNumber}</span></div>`;
+                if (bookingData.orderNumber) html += `<div><b>訂單編號</b><span>${bookingData.orderNumber}</span></div>`;
+                if (bookingData.idNumber) html += `<div><b>證件號碼</b><span>${bookingData.idNumber}</span></div>`;
                 if (bookingData.request) html += `<div class="full-width highlight-note"><b>備註需求</b><span>${bookingData.request}</span></div>`;
                 html += `</div>`;
 
@@ -796,7 +789,12 @@ function updateUI() {
             }
 
             if (activeRest && activeRest.status === 'resting') {
-                html += `<div class="rest-overlay-alert"><strong>🕒 休息佔用中</strong><span>時段：${activeRest.time || '未填寫'}</span><span>房客：${activeRest.name} (${activeRest.people}人)</span></div>`;
+                html += `
+                <div class="rest-overlay-alert">
+                    <strong>🕒 休息佔用中</strong>
+                    <span>時段：${activeRest.time || '未填寫'}</span>
+                    <span>房客：${activeRest.name} (${activeRest.people}人)</span>
+                </div>`;
             }
 
             card.innerHTML = html;
@@ -816,7 +814,7 @@ function updateUI() {
                 html += `<div><b>休息人數</b><span>${activeRest.people || '-'}人</span></div>`;
                 html += `<div><b>休息時段</b><span>${activeRest.time || '-'}</span></div>`;
                 html += `<div><b>實收金額</b><span>$${activeRest.price || 0}</span></div>`;
-                if (activeRest.id) html += `<div class="full-width"><b>證件號碼</b><span>${activeRest.id}</span></div>`;
+                if (activeRest.id) html += `<div><b>證件號碼</b><span>${activeRest.id}</span></div>`;
                 if (activeRest.note) html += `<div class="full-width highlight-note"><b>備註</b><span>${activeRest.note}</span></div>`;
                 html += `</div>`;
                 
