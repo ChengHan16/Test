@@ -26,23 +26,18 @@
         --status-checkout: #94a3b8;   
     }
 
-    html, body {
-        overflow-x: hidden;
-        width: 100%;
-        touch-action: pan-y; 
-    }
-
     * { box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
 
-    /* 增加 padding-bottom 確保滾動到底部時，不會被懸浮按鈕擋住橫幅 */
-    body { margin: 0; background-color: var(--bg-light); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; padding-bottom: 90px; }
+    /* 確保 Body 滿版且隱藏 X 軸，不影響 Sticky 定位 */
+    body { margin: 0; background-color: var(--bg-light); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; touch-action: pan-y; }
 
     .header { background-color: var(--primary-dark); color: white; padding: 12px 20px; display: flex; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
     .logo { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; margin-right: 12px; border: 2px solid var(--primary-gold); }
     .hotel-name { font-size: 1.15rem; font-weight: 700; letter-spacing: 1.5px; color: var(--primary-gold); }
 
+    /* ⭐ Main 結構：用於實現 Sticky 完美推擠效果 */
     .main-content { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
-    .container { max-width: 1100px; margin: 0 auto; padding: 20px 15px; width: 100%; flex-grow: 1; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 20px 15px 0 15px; width: 100%; flex-grow: 1; }
 
     .main-date-header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 10px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid var(--border-color); margin-bottom: 25px; white-space: nowrap; }
     .date-display-wrapper { flex-grow: 1; text-align: center; position: relative; padding: 5px 10px; border-radius: 12px; transition: all 0.2s; }
@@ -109,7 +104,6 @@
 
     .guest-name-row { font-size: 1.25rem; font-weight: 700; margin-bottom: 2px; color: var(--text-main); }
     
-    /* 詳細資訊網格微調，讓字體大小更和諧 */
     .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); font-size: 13.5px; color: var(--text-muted); }
     .detail-grid div { display: flex; justify-content: space-between; align-items: center; }
     .detail-grid b { color: var(--text-main); font-weight: 600; font-size: 12px; }
@@ -123,42 +117,44 @@
     .rest-overlay-alert { margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.7); border: 1px solid #bbf7d0; border-radius: 8px; font-size: 12px; color: #166534; display: flex; flex-direction: column; gap: 4px; border-left: 4px solid #22c55e; }
     .rest-overlay-alert strong { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #15803d; margin-bottom: 2px;}
 
-    /* ⭐ 完美修復：改為 Fixed 定位，讓按鈕永遠懸浮在螢幕固定位置 */
+    /* ⭐ Sticky 完美懸浮跟隨與煞車系統 */
     .sticky-nav-container {
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
+        position: sticky;
+        bottom: 15px; /* 距離底部 15px */
         display: flex;
         justify-content: space-between;
+        padding: 0 15px;
+        pointer-events: none; /* 中間空白處可穿透點擊 */
+        z-index: 90;
         width: 100%;
         max-width: 1100px;
-        padding: 0 15px;
-        pointer-events: none; /* 中間可穿透點擊 */
-        z-index: 900;
+        margin: 15px auto 0 auto; /* 確保滑到最底下時被橫幅推上去 */
     }
 
+    /* ⭐ 按鈕縮小與精緻化 */
     .date-nav-btn {
         pointer-events: auto; 
         background: var(--primary-dark); color: var(--primary-gold); border: 1px solid rgba(255,255,255,0.1);
-        padding: 12px 20px; border-radius: 30px; font-weight: 600; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-        cursor: pointer; transition: all 0.2s; font-size: 14px; backdrop-filter: blur(5px);
+        padding: 8px 16px; /* 縮小 Padding */
+        border-radius: 30px; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+        cursor: pointer; transition: all 0.2s; font-size: 13px; /* 縮小字體 */
+        backdrop-filter: blur(5px);
     }
     .date-nav-btn:active { transform: scale(0.95); }
 
     /* 底部橫幅置中 */
     .tech-support-banner {
         display: flex; justify-content: center; align-items: center; text-align: center;
-        padding: 20px 15px; font-size: 12px; font-weight: 600; color: var(--text-muted);
+        padding: 15px; font-size: 12px; font-weight: 600; color: var(--text-muted);
         background-color: #e2e8f0; margin-top: auto; letter-spacing: 0.5px;
         box-shadow: inset 0 2px 5px rgba(0,0,0,0.03);
-        padding-bottom: calc(20px + env(safe-area-inset-bottom));
-        width: 100%;
+        padding-bottom: calc(15px + env(safe-area-inset-bottom));
+        width: 100%; z-index: 80;
     }
 
     /* Modal 樣式 */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(22, 52, 80, 0.6); backdrop-filter: blur(4px); z-index: 999; }
-    .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 92%; max-width: 600px; background: var(--bg-light); border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); z-index: 1000; max-height: 88vh; overflow: hidden; flex-direction: column; }
+    .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 94%; max-width: 600px; background: var(--bg-light); border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); z-index: 1000; max-height: 88vh; overflow: hidden; flex-direction: column; }
     .modal-header { padding: 16px 20px; background: white; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
     .modal-header h3 { margin: 0; color: var(--primary-dark); font-size: 1.15rem; font-weight: 700; }
     .modal-body { padding: 15px; overflow-y: auto; flex-grow: 1; }
@@ -171,25 +167,20 @@
     .modal input:focus, .modal select:focus, .modal textarea:focus { outline: none; border-color: var(--primary-gold); box-shadow: 0 0 0 2px rgba(193, 161, 58, 0.2); }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     
-    /* ⭐ 完美修復：強制按鈕為橫向網格排列 (2x2 Grid) */
+    /* ⭐ 「關閉｜編輯｜入住｜退房」 單行排版系統 */
     .modal-footer { 
-        padding: 15px; background: white; border-top: 1px solid var(--border-color); 
-        display: grid; grid-template-columns: 1fr 1fr; gap: 10px; 
+        padding: 12px; background: white; border-top: 1px solid var(--border-color); 
+        display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: space-between;
     }
     
     .btn { 
-        width: 100%; margin: 0; padding: 12px 10px; border-radius: 8px; 
-        font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; 
-        font-size: 0.95rem; display: flex; justify-content: center; align-items: center; gap: 6px; 
+        padding: 10px 0; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; font-size: 0.85rem; flex: 1; text-align: center; display: flex; justify-content: center; align-items: center; white-space: nowrap;
     }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-primary { background: var(--primary-dark); color: var(--primary-gold); }
     .btn-success { background: #10b981; color: white; }
     .btn-outline { background: white; border: 1px solid var(--border-color); color: var(--text-main); }
     .btn-danger { background: #ef4444; color: white; }
-
-    /* 讓儲存按鈕跨滿整列 */
-    .btn-full-width { grid-column: span 2; }
 
     /* 唯讀檢視模式 CSS */
     .modal.view-mode input, .modal.view-mode select, .modal.view-mode textarea { background: transparent !important; border-color: transparent !important; color: var(--text-main) !important; box-shadow: none !important; padding: 0; font-weight: 600; appearance: none; -webkit-appearance: none; }
@@ -244,12 +235,12 @@
 
             <div class="room-grid" id="roomGrid"></div>
         </div>
-    </main>
 
-    <div class="sticky-nav-container">
-        <button class="date-nav-btn prev-day-btn" onclick="changeDate(-1)">❮ 前一日</button>
-        <button class="date-nav-btn next-day-btn" onclick="changeDate(1)">後一日 ❯</button>
-    </div>
+        <div class="sticky-nav-container">
+            <button class="date-nav-btn prev-day-btn" onclick="changeDate(-1)">❮ 前一日</button>
+            <button class="date-nav-btn next-day-btn" onclick="changeDate(1)">後一日 ❯</button>
+        </div>
+    </main>
 
     <div class="tech-support-banner">
         👨‍💻 來點子旅店資訊部 班長 所提供的技術支援
@@ -297,9 +288,9 @@
                 </div>
             </div>
         </div>
-        <div class="modal-footer" style="display: flex; justify-content: flex-end;">
-            <button class="btn btn-outline" style="width:auto;" onclick="closeModalRest()">取消</button>
-            <button id="btnSaveRest" class="btn btn-primary" style="width:auto;" onclick="addRest()">確認建立</button>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModalRest()">取消</button>
+            <button id="btnSaveRest" class="btn btn-primary" onclick="addRest()">確認建立</button>
         </div>
     </div>
 
@@ -360,16 +351,16 @@
         </div>
 
         <div id="modalFooterView" class="modal-footer">
-            <button class="btn btn-outline" onclick="closeModal()">關閉 / 返回</button>
-            <button class="btn btn-primary" onclick="toggleEditMode(true)">📝 編輯</button>
+            <button class="btn btn-outline" onclick="closeModal()">關閉</button>
+            <button class="btn btn-primary" onclick="toggleEditMode(true)">編輯</button>
             <button id="btnCheckinView" class="btn btn-success" onclick="setStatus('checkedin')">入住</button>
             <button id="btnCheckoutView" class="btn btn-outline" onclick="setStatus('checkedout')">退房</button>
         </div>
 
         <div id="modalFooterEdit" class="modal-footer" style="display: none;">
             <button class="btn btn-outline" onclick="cancelEdit()">取消</button>
-            <button id="btnDelete" class="btn btn-danger" onclick="deleteBooking()">刪除訂單</button>
-            <button id="btnSaveBooking" class="btn btn-primary btn-full-width" onclick="save()">💾 儲存資料</button>
+            <button id="btnDelete" class="btn btn-danger" onclick="deleteBooking()">刪除</button>
+            <button id="btnSaveBooking" class="btn btn-primary" style="flex: 2;" onclick="save()">💾 儲存</button>
         </div>
     </div>
 
@@ -555,7 +546,6 @@ window.searchGuest = async function() {
 
 window.closeSearch = function() { document.getElementById("modalOverlaySearch").style.display = "none"; document.getElementById("searchModal").style.display = "none"; document.body.classList.remove("no-scroll"); }
 
-// ⭐ JS 更新：切換顯示時使用 'grid' 而非 'flex'，確保按鈕保持 2x2 橫向排列
 window.toggleEditMode = function(isEdit) {
     const modal = document.getElementById('formModal');
     if (isEdit) modal.classList.remove('view-mode');
@@ -568,8 +558,16 @@ window.toggleEditMode = function(isEdit) {
         field.disabled = !isEdit;
     });
 
-    document.getElementById('modalFooterView').style.display = isEdit ? 'none' : 'grid';
-    document.getElementById('modalFooterEdit').style.display = isEdit ? 'grid' : 'none';
+    document.getElementById('modalFooterView').style.display = isEdit ? 'none' : 'flex';
+    document.getElementById('modalFooterEdit').style.display = isEdit ? 'flex' : 'none';
+    
+    if(!isEdit && currentRoom === "") {
+        document.getElementById('btnCheckinView').style.display = 'none';
+        document.getElementById('btnCheckoutView').style.display = 'none';
+    } else {
+        document.getElementById('btnCheckinView').style.display = 'flex';
+        document.getElementById('btnCheckoutView').style.display = 'flex';
+    }
 }
 
 window.cancelEdit = function() {
@@ -710,12 +708,12 @@ window.save = async function(){
             dayIndex++;
         }
 
-        saveBtn.innerHTML = "💾 儲存資料"; saveBtn.disabled = false;
+        saveBtn.innerHTML = "💾 儲存"; saveBtn.disabled = false;
         updateUI(); closeModal();
     } catch(err) {
         console.error("儲存發生錯誤:", err);
         alert("儲存失敗: " + err.message);
-        document.getElementById("btnSaveBooking").innerHTML = "💾 儲存資料"; 
+        document.getElementById("btnSaveBooking").innerHTML = "💾 儲存"; 
         document.getElementById("btnSaveBooking").disabled = false;
     }
 }
