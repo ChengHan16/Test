@@ -24,10 +24,11 @@
         --status-checkout: #94a3b8;   
     }
 
+    /* 強制隱藏 X 軸卷軸，禁止畫面左右飄移 */
     html, body {
         overflow-x: hidden;
         width: 100%;
-        touch-action: pan-y;
+        touch-action: pan-y; /* 僅允許上下滑動 */
     }
 
     * { box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -40,18 +41,38 @@
 
     .container { max-width: 1100px; margin: 0 auto; padding: 20px 15px; }
 
+    /* ⭐ 日期標題區塊：強制不換行 */
     .main-date-header {
-        display: flex; justify-content: space-between; align-items: center; background: white;
-        padding: 15px 10px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-        border: 1px solid var(--border-color); margin-bottom: 25px; white-space: nowrap; 
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        padding: 15px 10px;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        border: 1px solid var(--border-color);
+        margin-bottom: 25px;
+        white-space: nowrap; /* 絕對不換行 */
     }
 
     .date-display-wrapper {
-        flex-grow: 1; text-align: center; position: relative; padding: 5px 10px; border-radius: 12px; transition: all 0.2s;
+        flex-grow: 1;
+        text-align: center;
+        position: relative; /* 為了讓隱形 input 覆蓋 */
+        padding: 5px 10px;
+        border-radius: 12px;
+        transition: all 0.2s;
     }
+    
     .date-display-wrapper:active { background: var(--bg-light); }
 
-    .date-title { font-size: 1.3rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 2px; }
+    .date-title {
+        font-size: 1.3rem; 
+        font-weight: 700;
+        color: var(--primary-dark);
+        margin-bottom: 2px;
+    }
+
     .date-subtitle { font-size: 0.8rem; color: var(--status-rest); font-weight: 600; }
 
     .icon-btn {
@@ -61,11 +82,13 @@
     }
     .icon-btn:hover { background: var(--primary-dark); color: white; }
 
+    /* 隱形的日期輸入框，完美解決日曆定位錯誤 */
     .invisible-date-input {
         position: absolute; top: 0; left: 0; width: 100%; height: 100%;
         opacity: 0; cursor: pointer; border: none; padding: 0; margin: 0; z-index: 10;
     }
 
+    /* 控制列 */
     .date-control-bar { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; flex-wrap: wrap; gap: 12px; border: 1px solid var(--border-color); }
     .view-tabs { display: flex; gap: 8px; width: 100%; justify-content: center; }
     .tab-btn { flex: 1; background: var(--bg-light); border: 1px solid var(--border-color); padding: 8px; font-size: 0.95rem; font-weight: 600; color: var(--text-muted); cursor: pointer; border-radius: 30px; transition: all 0.2s; text-align: center; }
@@ -83,6 +106,7 @@
     #statsBox { font-size: 13px; line-height: 1.5; color: var(--text-muted); background: var(--bg-light); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-around; text-align: center; }
     #statsBox b { color: var(--primary-dark); }
 
+    /* ⭐ 卡片網格與全卡片變色系統 */
     .room-grid { display: grid; grid-template-columns: 1fr; gap: 15px; transition: transform 0.3s ease-out, opacity 0.3s ease-out; }
     @media (min-width: 650px) { .room-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; } }
     @media (min-width: 950px) { .room-grid { grid-template-columns: repeat(3, 1fr); } }
@@ -95,9 +119,10 @@
     }
     .room-card:active { transform: scale(0.98); }
 
+    /* 狀態背景色彩 - 淡色高質感 */
     .room-card.status-booked { background: linear-gradient(145deg, #fffbeb, #ffffff); border: 1px solid #fcd34d; }
     .room-card.status-checkedin { background: linear-gradient(145deg, #ecfdf5, #ffffff); border: 1px solid #6ee7b7; }
-    .room-card.status-stay { background: linear-gradient(145deg, #e0f2fe, #ffffff); border: 1px solid #7dd3fc; } 
+    .room-card.status-stay { background: linear-gradient(145deg, #e0f2fe, #ffffff); border: 1px solid #7dd3fc; } /* 續住顏色 */
     .room-card.status-resting { background: linear-gradient(145deg, #eff6ff, #ffffff); border: 1px solid #93c5fd; }
     .room-card.status-checkedout { background: linear-gradient(145deg, #f8fafc, #ffffff); border: 1px solid #cbd5e1; }
     .room-card.status-empty { background: #ffffff; border: 1px solid #e2e8f0; }
@@ -524,7 +549,7 @@ function openModal(room) {
     document.getElementById("modalOverlay").style.display = "block"; document.getElementById("formModal").style.display = "flex"; document.body.classList.add("no-scroll");
 
     const data = bookings[selectedDate]?.[currentRoom];
-    // ⭐ 確認包含所有被補回的欄位
+    // ⭐ 確認這些 ID 在 HTML 中全都有
     const fields = ['orderNumber', 'name', 'phone', 'people', 'idNumber', 'birthday', 'orderDate', 'total', 'deposit', 'balance', 'country', 'platform', 'request', 'payStatus'];
     
     if (data) { 
