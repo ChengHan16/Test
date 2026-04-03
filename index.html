@@ -2,44 +2,48 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>來點子站前旅店 - 房況管理系統</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/airbnb.css">
 
 <style>
-    /* 專業飯店配色定義 */
     :root {
-        --primary-dark: #0f172a;      /* 深藏青色 (Header, 主色) */
-        --primary-gold: #d4af37;      /* 香檳金 (點綴, Logo字體) */
-        --bg-light: #f1f5f9;          /* 背景淺灰 */
-        --card-bg: #ffffff;           /* 卡片純白 */
-        --text-main: #334155;         /* 主要文字 */
-        --text-muted: #64748b;        /* 次要文字 */
-        --border-color: #e2e8f0;      /* 邊線顏色 */
+        --primary-dark: #0f172a;      
+        --primary-gold: #d4af37;      
+        --bg-light: #f8fafc;          
+        --card-bg: #ffffff;           
+        --text-main: #334155;         
+        --text-muted: #64748b;        
+        --border-color: #e2e8f0;      
         
-        /* 狀態色彩 - 沉穩版 */
-        --status-booked: #f59e0b;     /* 橘黃 - 預定 */
-        --status-checkin: #10b981;    /* 翠綠 - 入住 */
-        --status-rest: #3b82f6;       /* 蔚藍 - 休息 */
-        --status-checkout: #94a3b8;   /* 灰 - 退房 */
+        --status-booked: #f59e0b;     
+        --status-checkin: #10b981;    
+        --status-rest: #3b82f6;       
+        --status-checkout: #94a3b8;   
     }
 
-    * { box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; }
+    /* ⭐ 強制隱藏 X 軸卷軸，禁止畫面左右飄移 */
+    html, body {
+        overflow-x: hidden;
+        width: 100%;
+        touch-action: pan-y; /* 僅允許上下滑動，防止手勢干擾 */
+    }
+
+    * { box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
 
     body {
         margin: 0;
         background-color: var(--bg-light);
         color: var(--text-main);
-        padding-bottom: 80px; /* 給浮動按鈕留空間 */
+        padding-bottom: 80px; 
     }
 
-    /* 高質感頂部導覽列 */
     .header {
         background-color: var(--primary-dark);
         color: white;
-        padding: 15px 30px;
+        padding: 12px 20px;
         display: flex;
         align-items: center;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -49,215 +53,199 @@
     }
 
     .logo {
-        width: 45px; 
-        height: 45px;
-        object-fit: cover;
-        border-radius: 8px; 
-        margin-right: 15px;
+        width: 40px; height: 40px; object-fit: cover;
+        border-radius: 8px; margin-right: 12px;
         border: 2px solid var(--primary-gold);
     }
 
     .hotel-name {
-        font-size: 1.25rem;
-        font-weight: 700;
-        letter-spacing: 1.5px;
-        color: var(--primary-gold);
+        font-size: 1.15rem; font-weight: 700;
+        letter-spacing: 1.5px; color: var(--primary-gold);
     }
 
     .container {
         max-width: 1100px;
-        margin: 30px auto;
-        padding: 0 20px;
+        margin: 0 auto;
+        padding: 20px 15px;
     }
 
-    /* ⭐ 新增：專業的視角切換 Tabs */
-    .view-tabs {
+    /* ⭐ 新增：巨大、置中的日期標題區塊 */
+    .main-date-header {
         display: flex;
-        gap: 10px;
-        margin-bottom: 25px;
-        border-bottom: 2px solid var(--border-color);
-        padding-bottom: 1px;
-    }
-
-    .tab-btn {
-        background: transparent;
-        border: none;
-        padding: 12px 24px;
-        font-size: 1.05rem;
-        font-weight: 600;
-        color: var(--text-muted);
-        cursor: pointer;
-        border-bottom: 3px solid transparent;
-        transition: all 0.2s;
-        margin-bottom: -2px;
-    }
-
-    .tab-btn:hover { color: var(--primary-dark); }
-    .tab-btn.active {
-        color: var(--primary-dark);
-        border-bottom-color: var(--primary-dark);
-    }
-
-    /* 控制列 (日期與搜尋) */
-    .date-control-bar {
-        display: flex;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
-        background: var(--card-bg);
-        padding: 15px 20px;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        margin-bottom: 20px;
-        flex-wrap: wrap;
         gap: 15px;
+        margin-bottom: 25px;
+        background: white;
+        padding: 20px 15px;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
         border: 1px solid var(--border-color);
     }
 
-    .left-controls { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+    .date-display-wrapper {
+        text-align: center;
+        cursor: pointer;
+        padding: 10px 20px;
+        border-radius: 16px;
+        transition: all 0.2s;
+    }
+    
+    .date-display-wrapper:hover { background: var(--bg-light); }
+
+    .date-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--primary-dark);
+        letter-spacing: 1px;
+        margin-bottom: 4px;
+    }
+
+    .date-subtitle {
+        font-size: 0.85rem;
+        color: var(--status-rest);
+        font-weight: 600;
+    }
+
+    .icon-btn {
+        background: var(--bg-light);
+        border: 1px solid var(--border-color);
+        color: var(--primary-dark);
+        width: 45px; height: 45px;
+        border-radius: 50%;
+        font-size: 1.2rem;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex; justify-content: center; align-items: center;
+        transition: 0.2s;
+    }
+    .icon-btn:hover { background: var(--primary-dark); color: white; transform: scale(1.05); }
+
+    /* 控制列重組 */
+    .date-control-bar {
+        display: flex; justify-content: space-between; align-items: center;
+        background: var(--card-bg); padding: 15px 20px; border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px;
+        flex-wrap: wrap; gap: 15px; border: 1px solid var(--border-color);
+    }
+
+    .view-tabs { display: flex; gap: 10px; border-bottom: none; margin: 0; padding: 0; }
+    .tab-btn {
+        background: var(--bg-light); border: 1px solid var(--border-color); padding: 8px 16px;
+        font-size: 0.95rem; font-weight: 600; color: var(--text-muted); cursor: pointer;
+        border-radius: 30px; transition: all 0.2s;
+    }
+    .tab-btn.active { background: var(--primary-dark); color: white; border-color: var(--primary-dark); }
+
     .right-controls { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+    .action-btn-group { display: flex; gap: 10px; }
 
-    .date-picker-wrapper {
-        display: flex; align-items: center; background: var(--bg-light); padding: 8px 16px;
-        border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; transition: 0.2s;
-    }
-    .date-picker-wrapper:hover { border-color: var(--primary-dark); }
-    .custom-date-input { border: none; background: transparent; font-size: 16px; font-weight: 700; color: var(--primary-dark); outline: none; cursor: pointer; width: 110px; text-align: center; }
-
-    .search-box {
-        display: flex; align-items: center; background: var(--bg-light); border: 1px solid var(--border-color);
-        border-radius: 8px; padding: 6px 12px; transition: all 0.2s;
-    }
+    .search-box { display: flex; align-items: center; background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 12px; transition: all 0.2s; }
     .search-box:focus-within { border-color: var(--primary-dark); background: #fff; }
-    .search-box input { border: none; background: transparent; padding: 4px; font-size: 14px; outline: none; width: 140px; }
-    .search-box button { background: none; border: none; cursor: pointer; color: var(--text-muted); }
+    .search-box input { border: none; background: transparent; padding: 4px; font-size: 14px; outline: none; width: 120px; }
+    .search-box button { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1rem; }
 
-    .action-btn {
-        background: var(--primary-dark); color: white; border: none; padding: 10px 18px;
-        border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px;
-    }
-    .action-btn:hover { background: #1e293b; transform: translateY(-1px); }
+    .action-btn { background: var(--primary-dark); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .action-btn.outline { background: white; color: var(--primary-dark); border: 1px solid var(--border-color); }
-    .action-btn.outline:hover { background: var(--bg-light); }
 
-    #statsBox { font-size: 13px; line-height: 1.5; text-align: right; color: var(--text-muted); }
+    #statsBox { font-size: 13px; line-height: 1.5; text-align: right; color: var(--text-muted); background: var(--bg-light); padding: 8px 12px; border-radius: 8px; }
     #statsBox b { color: var(--primary-dark); }
 
-    /* 專業卡片網格 */
-    .room-grid {
-        display: grid; grid-template-columns: 1fr; gap: 20px; transition: transform 0.3s ease-out, opacity 0.3s ease-out;
-    }
-    @media (min-width: 650px) { .room-grid { grid-template-columns: repeat(2, 1fr); } }
+    /* 卡片網格 */
+    .room-grid { display: grid; grid-template-columns: 1fr; gap: 15px; transition: transform 0.3s ease-out, opacity 0.3s ease-out; }
+    @media (min-width: 650px) { .room-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; } }
     @media (min-width: 950px) { .room-grid { grid-template-columns: repeat(3, 1fr); } }
 
     .room-card {
-        background: var(--card-bg); border-radius: 12px; padding: 20px; cursor: pointer;
+        background: var(--card-bg); border-radius: 12px; padding: 18px; cursor: pointer;
         box-shadow: 0 2px 4px rgba(0,0,0,0.04); border: 1px solid var(--border-color);
         display: flex; flex-direction: column; position: relative; overflow: hidden;
-        transition: all 0.2s; min-height: 160px;
+        transition: all 0.2s; min-height: 150px;
     }
-    .room-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-color: #cbd5e1; }
+    .room-card:active { transform: scale(0.98); } /* 手機點擊回饋 */
 
-    /* 卡片左側狀態色條 */
-    .room-card::before {
-        content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: transparent;
-    }
+    .room-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: transparent; }
     .room-card.status-booked::before { background: var(--status-booked); }
     .room-card.status-checkedin::before { background: var(--status-checkin); }
     .room-card.status-resting::before { background: var(--status-rest); }
     .room-card.status-checkedout::before { background: var(--status-checkout); }
 
     .room-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .room-number { font-size: 1.1rem; font-weight: 700; color: var(--primary-dark); }
+    .room-number { font-size: 1.15rem; font-weight: 700; color: var(--primary-dark); }
     
-    .status-badge { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+    .status-badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
     .badge-booked { background: #fef3c7; color: #b45309; }
     .badge-checkedin { background: #d1fae5; color: #047857; }
     .badge-resting { background: #dbeafe; color: #1d4ed8; }
     .badge-checkedout { background: #f1f5f9; color: #475569; }
     .badge-empty { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); }
 
-    .guest-name-row { font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; color: var(--text-main); }
-    .booking-detail { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+    .guest-name-row { font-size: 1.25rem; font-weight: 700; margin-bottom: 6px; color: var(--text-main); }
+    .booking-detail { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
 
-    /* ⭐ 新增：住宿卡片內的「休息客佔用提示區塊」 */
     .rest-overlay-alert {
-        margin-top: auto; /* 推到卡片底部 */
-        padding: 10px 12px;
-        background: #f0fdf4; /* 淡淡的綠底或藍底 */
-        border: 1px solid #bbf7d0;
-        border-radius: 8px;
-        font-size: 13px;
-        color: #166534;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        border-left: 4px solid #22c55e;
+        margin-top: auto; padding: 10px; background: #f0fdf4; border: 1px solid #bbf7d0;
+        border-radius: 8px; font-size: 12px; color: #166534; display: flex; flex-direction: column; gap: 4px; border-left: 4px solid #22c55e;
     }
     .rest-overlay-alert strong { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #15803d; margin-bottom: 2px;}
 
-    /* 懸浮導覽按鈕 */
     .date-nav-btn {
         position: fixed; bottom: 20px; background: var(--primary-dark); color: white; border: 1px solid rgba(255,255,255,0.1);
-        padding: 12px 20px; border-radius: 30px; font-weight: 600; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
-        cursor: pointer; z-index: 50; transition: all 0.2s;
+        padding: 12px 18px; border-radius: 30px; font-weight: 600; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
+        cursor: pointer; z-index: 50; transition: all 0.2s; font-size: 13px;
     }
-    .date-nav-btn:hover { background: #1e293b; transform: translateY(-2px); }
-    .prev-day-btn { left: 20px; }
-    .next-day-btn { right: 20px; }
+    .prev-day-btn { left: 15px; }
+    .next-day-btn { right: 15px; }
 
-    /* 手機版適配 */
+    /* 手機版排版優化 */
     @media (max-width: 768px) {
-        .header { padding: 12px 15px; }
-        .logo { width: 35px; height: 35px; }
-        .hotel-name { font-size: 1.1rem; }
-        .container { margin: 15px auto; padding: 0 15px; }
-        .date-control-bar { flex-direction: column; align-items: flex-start; }
-        .left-controls, .right-controls { width: 100%; justify-content: space-between; }
+        .main-date-header { padding: 15px 10px; gap: 10px; border-radius: 15px; }
+        .date-title { font-size: 1.45rem; }
+        .icon-btn { width: 38px; height: 38px; font-size: 1rem; }
+        .date-display-wrapper { padding: 5px 10px; }
+
+        .date-control-bar { flex-direction: column; align-items: stretch; padding: 12px; gap: 12px; }
+        .view-tabs { justify-content: center; width: 100%; }
+        .tab-btn { flex: 1; text-align: center; }
+        
+        .right-controls { width: 100%; flex-direction: column; align-items: stretch; gap: 10px; }
         .search-box { width: 100%; }
         .search-box input { width: 100%; }
-        #statsBox { text-align: left; width: 100%; border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 10px; }
-        .date-nav-btn { padding: 10px 15px; font-size: 13px; bottom: 15px; }
-        .prev-day-btn { left: 10px; }
-        .next-day-btn { right: 10px; }
-        .action-btn { flex: 1; justify-content: center; }
+        .action-btn-group { display: flex; width: 100%; }
+        .action-btn { flex: 1; justify-content: center; text-align: center; }
+        
+        #statsBox { text-align: center; display: flex; justify-content: space-around; }
     }
 
-    /* Modal 樣式優化 (保持原本強大結構，微調色彩) */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 999; }
-    .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 600px; background: var(--card-bg); border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); z-index: 1000; max-height: 85vh; overflow: hidden; flex-direction: column; }
+    .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 92%; max-width: 600px; background: var(--bg-light); border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); z-index: 1000; max-height: 88vh; overflow: hidden; flex-direction: column; }
     #searchModal { max-width: 800px; }
-    .modal-header { padding: 18px 24px; background: white; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-    .modal-header h3 { margin: 0; color: var(--primary-dark); font-size: 1.25rem; font-weight: 700; }
-    .modal-body { padding: 24px; overflow-y: auto; flex-grow: 1; background: var(--bg-light); }
+    .modal-header { padding: 16px 20px; background: white; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { margin: 0; color: var(--primary-dark); font-size: 1.15rem; font-weight: 700; }
+    .modal-body { padding: 15px; overflow-y: auto; flex-grow: 1; }
     
-    .form-section { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color); }
-    .form-section-title { font-size: 0.85rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--bg-light); padding-bottom: 8px; }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
-    .modal input, .modal select, .modal textarea { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; transition: all 0.2s; background: #f8fafc; color: var(--text-main); }
-    .modal input:focus, .modal select:focus, .modal textarea:focus { outline: none; border-color: var(--primary-dark); background: white; box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1); }
-    .modal input:disabled, .modal input[readonly] { background: #e2e8f0; color: var(--text-muted); cursor: not-allowed; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    .modal-footer { padding: 16px 24px; background: white; border-top: 1px solid var(--border-color); display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+    .form-section { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); }
+    .form-section-title { font-size: 0.85rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 12px; border-bottom: 2px solid var(--bg-light); padding-bottom: 6px; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; }
+    .modal input, .modal select, .modal textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; transition: all 0.2s; background: #fff; color: var(--text-main); }
+    .modal input:focus, .modal select:focus, .modal textarea:focus { outline: none; border-color: var(--primary-dark); box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.1); }
+    .modal input:disabled, .modal input[readonly] { background: #f1f5f9; color: #94a3b8; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .modal-footer { padding: 15px 20px; background: white; border-top: 1px solid var(--border-color); display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
     
-    .btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; font-size: 0.95rem; }
+    .btn { padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; font-size: 0.95rem; }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-primary { background: var(--primary-dark); color: white; }
-    .btn-primary:hover:not(:disabled) { background: #1e293b; }
     .btn-success { background: #10b981; color: white; }
-    .btn-success:hover { background: #059669; }
     .btn-outline { background: white; border: 1px solid var(--border-color); color: var(--text-main); }
-    .btn-outline:hover { background: var(--bg-light); }
     .btn-danger { background: #ef4444; color: white; }
-    .btn-danger:hover { background: #dc2626; }
 
-    /* 搜尋表格 */
     .table-container { overflow-x: auto; background: white; border-radius: 8px; border: 1px solid var(--border-color); }
-    .search-table { width: 100%; border-collapse: collapse; min-width: 600px; }
-    .search-table th, .search-table td { padding: 12px 16px; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 14px; }
+    .search-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+    .search-table th, .search-table td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 13px; }
     .search-table th { background: var(--bg-light); font-weight: 700; color: var(--primary-dark); white-space: nowrap; }
-    .search-table td { vertical-align: middle; color: var(--text-main); }
-    
+
     .no-scroll { overflow: hidden !important; height: 100vh !important; }
 </style>
 </head>
@@ -272,28 +260,32 @@
 
     <div class="container" id="mainContainer">
         
-        <div class="view-tabs">
-            <button class="tab-btn active" id="tab-booking" onclick="switchView('booking')">🏨 住宿房況</button>
-            <button class="tab-btn" id="tab-rest" onclick="switchView('rest')">🕒 休息房況</button>
+        <div class="main-date-header">
+            <button class="icon-btn" onclick="changeDate(-1)">❮</button>
+            <div class="date-display-wrapper" onclick="document.getElementById('selectedDate')._flatpickr.open()">
+                <div class="date-title" id="displayDateTitle">載入中...</div>
+                <div class="date-subtitle">📅 點擊開啟日曆</div>
+                <input type="text" id="selectedDate" style="visibility:hidden; position:absolute; width:0; height:0; padding:0; margin:0;">
+            </div>
+            <button class="icon-btn" onclick="changeDate(1)">❯</button>
         </div>
 
         <div class="date-control-bar">
-            <div class="left-controls">
-                <div class="date-picker-wrapper" onclick="document.getElementById('selectedDate')._flatpickr.open()">
-                    <span class="date-icon">📅</span>
-                    <input type="text" id="selectedDate" class="custom-date-input" readonly placeholder="選擇日期">
-                </div>
-                
+            <div class="view-tabs">
+                <button class="tab-btn active" id="tab-booking" onclick="switchView('booking')">🏨 住宿</button>
+                <button class="tab-btn" id="tab-rest" onclick="switchView('rest')">🕒 休息</button>
+            </div>
+            
+            <div class="right-controls">
                 <div class="search-box">
                     <input type="text" id="searchInput" placeholder="搜尋姓名/電話" onkeypress="if(event.key==='Enter') searchGuest()">
                     <button onclick="searchGuest()">🔍</button>
                 </div>
-            </div>
-            
-            <div class="right-controls">
                 <div id="statsBox"></div>
-                <button class="action-btn" onclick="showBookingForm()">＋ 住宿</button>
-                <button class="action-btn outline" onclick="showRestForm()">＋ 休息</button>
+                <div class="action-btn-group">
+                    <button class="action-btn" onclick="showBookingForm()">＋ 住宿</button>
+                    <button class="action-btn outline" onclick="showRestForm()">＋ 休息</button>
+                </div>
             </div>
         </div>
 
@@ -306,10 +298,10 @@
             <h3>🔍 歷史紀錄查詢</h3>
             <button onclick="closeSearch()" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-muted);">&times;</button>
         </div>
-        <div class="modal-body" style="padding: 15px;">
+        <div class="modal-body">
             <div class="table-container">
                 <table class="search-table">
-                    <thead><tr><th>類型</th><th>姓名 / 房號</th><th>日期時間</th><th>平台</th><th>狀態</th></tr></thead>
+                    <thead><tr><th>類型</th><th>姓名/房號</th><th>日期時間</th><th>平台</th><th>狀態</th></tr></thead>
                     <tbody id="searchResultsBody"></tbody>
                 </table>
             </div>
@@ -384,7 +376,7 @@
                     <div class="form-group"><label>已付訂金</label><input id="deposit" type="number"></div>
                 </div>
                 <div class="grid-2">
-                    <div class="form-group"><label>應收尾款</label><input id="balance" type="number" readonly style="font-weight:bold; color:#ef4444;"></div>
+                    <div class="form-group"><label>應收尾款</label><input id="balance" type="number" readonly style="font-weight:bold; color:#ef4444; background:#fef2f2;"></div>
                     <div class="form-group">
                         <label>付款狀態</label>
                         <select id="payStatus">
@@ -398,12 +390,13 @@
                 <div class="form-group"><label>備註事項</label><textarea id="request" rows="2" placeholder="特殊需求..."></textarea></div>
             </div>
         </div>
-        <div class="modal-footer">
-            <button id="btnDelete" class="btn btn-danger" onclick="deleteBooking()" style="margin-right:auto;">取消訂單</button>
+        <div class="modal-footer" style="justify-content: flex-start;">
+            <button id="btnDelete" class="btn btn-danger" onclick="deleteBooking()">取消訂單</button>
+            <div style="flex-grow: 1;"></div>
             <button class="btn btn-outline" onclick="closeModal()">關閉</button>
-            <button id="btnSaveBooking" class="btn btn-primary" onclick="save()">儲存資料</button>
-            <button id="btnCheckin" class="btn btn-success" onclick="setStatus('checkedin')">辦理入住</button>
-            <button id="btnCheckout" class="btn btn-outline" onclick="setStatus('checkedout')">辦理退房</button>
+            <button id="btnSaveBooking" class="btn btn-primary" onclick="save()">儲存</button>
+            <button id="btnCheckin" class="btn btn-success" onclick="setStatus('checkedin')">入住</button>
+            <button id="btnCheckout" class="btn btn-outline" onclick="setStatus('checkedout')">退房</button>
         </div>
     </div>
 
@@ -426,14 +419,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ⭐ 視角狀態管理
-let currentViewMode = 'booking'; // 'booking' 或 'rest'
+let currentViewMode = 'booking'; 
 
 window.switchView = function(mode) {
     currentViewMode = mode;
     document.getElementById('tab-booking').classList.toggle('active', mode === 'booking');
     document.getElementById('tab-rest').classList.toggle('active', mode === 'rest');
-    updateUI(); // 切換視角後重新渲染卡片
+    updateUI(); 
 }
 
 function getCurrentDate(){ return document.getElementById("selectedDate").value; }
@@ -443,6 +435,16 @@ function getDateString(dateObj) {
     let m = String(dateObj.getMonth() + 1).padStart(2, '0');
     let d = String(dateObj.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
+}
+
+// ⭐ 更新大標題日期顯示
+function updateDateDisplay(dateObj) {
+    const days = ['日', '一', '二', '三', '四', '五', '六'];
+    const y = dateObj.getFullYear();
+    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const d = String(dateObj.getDate()).padStart(2, '0');
+    const day = days[dateObj.getDay()];
+    document.getElementById('displayDateTitle').innerText = `${y}年${m}月${d}日 (週${day})`;
 }
 
 const rooms = ["201","202","203","301","302","303","401","402","403"];
@@ -460,11 +462,15 @@ window.onload = async () => {
 
     flatpickr("#selectedDate", {
         locale: "zh_tw", dateFormat: "Y-m-d", defaultDate: "today", disableMobile: true,
-        onChange: async function() {
+        onChange: async function(selectedDates) {
+            if (selectedDates[0]) updateDateDisplay(selectedDates[0]);
             await Promise.all([loadData(), loadRestData()]);
             updateUI();
         }
     });
+
+    // 初始設定日期大標題
+    updateDateDisplay(new Date());
 
     const deposit = document.getElementById("deposit");
     const total = document.getElementById("total");
@@ -490,6 +496,8 @@ window.changeDate = function(days) {
     let [y, m, d] = dateInput.value.split("-");
     let currentDate = new Date(y, m - 1, d);
     currentDate.setDate(currentDate.getDate() + days);
+    
+    // 更新 Flatpickr 與 UI
     const newDateStr = getDateString(currentDate);
     dateInput._flatpickr.setDate(newDateStr, true);
     
@@ -498,6 +506,7 @@ window.changeDate = function(days) {
     setTimeout(() => { grid.style.opacity = '1'; grid.style.transform = 'translateX(0)'; }, 150);
 };
 
+// 處理手勢滑動
 let touchstartX = 0, touchendX = 0, touchstartY = 0, touchendY = 0;
 const container = document.getElementById('mainContainer');
 container.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; touchstartY = e.changedTouches[0].screenY; }, {passive: true});
@@ -566,7 +575,7 @@ window.searchGuest = async function() {
                     payBadge = `<span style="color:#10b981; font-weight:bold;">已結清 ($${r.price || 0})</span>`;
                 }
                 return `<tr>
-                    <td><span class="status-badge ${r.type === '住宿' ? 'badge-booked' : 'badge-resting'}">${r.type}</span></td>
+                    <td><span style="font-size:12px; font-weight:bold; color:${r.type==='住宿'?'#b45309':'#1d4ed8'};">${r.type}</span></td>
                     <td><b>${r.name}</b><br><small style="color:var(--text-muted);">房號: ${r.room}</small></td>
                     <td>${r.date}</td><td>${r.platform}</td><td>${payBadge}</td>
                 </tr>`;
@@ -623,22 +632,16 @@ window.showRestForm = function(prefillRoom = "") {
     if (!selectedDate) { alert("請先選擇日期"); return; }
     updateRestRoomOptions();
     
-    // 如果是從網格直接點擊空房進來，自動選定房號
     const roomSelect = document.getElementById("restRoom");
     if(prefillRoom) {
-        // 確保選單內有該房間選項
         let exists = Array.from(roomSelect.options).some(opt => opt.value === prefillRoom);
-        if(!exists) {
-            const op = document.createElement("option"); op.value = prefillRoom; op.textContent = prefillRoom; roomSelect.appendChild(op);
-        }
+        if(!exists) { const op = document.createElement("option"); op.value = prefillRoom; op.textContent = prefillRoom; roomSelect.appendChild(op); }
         roomSelect.value = prefillRoom;
     } else {
         roomSelect.value = "";
     }
 
-    document.getElementById("modalOverlayRest").style.display = "block";
-    document.getElementById("restFormModal").style.display = "flex";
-    document.body.classList.add("no-scroll");
+    document.getElementById("modalOverlayRest").style.display = "block"; document.getElementById("restFormModal").style.display = "flex"; document.body.classList.add("no-scroll");
 }
 
 window.closeModalRest = function() { document.getElementById("modalOverlayRest").style.display = "none"; document.getElementById("restFormModal").style.display = "none"; document.body.classList.remove("no-scroll"); }
@@ -682,7 +685,7 @@ window.save = async function(){
             current.setDate(current.getDate() + 1); dayIndex++;
         }
         updateUI(); closeModal();
-    } catch(err) { alert("儲存失敗"); } finally { saveBtn.innerText = "儲存資料"; saveBtn.disabled = false; }
+    } catch(err) { alert("儲存失敗"); } finally { saveBtn.innerText = "儲存"; saveBtn.disabled = false; }
 }
 
 window.setStatus = async function(status){
@@ -724,7 +727,6 @@ async function toggleRestStatus(index, newStatus) {
     await setDoc(doc(db, "restData", date), { data: restData[date] }); updateUI();
 }
 
-// ⭐ 重構的核心 UI 渲染邏輯
 function updateUI() {
     const date = document.getElementById("selectedDate").value;
     const roomCards = document.querySelectorAll(".room-card");
@@ -733,18 +735,13 @@ function updateUI() {
     roomCards.forEach((card, i) => {
         const room = rooms[i]; 
         const bookingData = bookings[date]?.[room]; 
-        // 抓取該房間當日最後一筆有效的休息資料（優先顯示正在休息中的）
         const restInfos = currentRestData.filter(r => r.room === room);
         const activeRest = restInfos.find(r => r.status === 'resting') || restInfos[restInfos.length - 1];
 
-        // 初始化卡片
         card.className = "room-card"; 
         let html = `<div class="room-header"><span class="room-number">${room}</span>`;
 
         if (currentViewMode === 'booking') {
-            // ===========================
-            // 🏨 住宿視角渲染
-            // ===========================
             if (bookingData) {
                 let [cy, cm, cd] = bookingData.checkinDate.split("-"); let checkin = new Date(cy, cm-1, cd);
                 let [ey, em, ed] = bookingData.checkoutDate.split("-"); let checkout = new Date(ey, em-1, ed);
@@ -762,7 +759,6 @@ function updateUI() {
                 html += `<div class="guest-name-row" style="color:var(--border-color);">--</div>`;
             }
 
-            // ⭐ 關鍵：如果該房間目前被「休息客」佔用，必須在住宿卡片中亮起警示區塊
             if (activeRest && activeRest.status === 'resting') {
                 html += `
                 <div class="rest-overlay-alert">
@@ -776,9 +772,6 @@ function updateUI() {
             card.onclick = () => openModal(room);
 
         } else {
-            // ===========================
-            // 🕒 休息視角渲染
-            // ===========================
             if (activeRest) {
                 card.classList.add(activeRest.status === "resting" ? "status-resting" : "status-checkedout");
                 let statusName = activeRest.status === "resting" ? "休息中" : "已結束";
@@ -797,14 +790,9 @@ function updateUI() {
                     }
                 };
             } else {
-                // 沒有休息客，顯示為空，但如果住宿有單，稍作提示
                 html += `<span class="status-badge badge-empty">未排休息</span></div>`;
-                if(bookingData) {
-                    html += `<div class="guest-name-row" style="color:var(--status-booked); font-size:14px;">(本日有住宿預訂)</div>`;
-                } else {
-                    html += `<div class="guest-name-row" style="color:var(--border-color);">--</div>`;
-                }
-                // 點擊直接開啟休息新增視窗並帶入房號
+                if(bookingData) { html += `<div class="guest-name-row" style="color:var(--status-booked); font-size:14px;">(本日有住宿預訂)</div>`; } 
+                else { html += `<div class="guest-name-row" style="color:var(--border-color);">--</div>`; }
                 card.onclick = () => showRestForm(room);
             }
             card.innerHTML = html;
@@ -845,12 +833,12 @@ async function loadRestData() {
 
 function updateStats() {
     const date = document.getElementById("selectedDate").value; const statsBox = document.getElementById("statsBox");
-    if (!date) { statsBox.innerHTML = "本日總客流: 0<br>目前在店: 0"; return; }
+    if (!date) { statsBox.innerHTML = "<div>人流 <b>0</b> ｜ 在店 <b>0</b></div>"; return; }
 
     let dailyTotalPeople = 0, currentInHousePeople = 0;  
     if (bookings[date]) { Object.values(bookings[date]).forEach(data => { let p = Number(data.people) || 0; if (data.everCheckedIn) dailyTotalPeople += p; if (data.status === 'checkedin') currentInHousePeople += p; }); }
     if (restData[date]) { restData[date].forEach(rest => { let p = Number(rest.people) || 0; dailyTotalPeople += p; if (rest.status === 'resting') currentInHousePeople += p; }); }
-    statsBox.innerHTML = `當日累計人流：<b>${dailyTotalPeople}</b> 人<br>目前館內人數：<b>${currentInHousePeople}</b> 人`;
+    statsBox.innerHTML = `<div>當日人流 <b>${dailyTotalPeople}</b> ｜ 目前在店 <b>${currentInHousePeople}</b></div>`;
 }
 
 function updateRestRoomOptions() {
