@@ -34,21 +34,14 @@
 
     * { box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
 
-    /* 確保 Body 滿版 */
-    body { margin: 0; background-color: var(--bg-light); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
+    /* 增加 padding-bottom 確保滾動到底部時，不會被懸浮按鈕擋住橫幅 */
+    body { margin: 0; background-color: var(--bg-light); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; padding-bottom: 90px; }
 
     .header { background-color: var(--primary-dark); color: white; padding: 12px 20px; display: flex; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
     .logo { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; margin-right: 12px; border: 2px solid var(--primary-gold); }
     .hotel-name { font-size: 1.15rem; font-weight: 700; letter-spacing: 1.5px; color: var(--primary-gold); }
 
-    /* ⭐ 新增 Main 包覆層：讓 Sticky 按鈕可以正常跟隨並煞車 */
-    .main-content {
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        position: relative; 
-    }
-
+    .main-content { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
     .container { max-width: 1100px; margin: 0 auto; padding: 20px 15px; width: 100%; flex-grow: 1; }
 
     .main-date-header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 10px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid var(--border-color); margin-bottom: 25px; white-space: nowrap; }
@@ -62,15 +55,11 @@
 
     .invisible-date-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: none; padding: 0; margin: 0; z-index: 10; }
 
-    /* ⭐ 手機版日曆強制置中與背景暗化 */
+    /* 手機版日曆強制置中 */
     @media (max-width: 768px) {
         .flatpickr-calendar {
-            position: fixed !important;
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) !important;
-            margin: 0 !important;
-            /* 利用巨大的陰影當作半透明背景遮罩 */
+            position: fixed !important; top: 50% !important; left: 50% !important;
+            transform: translate(-50%, -50%) !important; margin: 0 !important;
             box-shadow: 0 0 0 2000px rgba(22, 52, 80, 0.6), 0 25px 50px -12px rgba(0,0,0,0.5) !important;
             z-index: 99999 !important;
         }
@@ -120,7 +109,8 @@
 
     .guest-name-row { font-size: 1.25rem; font-weight: 700; margin-bottom: 2px; color: var(--text-main); }
     
-    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border-color); font-size: 13px; color: var(--text-muted); }
+    /* 詳細資訊網格微調，讓字體大小更和諧 */
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); font-size: 13.5px; color: var(--text-muted); }
     .detail-grid div { display: flex; justify-content: space-between; align-items: center; }
     .detail-grid b { color: var(--text-main); font-weight: 600; font-size: 12px; }
     .detail-grid span { text-align: right; }
@@ -133,30 +123,32 @@
     .rest-overlay-alert { margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.7); border: 1px solid #bbf7d0; border-radius: 8px; font-size: 12px; color: #166534; display: flex; flex-direction: column; gap: 4px; border-left: 4px solid #22c55e; }
     .rest-overlay-alert strong { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #15803d; margin-bottom: 2px;}
 
-    /* ⭐ 完美懸浮跟隨與煞車系統 */
+    /* ⭐ 完美修復：改為 Fixed 定位，讓按鈕永遠懸浮在螢幕固定位置 */
     .sticky-nav-container {
-        position: sticky;
+        position: fixed;
         bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
         display: flex;
         justify-content: space-between;
-        padding: 0 15px;
-        pointer-events: none; /* 中間空白處可穿透點擊 */
-        z-index: 50;
-        max-width: 1100px;
-        margin: 20px auto 0 auto;
         width: 100%;
+        max-width: 1100px;
+        padding: 0 15px;
+        pointer-events: none; /* 中間可穿透點擊 */
+        z-index: 900;
     }
 
     .date-nav-btn {
-        pointer-events: auto; /* 按鈕本身恢復點擊 */
+        pointer-events: auto; 
         background: var(--primary-dark); color: var(--primary-gold); border: 1px solid rgba(255,255,255,0.1);
-        padding: 12px 18px; border-radius: 30px; font-weight: 600; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
-        cursor: pointer; transition: all 0.2s; font-size: 13px;
+        padding: 12px 20px; border-radius: 30px; font-weight: 600; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        cursor: pointer; transition: all 0.2s; font-size: 14px; backdrop-filter: blur(5px);
     }
     .date-nav-btn:active { transform: scale(0.95); }
 
+    /* 底部橫幅置中 */
     .tech-support-banner {
-        display: flex; justify-content: center; align-items: center;
+        display: flex; justify-content: center; align-items: center; text-align: center;
         padding: 20px 15px; font-size: 12px; font-weight: 600; color: var(--text-muted);
         background-color: #e2e8f0; margin-top: auto; letter-spacing: 0.5px;
         box-shadow: inset 0 2px 5px rgba(0,0,0,0.03);
@@ -179,43 +171,25 @@
     .modal input:focus, .modal select:focus, .modal textarea:focus { outline: none; border-color: var(--primary-gold); box-shadow: 0 0 0 2px rgba(193, 161, 58, 0.2); }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     
-    /* ⭐ 按鈕與網格排版系統 */
-    .modal-footer { padding: 15px; background: white; border-top: 1px solid var(--border-color); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-end; }
-    .btn { padding: 12px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; font-size: 0.95rem; display: flex; justify-content: center; align-items: center; gap: 6px; }
+    /* ⭐ 完美修復：強制按鈕為橫向網格排列 (2x2 Grid) */
+    .modal-footer { 
+        padding: 15px; background: white; border-top: 1px solid var(--border-color); 
+        display: grid; grid-template-columns: 1fr 1fr; gap: 10px; 
+    }
+    
+    .btn { 
+        width: 100%; margin: 0; padding: 12px 10px; border-radius: 8px; 
+        font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; 
+        font-size: 0.95rem; display: flex; justify-content: center; align-items: center; gap: 6px; 
+    }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-primary { background: var(--primary-dark); color: var(--primary-gold); }
     .btn-success { background: #10b981; color: white; }
     .btn-outline { background: white; border: 1px solid var(--border-color); color: var(--text-main); }
     .btn-danger { background: #ef4444; color: white; }
 
-    .btn-v-close, .btn-e-del { margin-right: auto; } /* 電腦版靠左 */
-
-    /* ⭐ 手機版黃金比例按鈕網格 (2x2 矩陣) */
-    @media (max-width: 600px) {
-        .view-footer-grid, .edit-footer-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            padding: 15px;
-            width: 100%;
-        }
-        .view-footer-grid > button, .edit-footer-grid > button {
-            width: 100%;
-            margin: 0 !important;
-            padding: 12px 10px; 
-        }
-
-        /* 檢視模式排版：上層[編輯][入住]，下層[關閉][退房] */
-        .btn-v-edit { order: 1; }
-        .btn-v-checkin { order: 2; }
-        .btn-v-close { order: 3; }
-        .btn-v-checkout { order: 4; }
-
-        /* 編輯模式排版：上層[儲存](滿版)，下層[刪除][取消] */
-        .btn-e-save { order: 1; grid-column: span 2; }
-        .btn-e-del { order: 2; }
-        .btn-e-cancel { order: 3; }
-    }
+    /* 讓儲存按鈕跨滿整列 */
+    .btn-full-width { grid-column: span 2; }
 
     /* 唯讀檢視模式 CSS */
     .modal.view-mode input, .modal.view-mode select, .modal.view-mode textarea { background: transparent !important; border-color: transparent !important; color: var(--text-main) !important; box-shadow: none !important; padding: 0; font-weight: 600; appearance: none; -webkit-appearance: none; }
@@ -270,12 +244,12 @@
 
             <div class="room-grid" id="roomGrid"></div>
         </div>
-
-        <div class="sticky-nav-container">
-            <button class="date-nav-btn prev-day-btn" onclick="changeDate(-1)">❮ 前一日</button>
-            <button class="date-nav-btn next-day-btn" onclick="changeDate(1)">後一日 ❯</button>
-        </div>
     </main>
+
+    <div class="sticky-nav-container">
+        <button class="date-nav-btn prev-day-btn" onclick="changeDate(-1)">❮ 前一日</button>
+        <button class="date-nav-btn next-day-btn" onclick="changeDate(1)">後一日 ❯</button>
+    </div>
 
     <div class="tech-support-banner">
         👨‍💻 來點子旅店資訊部 班長 所提供的技術支援
@@ -323,9 +297,9 @@
                 </div>
             </div>
         </div>
-        <div class="modal-footer" style="justify-content: flex-end;">
-            <button class="btn btn-outline" onclick="closeModalRest()">取消</button>
-            <button id="btnSaveRest" class="btn btn-primary" onclick="addRest()">確認建立</button>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end;">
+            <button class="btn btn-outline" style="width:auto;" onclick="closeModalRest()">取消</button>
+            <button id="btnSaveRest" class="btn btn-primary" style="width:auto;" onclick="addRest()">確認建立</button>
         </div>
     </div>
 
@@ -385,17 +359,17 @@
             </div>
         </div>
 
-        <div id="modalFooterView" class="modal-footer view-footer-grid">
-            <button class="btn btn-outline btn-v-close" onclick="closeModal()">關閉 / 返回</button>
-            <button class="btn btn-primary btn-v-edit" onclick="toggleEditMode(true)">📝 編輯</button>
-            <button id="btnCheckinView" class="btn btn-success btn-v-checkin" onclick="setStatus('checkedin')">入住</button>
-            <button id="btnCheckoutView" class="btn btn-outline btn-v-checkout" onclick="setStatus('checkedout')">退房</button>
+        <div id="modalFooterView" class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal()">關閉 / 返回</button>
+            <button class="btn btn-primary" onclick="toggleEditMode(true)">📝 編輯</button>
+            <button id="btnCheckinView" class="btn btn-success" onclick="setStatus('checkedin')">入住</button>
+            <button id="btnCheckoutView" class="btn btn-outline" onclick="setStatus('checkedout')">退房</button>
         </div>
 
-        <div id="modalFooterEdit" class="modal-footer edit-footer-grid" style="display: none;">
-            <button id="btnDelete" class="btn btn-danger btn-e-del" onclick="deleteBooking()">刪除訂單</button>
-            <button class="btn btn-outline btn-e-cancel" onclick="cancelEdit()">取消</button>
-            <button id="btnSaveBooking" class="btn btn-primary btn-e-save" onclick="save()">💾 儲存</button>
+        <div id="modalFooterEdit" class="modal-footer" style="display: none;">
+            <button class="btn btn-outline" onclick="cancelEdit()">取消</button>
+            <button id="btnDelete" class="btn btn-danger" onclick="deleteBooking()">刪除訂單</button>
+            <button id="btnSaveBooking" class="btn btn-primary btn-full-width" onclick="save()">💾 儲存資料</button>
         </div>
     </div>
 
@@ -581,7 +555,7 @@ window.searchGuest = async function() {
 
 window.closeSearch = function() { document.getElementById("modalOverlaySearch").style.display = "none"; document.getElementById("searchModal").style.display = "none"; document.body.classList.remove("no-scroll"); }
 
-// 智慧切換檢視/編輯模式
+// ⭐ JS 更新：切換顯示時使用 'grid' 而非 'flex'，確保按鈕保持 2x2 橫向排列
 window.toggleEditMode = function(isEdit) {
     const modal = document.getElementById('formModal');
     if (isEdit) modal.classList.remove('view-mode');
@@ -594,19 +568,10 @@ window.toggleEditMode = function(isEdit) {
         field.disabled = !isEdit;
     });
 
-    document.getElementById('modalFooterView').style.display = isEdit ? 'none' : 'flex';
-    document.getElementById('modalFooterEdit').style.display = isEdit ? 'flex' : 'none';
-    
-    if(!isEdit && currentRoom === "") {
-        document.getElementById('btnCheckinView').style.display = 'none';
-        document.getElementById('btnCheckoutView').style.display = 'none';
-    } else {
-        document.getElementById('btnCheckinView').style.display = 'inline-flex';
-        document.getElementById('btnCheckoutView').style.display = 'inline-flex';
-    }
+    document.getElementById('modalFooterView').style.display = isEdit ? 'none' : 'grid';
+    document.getElementById('modalFooterEdit').style.display = isEdit ? 'grid' : 'none';
 }
 
-// 取消編輯，回退到檢視狀態
 window.cancelEdit = function() {
     if (currentRoom === "") closeModal(); 
     else openModal(currentRoom); 
@@ -626,10 +591,10 @@ function openModal(room) {
 
     if (currentRoom) {
         roomSelect.value = currentRoom;
-        toggleEditMode(false); // 卡片點入，直接進入「檢視模式」
+        toggleEditMode(false); 
     } else {
         roomSelect.value = "";
-        toggleEditMode(true);  // 新增訂單，直接進入「編輯模式」
+        toggleEditMode(true);  
     }
 
     document.getElementById("modalOverlay").style.display = "block"; document.getElementById("formModal").style.display = "flex"; document.body.classList.add("no-scroll");
@@ -745,12 +710,12 @@ window.save = async function(){
             dayIndex++;
         }
 
-        saveBtn.innerHTML = "💾 儲存"; saveBtn.disabled = false;
+        saveBtn.innerHTML = "💾 儲存資料"; saveBtn.disabled = false;
         updateUI(); closeModal();
     } catch(err) {
         console.error("儲存發生錯誤:", err);
         alert("儲存失敗: " + err.message);
-        document.getElementById("btnSaveBooking").innerHTML = "💾 儲存"; 
+        document.getElementById("btnSaveBooking").innerHTML = "💾 儲存資料"; 
         document.getElementById("btnSaveBooking").disabled = false;
     }
 }
