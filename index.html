@@ -28,7 +28,6 @@
 
     * { box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
 
-    /* 確保 Body 滿版且隱藏 X 軸，不影響 Sticky 定位 */
     body { margin: 0; background-color: var(--bg-light); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; touch-action: pan-y; padding-bottom: 90px; }
 
     .header { background-color: var(--primary-dark); color: white; padding: 12px 20px; display: flex; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
@@ -49,7 +48,6 @@
 
     .invisible-date-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: none; padding: 0; margin: 0; z-index: 10; }
 
-    /* 手機版日曆強制置中 */
     @media (max-width: 768px) {
         .flatpickr-calendar {
             position: fixed !important; top: 50% !important; left: 50% !important;
@@ -138,7 +136,6 @@
     }
     .date-nav-btn:active { transform: scale(0.95); }
 
-    /* 底部橫幅置中 */
     .tech-support-banner {
         display: flex; justify-content: center; align-items: center; text-align: center;
         padding: 18px 15px; font-size: 12px; font-weight: 600; color: var(--text-muted);
@@ -148,7 +145,6 @@
         width: 100%; z-index: 80;
     }
 
-    /* Modal 樣式 */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(22, 52, 80, 0.6); backdrop-filter: blur(4px); z-index: 999; }
     .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 94%; max-width: 600px; background: var(--bg-light); border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); z-index: 1000; max-height: 88vh; overflow: hidden; flex-direction: column; }
     .modal-header { padding: 16px 20px; background: white; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
@@ -168,16 +164,28 @@
     .time-picker-group input { flex: 1; text-align: center; }
     .time-picker-group span { font-weight: bold; color: var(--text-muted); }
 
-    /* ⭐ 修改 Log 紀錄專屬 CSS */
-    .log-content {
-        font-size: 12px; color: #64748b; background: #f1f5f9;
-        padding: 10px 12px; border-radius: 8px; max-height: 100px; overflow-y: auto;
-        border: 1px solid var(--border-color);
-        display: flex; flex-direction: column; gap: 4px;
-    }
-    .log-item { border-bottom: 1px dashed #cbd5e1; padding-bottom: 4px; }
-    .log-item:last-child { border-bottom: none; padding-bottom: 0; }
-    .log-empty { text-align: center; color: #94a3b8; font-style: italic; }
+    /* ⭐ 修改 Log 紀錄可展開的 UI 設計 */
+    .log-container { display: flex; flex-direction: column; gap: 8px; }
+    .log-empty { text-align: center; color: #94a3b8; font-style: italic; font-size: 13px; padding: 10px; }
+    .log-item { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; }
+    .log-header { cursor: pointer; padding: 12px 15px; background: #f1f5f9; display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: var(--primary-dark); font-size: 13px; transition: background 0.2s; }
+    .log-header:hover { background: #e2e8f0; }
+    .expand-icon { font-size: 10px; transition: transform 0.3s ease; color: var(--text-muted); }
+    .expand-icon.open { transform: rotate(180deg); }
+    .log-details { display: none; padding: 10px 15px; border-top: 1px dashed var(--border-color); background: white; }
+    .log-details.show { display: block; animation: fadeIn 0.2s ease-in-out; }
+    .log-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; font-size: 13px; }
+    .log-row:last-child { border-bottom: none; padding-bottom: 0; }
+    
+    /* 修改與未修改的高亮配色 */
+    .log-changed { background: #fffbeb; border-radius: 6px; padding: 6px 8px; margin: 2px -8px; border-bottom: none !important; }
+    .log-changed b { color: #b45309; }
+    .log-changed span { color: #475569; }
+    .log-changed strong { color: #dc2626; font-weight: bold; }
+    .log-unchanged { color: #94a3b8; }
+    .log-unchanged b { color: #94a3b8; font-weight: normal; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
     /* 單行四等分完美排列 */
     .modal-footer { 
@@ -198,7 +206,7 @@
     .modal.view-mode input, .modal.view-mode select, .modal.view-mode textarea { background: transparent !important; border-color: transparent !important; color: var(--text-main) !important; box-shadow: none !important; padding: 0; font-weight: 600; appearance: none; -webkit-appearance: none; }
     .modal.view-mode select { pointer-events: none; }
     .modal.view-mode textarea { resize: none; }
-    .modal.view-mode .time-picker-group span { display: none; } /* 檢視模式隱藏波浪號，由 JS 補上文字 */
+    .modal.view-mode .time-picker-group span { display: none; }
 
     .table-container { overflow-x: auto; background: white; border-radius: 8px; border: 1px solid var(--border-color); }
     .search-table { width: 100%; border-collapse: collapse; min-width: 500px; }
@@ -297,7 +305,7 @@
                 </div>
                 <div class="grid-2">
                     <div class="form-group"><label>顧客姓名 <span style="color:red">*</span></label><input id="restName" placeholder="顧客姓名"></div>
-                    <div class="form-group"><label>聯絡電話</label><input id="restPhone" placeholder="聯絡電話"></div>
+                    <div class="form-group"><label>電話</label><input id="restPhone" placeholder="聯絡電話"></div>
                 </div>
                 <div class="grid-2">
                     <div class="form-group"><label>人數</label><input id="restPeople" type="number" value="2" min="1"></div>
@@ -311,14 +319,14 @@
             
             <div class="form-section" id="restLogSection">
                 <div class="form-section-title">修改紀錄</div>
-                <div id="restLogs" class="log-content"></div>
+                <div id="restLogs" class="log-container"></div>
             </div>
         </div>
         
         <div id="restFooterView" class="modal-footer">
-            <button class="btn btn-outline" onclick="closeModalRest()">關閉 / 返回</button>
+            <button class="btn btn-outline" onclick="closeModalRest()">關閉</button>
             <button class="btn btn-primary" onclick="toggleRestEditMode(true)">編輯</button>
-            <button id="btnCheckoutRestView" class="btn btn-danger" style="flex: 2;" onclick="checkoutRestAction()">結束休息</button>
+            <button id="btnCheckoutRestView" class="btn btn-success" style="flex: 2; background:#ef4444;" onclick="checkoutRestAction()">結束休息</button>
         </div>
 
         <div id="restFooterEdit" class="modal-footer" style="display: none;">
@@ -385,7 +393,7 @@
             
             <div class="form-section" id="bookingLogSection">
                 <div class="form-section-title">修改紀錄</div>
-                <div id="bookingLogs" class="log-content"></div>
+                <div id="bookingLogs" class="log-container"></div>
             </div>
         </div>
 
@@ -424,7 +432,7 @@ const db = getFirestore(app);
 
 let currentViewMode = 'booking'; 
 
-// ⭐ 產生精準的時間戳記 (格式：2026/04/04 下午 13:28 39秒 修改)
+// ⭐ 產生精準的時間戳記
 function getLogTimestamp() {
     const now = new Date();
     const y = now.getFullYear();
@@ -432,23 +440,74 @@ function getLogTimestamp() {
     const d = String(now.getDate()).padStart(2, '0');
     const h = now.getHours();
     const ampm = h >= 12 ? '下午' : '上午';
-    const hh = String(h).padStart(2, '0');
+    const hh = String(h > 12 ? h - 12 : (h === 0 ? 12 : h)).padStart(2, '0');
     const mm = String(now.getMinutes()).padStart(2, '0');
     const ss = String(now.getSeconds()).padStart(2, '0');
     return `${y}/${m}/${d} ${ampm} ${hh}:${mm} ${ss}秒 修改`;
 }
 
-// 渲染 Log 列表
-function renderLogs(elementId, logsArray) {
+// ⭐ UI：點擊展開 Log 內容
+window.toggleLogDetails = function(element) {
+    const details = element.nextElementSibling;
+    const icon = element.querySelector('.expand-icon');
+    details.classList.toggle('show');
+    icon.classList.toggle('open');
+}
+
+// ⭐ 渲染 Diff Log
+function renderLogs(elementId, logsArray, fieldMap) {
     const container = document.getElementById(elementId);
     if (!logsArray || logsArray.length === 0) {
         container.innerHTML = '<div class="log-empty">尚無修改紀錄</div>';
         return;
     }
-    container.innerHTML = logsArray.map(log => `<div class="log-item">✏️ ${log}</div>`).join('');
-    // 自動捲動到底部
-    setTimeout(() => { container.scrollTop = container.scrollHeight; }, 50);
+    
+    let html = '';
+    const formatVal = (v, k) => {
+        if(v === "" || v === undefined) return "-";
+        if(k === 'payStatus') return v === 'paid' ? '現場已結清' : v === 'platform' ? '平台已收' : '未付清';
+        return v;
+    };
+
+    // 從最新的紀錄開始印 (反向迴圈)
+    for (let i = logsArray.length - 1; i >= 0; i--) {
+        let log = logsArray[i];
+        if (typeof log === 'string') {
+            // 相容舊的純文字紀錄
+            html += `<div class="log-item"><div class="log-header" style="cursor:default;"><span>✏️ ${log}</span></div></div>`;
+        } else {
+            let detailsHtml = '';
+            for (let key in fieldMap) {
+                let label = fieldMap[key];
+                let isChanged = log.changes && log.changes[key] !== undefined;
+                let currentVal = log.snapshot ? log.snapshot[key] : '-';
+                
+                if (isChanged) {
+                    let oldVal = formatVal(log.changes[key].old, key);
+                    let newVal = formatVal(log.changes[key].new, key);
+                    detailsHtml += `<div class="log-row log-changed"><b>${label}</b><span>${oldVal} ➔ <strong>${newVal}</strong></span></div>`;
+                } else {
+                    detailsHtml += `<div class="log-row log-unchanged"><b>${label}</b><span>${formatVal(currentVal, key)}</span></div>`;
+                }
+            }
+            
+            html += `
+            <div class="log-item">
+                <div class="log-header" onclick="toggleLogDetails(this)">
+                    <span>✏️ ${log.timestamp}</span>
+                    <span class="expand-icon">▼</span>
+                </div>
+                <div class="log-details">${detailsHtml}</div>
+            </div>`;
+        }
+    }
+    container.innerHTML = html;
 }
+
+// 欄位對照表 (中文化)
+const bookingFieldMap = { checkinDate: "入住日", checkoutDate: "退房日", orderNumber: "訂單編號", name: "姓名", phone: "電話", people: "人數", idNumber: "身分證", birthday: "生日", country: "國籍", total: "總金額", deposit: "訂金", payStatus: "付款狀態", platform: "來源平台", request: "備註", status: "房間狀態" };
+const restFieldMap = { room: "房號", time: "休息時段", name: "姓名", phone: "電話", people: "人數", price: "實收金額", id: "身分證", note: "備註", status: "房間狀態" };
+
 
 window.switchView = function(mode) {
     currentViewMode = mode;
@@ -538,11 +597,9 @@ const container = document.getElementById('mainContainer');
 container.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; touchstartY = e.changedTouches[0].screenY; }, {passive: true});
 container.addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; touchendY = e.changedTouches[0].screenY; handleSwipe(); }, {passive: true});
 
-// ⭐ 提升阻尼感，防止誤觸
 function handleSwipe() {
     const thresholdX = 120; 
     const thresholdY = 40;  
-    
     let diffX = touchendX - touchstartX;
     let diffY = Math.abs(touchendY - touchstartY);
     
@@ -675,12 +732,13 @@ function openModal(room) {
         fields.forEach(id => { const el = document.getElementById(id); if (el) el.value = data[id] || ""; }); 
         document.getElementById("bookingCheckin").value = data.checkinDate || selectedDate;
         document.getElementById("checkoutDate").value = data.checkoutDate || "";
-        renderLogs('bookingLogs', data.updateLogs || []); // ⭐ 載入 Logs
+        renderLogs('bookingLogs', data.updateLogs || [], bookingFieldMap);
+        document.getElementById("bookingLogSection").style.display = "block";
     } else { 
         fields.forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; }); 
         document.getElementById("bookingCheckin").value = selectedDate; 
         document.getElementById("checkoutDate").value = "";
-        renderLogs('bookingLogs', []); // 清空 Logs
+        document.getElementById("bookingLogSection").style.display = "none"; // 新單不顯示 Log 區塊
     }
 }
 
@@ -698,8 +756,6 @@ window.toggleRestEditMode = function(isEdit) {
         field.disabled = !isEdit;
     });
 
-    document.getElementById('restTimeWave').style.display = isEdit ? 'inline' : 'none'; // 隱藏波浪號
-
     document.getElementById('restFooterView').style.display = isEdit ? 'none' : 'flex';
     document.getElementById('restFooterEdit').style.display = isEdit ? 'flex' : 'none';
 
@@ -715,7 +771,6 @@ window.cancelRestEdit = function() {
     else openRestModal(currentRestIndex, currentRoom); 
 }
 
-// 統一用這個函數開啟休息客彈窗
 window.openRestModal = function(index = -1, prefillRoom = "") {
     const selectedDate = document.getElementById("selectedDate").value;
     if (!selectedDate) { alert("請先選擇日期"); return; }
@@ -727,7 +782,6 @@ window.openRestModal = function(index = -1, prefillRoom = "") {
     const roomSelect = document.getElementById("restRoom");
 
     if (index >= 0) {
-        // 檢視已有資料
         const data = restData[selectedDate][index];
         roomSelect.value = data.room;
         document.getElementById("restName").value = data.name || "";
@@ -737,16 +791,16 @@ window.openRestModal = function(index = -1, prefillRoom = "") {
         document.getElementById("restID").value = data.id || "";
         document.getElementById("restNote").value = data.note || "";
         
-        // 解析時間 (例: 14:00~16:00)
+        // 解析時間
         let timeParts = (data.time || "").split("~");
         document.getElementById("restStartTime").value = timeParts[0] || "";
         document.getElementById("restEndTime").value = timeParts[1] || "";
 
         document.getElementById("restModalTitle").innerText = `房號 ${data.room} - 休息單`;
-        renderLogs('restLogs', data.updateLogs || []);
+        renderLogs('restLogs', data.updateLogs || [], restFieldMap);
+        document.getElementById("restLogSection").style.display = "block";
         toggleRestEditMode(false); 
     } else {
-        // 新增模式
         if(prefillRoom) roomSelect.value = prefillRoom;
         else roomSelect.value = "";
         
@@ -760,7 +814,7 @@ window.openRestModal = function(index = -1, prefillRoom = "") {
         document.getElementById("restEndTime").value = "";
         
         document.getElementById("restModalTitle").innerText = "🕒 建立休息單";
-        renderLogs('restLogs', []);
+        document.getElementById("restLogSection").style.display = "none";
         toggleRestEditMode(true);
     }
 
@@ -769,10 +823,7 @@ window.openRestModal = function(index = -1, prefillRoom = "") {
     document.body.classList.add("no-scroll");
 }
 
-window.showRestForm = function(prefillRoom = "") {
-    openRestModal(-1, prefillRoom);
-}
-
+window.showRestForm = function(prefillRoom = "") { openRestModal(-1, prefillRoom); }
 window.closeModalRest = function() { document.getElementById("modalOverlayRest").style.display = "none"; document.getElementById("restFormModal").style.display = "none"; document.body.classList.remove("no-scroll"); }
 
 window.save = async function(){
@@ -792,13 +843,6 @@ window.save = async function(){
         const saveBtn = document.getElementById("btnSaveBooking");
         saveBtn.innerHTML = "處理中..."; saveBtn.disabled = true;
 
-        const selectedDate = document.getElementById("selectedDate").value;
-        const existingData = bookings[selectedDate]?.[currentRoom];
-
-        // ⭐ 準備 Log 紀錄
-        let logs = existingData?.updateLogs || [];
-        logs.push(getLogTimestamp());
-
         const orderData = {
             orderNumber: document.getElementById("orderNumber").value.trim() || "",
             name: document.getElementById("name").value.trim() || "", 
@@ -816,11 +860,31 @@ window.save = async function(){
             payStatus: document.getElementById("payStatus").value || "",
             checkinDate: checkin, 
             checkoutDate: checkout,
-            updateLogs: logs, // 儲存 Logs
             everCheckedIn: false 
         };
 
-        if (existingData && existingData.checkinDate && existingData.checkoutDate) {
+        const selectedDate = document.getElementById("selectedDate").value;
+        const existingData = bookings[selectedDate]?.[currentRoom] || {};
+        
+        // ⭐ 執行 Diff 比對邏輯
+        let changes = {};
+        let hasChanges = false;
+        Object.keys(bookingFieldMap).forEach(key => {
+            let oldVal = String(existingData[key] || "");
+            let newVal = String(orderData[key] || "");
+            if (oldVal !== newVal && Object.keys(existingData).length > 0) { // 只有舊資料存在才算修改
+                changes[key] = { old: oldVal, new: newVal };
+                hasChanges = true;
+            }
+        });
+
+        let logs = existingData.updateLogs || [];
+        if (hasChanges) {
+            logs.push({ timestamp: getLogTimestamp(), changes: changes, snapshot: { ...orderData } });
+        }
+        orderData.updateLogs = logs;
+
+        if (existingData.checkinDate && existingData.checkoutDate) {
             orderData.status = existingData.status;
             orderData.everCheckedIn = existingData.everCheckedIn || false;
 
@@ -846,11 +910,7 @@ window.save = async function(){
             const dateStr = getDateString(writeCurrent);
             if(!bookings[dateStr]) bookings[dateStr] = {};
             
-            bookings[dateStr][currentRoom] = {
-                ...orderData,
-                status: dayIndex === 0 ? (orderData.status || "booked") : "stay"
-            };
-            
+            bookings[dateStr][currentRoom] = { ...orderData, status: dayIndex === 0 ? (orderData.status || "booked") : "stay" };
             await setDoc(doc(db, "bookings", dateStr), bookings[dateStr]);
             writeCurrent.setDate(writeCurrent.getDate() + 1); 
             dayIndex++;
@@ -859,6 +919,7 @@ window.save = async function(){
         saveBtn.innerHTML = "💾 儲存"; saveBtn.disabled = false;
         updateUI(); closeModal();
     } catch(err) {
+        console.error("儲存發生錯誤:", err);
         alert("儲存失敗: " + err.message);
         document.getElementById("btnSaveBooking").innerHTML = "💾 儲存"; 
         document.getElementById("btnSaveBooking").disabled = false;
@@ -868,6 +929,15 @@ window.save = async function(){
 window.setStatus = async function(status){
     const date = document.getElementById("selectedDate").value; const data = bookings[date]?.[currentRoom];
     if(!data) return;
+    
+    // ⭐ 加入狀態變更的 Log
+    let logs = data.updateLogs || [];
+    logs.push({
+        timestamp: getLogTimestamp(),
+        changes: { status: { old: data.status, new: status } },
+        snapshot: { ...data, status: status }
+    });
+
     let [cy, cm, cd] = data.checkinDate.split("-"); let current = new Date(cy, cm-1, cd);
     let [ey, em, ed] = data.checkoutDate.split("-"); const checkout = new Date(ey, em-1, ed);
 
@@ -875,6 +945,7 @@ window.setStatus = async function(status){
         const dStr = getDateString(current);
         if(bookings[dStr]?.[currentRoom]){
             bookings[dStr][currentRoom].status = status;
+            bookings[dStr][currentRoom].updateLogs = logs;
             if(status === "checkedin" || status === "checkedout") bookings[dStr][currentRoom].everCheckedIn = true;
             await setDoc(doc(db, "bookings", dStr), bookings[dStr]);
         }
@@ -919,7 +990,6 @@ function updateUI() {
                 const nights = Math.round((checkout - checkin) / (1000*60*60*24));
                 
                 card.classList.add(`status-${bookingData.status || "booked"}`);
-                
                 let statusName = bookingData.status === 'checkedin' ? '入住中' : (bookingData.status === 'checkedout' ? '已退房' : (bookingData.status === 'stay' ? '續住中' : '已預訂'));
                 let badgeClass = bookingData.status === 'checkedin' ? 'badge-checkedin' : (bookingData.status === 'checkedout' ? 'badge-checkedout' : (bookingData.status === 'stay' ? 'badge-stay' : 'badge-booked'));
                 
@@ -933,8 +1003,8 @@ function updateUI() {
                 html += `<div><b>旅客國籍</b><span>${bookingData.country || '台灣'}</span></div>`;
                 html += `<div><b>訂單總額</b><span>$${bookingData.total || 0}</span></div>`;
                 html += `<div><b>應收尾款</b><span style="color:#ef4444; font-weight:bold;">$${bookingData.balance || 0}</span></div>`;
-                if (bookingData.orderNumber) html += `<div><b>訂單編號</b><span>${bookingData.orderNumber}</span></div>`;
-                if (bookingData.idNumber) html += `<div><b>證件號碼</b><span>${bookingData.idNumber}</span></div>`;
+                if (bookingData.orderNumber) html += `<div class="full-width"><b>訂單編號</b><span>${bookingData.orderNumber}</span></div>`;
+                if (bookingData.idNumber) html += `<div class="full-width"><b>證件號碼</b><span>${bookingData.idNumber}</span></div>`;
                 if (bookingData.request) html += `<div class="full-width highlight-note"><b>備註需求</b><span>${bookingData.request}</span></div>`;
                 html += `</div>`;
 
@@ -965,14 +1035,13 @@ function updateUI() {
                 html += `<div><b>休息人數</b><span>${activeRest.people || '-'}人</span></div>`;
                 html += `<div><b>休息時段</b><span>${activeRest.time || '-'}</span></div>`;
                 html += `<div><b>實收金額</b><span>$${activeRest.price || 0}</span></div>`;
-                if (activeRest.id) html += `<div><b>證件號碼</b><span>${activeRest.id}</span></div>`;
+                if (activeRest.id) html += `<div class="full-width"><b>證件號碼</b><span>${activeRest.id}</span></div>`;
                 if (activeRest.note) html += `<div class="full-width highlight-note"><b>備註</b><span>${activeRest.note}</span></div>`;
                 html += `</div>`;
                 
-                // ⭐ 點擊直接開啟休息客檢視模式，而不是直接要求結束
                 card.onclick = () => {
                     const idx = currentRestData.findIndex(r => r === activeRest);
-                    openRestModal(idx, room);
+                    openRestModal(idx, room); // ⭐ 改為開啟檢視模式
                 };
             } else {
                 card.classList.add(`status-empty`);
@@ -987,7 +1056,6 @@ function updateUI() {
     updateStats();
 }
 
-// ⭐ 休息客儲存邏輯升級
 window.addRest = async function(){
     const date = getCurrentDate(); if(!date){ alert("請選日期"); return; }
     const room = document.getElementById("restRoom").value;
@@ -997,38 +1065,42 @@ window.addRest = async function(){
     const btn = document.getElementById("btnSaveRest");
     btn.innerText = "處理中..."; btn.disabled = true;
 
-    // 合併時間
     let st = document.getElementById("restStartTime").value;
     let et = document.getElementById("restEndTime").value;
     let combinedTime = (st || et) ? `${st}~${et}` : "";
 
-    // 取得舊的 Log 或是建立新的
-    let existingLogs = [];
-    if (currentRestIndex >= 0 && restData[date][currentRestIndex]) {
-        existingLogs = restData[date][currentRestIndex].updateLogs || [];
-    }
-    existingLogs.push(getLogTimestamp());
-
     let restObj = { 
-        room: room, 
-        name: name, 
-        phone: document.getElementById("restPhone").value, 
-        people: Number(document.getElementById("restPeople").value) || 2, 
-        time: combinedTime, 
-        price: Number(document.getElementById("restPrice").value) || 0, 
-        id: document.getElementById("restID").value, 
-        note: document.getElementById("restNote").value, 
-        status: (currentRestIndex >= 0 && restData[date][currentRestIndex]) ? restData[date][currentRestIndex].status : "resting",
-        updateLogs: existingLogs
+        room: room, name: name, phone: document.getElementById("restPhone").value, 
+        people: String(Number(document.getElementById("restPeople").value) || 2), 
+        time: combinedTime, price: String(Number(document.getElementById("restPrice").value) || 0), 
+        id: document.getElementById("restID").value, note: document.getElementById("restNote").value, 
+        status: (currentRestIndex >= 0 && restData[date][currentRestIndex]) ? restData[date][currentRestIndex].status : "resting"
     };
-    
+
     if(!restData[date]){ restData[date]=[]; }
     
-    if (currentRestIndex >= 0) {
-        restData[date][currentRestIndex] = restObj; // 更新
-    } else {
-        restData[date].push(restObj); // 新增
+    let existingData = currentRestIndex >= 0 ? restData[date][currentRestIndex] : {};
+    
+    // ⭐ 執行 Diff 比對邏輯
+    let changes = {};
+    let hasChanges = false;
+    Object.keys(restFieldMap).forEach(key => {
+        let oldVal = String(existingData[key] || "");
+        let newVal = String(restObj[key] || "");
+        if (oldVal !== newVal && Object.keys(existingData).length > 0) { 
+            changes[key] = { old: oldVal, new: newVal };
+            hasChanges = true;
+        }
+    });
+
+    let logs = existingData.updateLogs || [];
+    if (hasChanges) {
+        logs.push({ timestamp: getLogTimestamp(), changes: changes, snapshot: { ...restObj } });
     }
+    restObj.updateLogs = logs;
+    
+    if (currentRestIndex >= 0) { restData[date][currentRestIndex] = restObj; } 
+    else { restData[date].push(restObj); }
     
     try { 
         await setDoc(doc(db, "restData", date), { data: restData[date] }); 
@@ -1036,7 +1108,6 @@ window.addRest = async function(){
     } catch(e) { alert("儲存失敗"); } finally { btn.innerText = "確認建立"; btn.disabled = false; }
 }
 
-// 供彈窗檢視模式直接呼叫結束休息
 window.checkoutRestAction = async function() {
     if (currentRestIndex >= 0) {
         const date = getCurrentDate();
@@ -1056,7 +1127,6 @@ window.checkoutRestAction = async function() {
     }
 }
 
-// 刪除休息客資料
 window.deleteRestAction = async function() {
     if (currentRestIndex >= 0 && confirm("確定要刪除這筆休息資料嗎？")) {
         const date = getCurrentDate();
@@ -1065,14 +1135,12 @@ window.deleteRestAction = async function() {
         updateUI(); closeModalRest();
     }
 }
-
 window.saveRestAction = window.addRest;
 
 async function loadData() {
     const date = document.getElementById("selectedDate").value; 
     try { const docSnap = await getDoc(doc(db, "bookings", date)); bookings[date] = docSnap.exists() ? docSnap.data() : {}; } catch(e) { bookings[date] = {}; }
 }
-
 async function loadRestData() {
     const date = document.getElementById("selectedDate").value;
     try { const docSnap = await getDoc(doc(db, "restData", date)); restData[date] = docSnap.exists() ? docSnap.data().data || [] : []; } catch(e) { restData[date] = []; }
