@@ -10,7 +10,6 @@
 
 <style>
     :root {
-        /* 深海軍藍與香檳金 配色 */
         --primary-dark: #163450;      
         --primary-gold: #c1a13a;      
         
@@ -114,36 +113,11 @@
     .rest-overlay-alert { margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.7); border: 1px solid #bbf7d0; border-radius: 8px; font-size: 12px; color: #166534; display: flex; flex-direction: column; gap: 4px; border-left: 4px solid #22c55e; }
     .rest-overlay-alert strong { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #15803d; margin-bottom: 2px;}
 
-    /* Sticky 完美懸浮跟隨與煞車 */
-    .sticky-nav-container {
-        position: sticky;
-        bottom: 20px;
-        display: flex;
-        justify-content: space-between;
-        padding: 0 15px;
-        pointer-events: none; 
-        z-index: 90;
-        width: 100%;
-        max-width: 1100px;
-        margin: 10px auto 35px auto; 
-    }
-
-    .date-nav-btn {
-        pointer-events: auto; 
-        background: var(--primary-dark); color: var(--primary-gold); border: 1px solid rgba(255,255,255,0.1);
-        padding: 10px 18px; border-radius: 30px; font-weight: 600; box-shadow: 0 6px 12px rgba(0,0,0,0.25);
-        cursor: pointer; transition: all 0.2s; font-size: 13px; backdrop-filter: blur(5px);
-    }
+    .sticky-nav-container { position: sticky; bottom: 20px; display: flex; justify-content: space-between; padding: 0 15px; pointer-events: none; z-index: 90; width: 100%; max-width: 1100px; margin: 10px auto 35px auto; }
+    .date-nav-btn { pointer-events: auto; background: var(--primary-dark); color: var(--primary-gold); border: 1px solid rgba(255,255,255,0.1); padding: 10px 18px; border-radius: 30px; font-weight: 600; box-shadow: 0 6px 12px rgba(0,0,0,0.25); cursor: pointer; transition: all 0.2s; font-size: 13px; backdrop-filter: blur(5px); }
     .date-nav-btn:active { transform: scale(0.95); }
 
-    .tech-support-banner {
-        display: flex; justify-content: center; align-items: center; text-align: center;
-        padding: 18px 15px; font-size: 12px; font-weight: 600; color: var(--text-muted);
-        background-color: #e2e8f0; margin-top: auto; letter-spacing: 0.5px;
-        box-shadow: inset 0 2px 5px rgba(0,0,0,0.03);
-        padding-bottom: calc(18px + env(safe-area-inset-bottom));
-        width: 100%; z-index: 80;
-    }
+    .tech-support-banner { display: flex; justify-content: center; align-items: center; text-align: center; padding: 18px 15px; font-size: 12px; font-weight: 600; color: var(--text-muted); background-color: #e2e8f0; margin-top: auto; letter-spacing: 0.5px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.03); padding-bottom: calc(18px + env(safe-area-inset-bottom)); width: 100%; z-index: 80; }
 
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(22, 52, 80, 0.6); backdrop-filter: blur(4px); z-index: 999; }
     .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 94%; max-width: 600px; background: var(--bg-light); border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); z-index: 1000; max-height: 88vh; overflow: hidden; flex-direction: column; }
@@ -159,12 +133,10 @@
     .modal input:focus, .modal select:focus, .modal textarea:focus { outline: none; border-color: var(--primary-gold); box-shadow: 0 0 0 2px rgba(193, 161, 58, 0.2); }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     
-    /* ⭐ 時間選擇器專用排版 */
     .time-picker-group { display: flex; align-items: center; gap: 8px; }
     .time-picker-group input { flex: 1; text-align: center; }
     .time-picker-group span { font-weight: bold; color: var(--text-muted); }
 
-    /* ⭐ 修改 Log 紀錄可展開的 UI 設計 */
     .log-container { display: flex; flex-direction: column; gap: 8px; }
     .log-empty { text-align: center; color: #94a3b8; font-style: italic; font-size: 13px; padding: 10px; }
     .log-item { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; }
@@ -177,7 +149,6 @@
     .log-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; font-size: 13px; }
     .log-row:last-child { border-bottom: none; padding-bottom: 0; }
     
-    /* 修改與未修改的高亮配色 */
     .log-changed { background: #fffbeb; border-radius: 6px; padding: 6px 8px; margin: 2px -8px; border-bottom: none !important; }
     .log-changed b { color: #b45309; }
     .log-changed span { color: #475569; }
@@ -187,26 +158,21 @@
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* 單行四等分完美排列 */
-    .modal-footer { 
-        padding: 12px; background: white; border-top: 1px solid var(--border-color); 
-        display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: space-between;
-    }
-    
-    .btn { 
-        padding: 10px 0; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; font-size: 0.85rem; flex: 1; text-align: center; display: flex; justify-content: center; align-items: center; white-space: nowrap;
-    }
+    .modal-footer { padding: 12px; background: white; border-top: 1px solid var(--border-color); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: space-between; }
+    .btn { padding: 10px 0; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; font-size: 0.85rem; flex: 1; text-align: center; display: flex; justify-content: center; align-items: center; white-space: nowrap; }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-primary { background: var(--primary-dark); color: var(--primary-gold); }
     .btn-success { background: #10b981; color: white; }
     .btn-outline { background: white; border: 1px solid var(--border-color); color: var(--text-main); }
     .btn-danger { background: #ef4444; color: white; }
 
-    /* 唯讀檢視模式 CSS */
     .modal.view-mode input, .modal.view-mode select, .modal.view-mode textarea { background: transparent !important; border-color: transparent !important; color: var(--text-main) !important; box-shadow: none !important; padding: 0; font-weight: 600; appearance: none; -webkit-appearance: none; }
     .modal.view-mode select { pointer-events: none; }
     .modal.view-mode textarea { resize: none; }
     .modal.view-mode .time-picker-group span { display: none; }
+
+    /* ⭐ 鎖定選單選項 (灰色顯示) */
+    select option:disabled { color: #94a3b8; background: #f1f5f9; font-style: italic; }
 
     .table-container { overflow-x: auto; background: white; border-radius: 8px; border: 1px solid var(--border-color); }
     .search-table { width: 100%; border-collapse: collapse; min-width: 500px; }
@@ -326,7 +292,7 @@
         <div id="restFooterView" class="modal-footer">
             <button class="btn btn-outline" onclick="closeModalRest()">關閉</button>
             <button class="btn btn-primary" onclick="toggleRestEditMode(true)">編輯</button>
-            <button id="btnCheckoutRestView" class="btn btn-success" style="flex: 2; background:#ef4444;" onclick="checkoutRestAction()">結束休息</button>
+            <button id="btnCheckoutRestView" class="btn btn-danger" style="flex: 2; background:#ef4444;" onclick="checkoutRestAction()">結束休息</button>
         </div>
 
         <div id="restFooterEdit" class="modal-footer" style="display: none;">
@@ -432,7 +398,6 @@ const db = getFirestore(app);
 
 let currentViewMode = 'booking'; 
 
-// ⭐ 產生精準的時間戳記
 function getLogTimestamp() {
     const now = new Date();
     const y = now.getFullYear();
@@ -446,7 +411,6 @@ function getLogTimestamp() {
     return `${y}/${m}/${d} ${ampm} ${hh}:${mm} ${ss}秒 修改`;
 }
 
-// ⭐ UI：點擊展開 Log 內容
 window.toggleLogDetails = function(element) {
     const details = element.nextElementSibling;
     const icon = element.querySelector('.expand-icon');
@@ -454,7 +418,6 @@ window.toggleLogDetails = function(element) {
     icon.classList.toggle('open');
 }
 
-// ⭐ 渲染 Diff Log
 function renderLogs(elementId, logsArray, fieldMap) {
     const container = document.getElementById(elementId);
     if (!logsArray || logsArray.length === 0) {
@@ -466,14 +429,13 @@ function renderLogs(elementId, logsArray, fieldMap) {
     const formatVal = (v, k) => {
         if(v === "" || v === undefined) return "-";
         if(k === 'payStatus') return v === 'paid' ? '現場已結清' : v === 'platform' ? '平台已收' : '未付清';
+        if(k === 'status') return v === 'checkedin' ? '入住中' : v === 'checkedout' ? '已退房' : v === 'stay' ? '續住' : v === 'booked' ? '已預訂' : v === 'resting' ? '休息中' : v === 'checkout' ? '結束休息' : v;
         return v;
     };
 
-    // 從最新的紀錄開始印 (反向迴圈)
     for (let i = logsArray.length - 1; i >= 0; i--) {
         let log = logsArray[i];
         if (typeof log === 'string') {
-            // 相容舊的純文字紀錄
             html += `<div class="log-item"><div class="log-header" style="cursor:default;"><span>✏️ ${log}</span></div></div>`;
         } else {
             let detailsHtml = '';
@@ -504,10 +466,8 @@ function renderLogs(elementId, logsArray, fieldMap) {
     container.innerHTML = html;
 }
 
-// 欄位對照表 (中文化)
 const bookingFieldMap = { checkinDate: "入住日", checkoutDate: "退房日", orderNumber: "訂單編號", name: "姓名", phone: "電話", people: "人數", idNumber: "身分證", birthday: "生日", country: "國籍", total: "總金額", deposit: "訂金", payStatus: "付款狀態", platform: "來源平台", request: "備註", status: "房間狀態" };
 const restFieldMap = { room: "房號", time: "休息時段", name: "姓名", phone: "電話", people: "人數", price: "實收金額", id: "身分證", note: "備註", status: "房間狀態" };
-
 
 window.switchView = function(mode) {
     currentViewMode = mode;
@@ -538,7 +498,7 @@ const rooms = ["201","202","203","301","302","303","401","402","403"];
 let bookings = {};
 let currentRoom = "";
 let restData = {};
-let currentRestIndex = -1; // 追蹤目前編輯的休息客 Index
+let currentRestIndex = -1; 
 
 window.onload = async () => {
     const grid = document.getElementById("roomGrid");
@@ -713,7 +673,17 @@ function openModal(room) {
 
     const roomSelect = document.getElementById("bookingRoom");
     roomSelect.innerHTML = '<option value="">請選擇</option>';
-    rooms.forEach(r => { const op = document.createElement("option"); op.value = r; op.textContent = r; roomSelect.appendChild(op); });
+    rooms.forEach(r => { 
+        const op = document.createElement("option"); 
+        op.value = r; 
+        op.textContent = r; 
+        // ⭐ 鎖定已被佔用的房號
+        if (currentRoom === "" && bookings[selectedDate]?.[r] && bookings[selectedDate]?.[r].status !== 'checkedout') {
+            op.disabled = true;
+            op.textContent = r + " (已佔用)";
+        }
+        roomSelect.appendChild(op); 
+    });
 
     if (currentRoom) {
         roomSelect.value = currentRoom;
@@ -738,13 +708,12 @@ function openModal(room) {
         fields.forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; }); 
         document.getElementById("bookingCheckin").value = selectedDate; 
         document.getElementById("checkoutDate").value = "";
-        document.getElementById("bookingLogSection").style.display = "none"; // 新單不顯示 Log 區塊
+        document.getElementById("bookingLogSection").style.display = "none"; 
     }
 }
 
 window.closeModal = function() { document.getElementById("modalOverlay").style.display = "none"; document.getElementById("formModal").style.display = "none"; document.body.classList.remove("no-scroll"); }
 
-// ⭐ 休息客表單：加入檢視/編輯模式與 Index 控制
 window.toggleRestEditMode = function(isEdit) {
     const modal = document.getElementById('restFormModal');
     if (isEdit) modal.classList.remove('view-mode');
@@ -791,7 +760,6 @@ window.openRestModal = function(index = -1, prefillRoom = "") {
         document.getElementById("restID").value = data.id || "";
         document.getElementById("restNote").value = data.note || "";
         
-        // 解析時間
         let timeParts = (data.time || "").split("~");
         document.getElementById("restStartTime").value = timeParts[0] || "";
         document.getElementById("restEndTime").value = timeParts[1] || "";
@@ -866,13 +834,12 @@ window.save = async function(){
         const selectedDate = document.getElementById("selectedDate").value;
         const existingData = bookings[selectedDate]?.[currentRoom] || {};
         
-        // ⭐ 執行 Diff 比對邏輯
         let changes = {};
         let hasChanges = false;
         Object.keys(bookingFieldMap).forEach(key => {
             let oldVal = String(existingData[key] || "");
             let newVal = String(orderData[key] || "");
-            if (oldVal !== newVal && Object.keys(existingData).length > 0) { // 只有舊資料存在才算修改
+            if (oldVal !== newVal && Object.keys(existingData).length > 0) { 
                 changes[key] = { old: oldVal, new: newVal };
                 hasChanges = true;
             }
@@ -919,7 +886,6 @@ window.save = async function(){
         saveBtn.innerHTML = "💾 儲存"; saveBtn.disabled = false;
         updateUI(); closeModal();
     } catch(err) {
-        console.error("儲存發生錯誤:", err);
         alert("儲存失敗: " + err.message);
         document.getElementById("btnSaveBooking").innerHTML = "💾 儲存"; 
         document.getElementById("btnSaveBooking").disabled = false;
@@ -927,43 +893,58 @@ window.save = async function(){
 }
 
 window.setStatus = async function(status){
-    const date = document.getElementById("selectedDate").value; const data = bookings[date]?.[currentRoom];
-    if(!data) return;
-    
-    // ⭐ 加入狀態變更的 Log
-    let logs = data.updateLogs || [];
-    logs.push({
-        timestamp: getLogTimestamp(),
-        changes: { status: { old: data.status, new: status } },
-        snapshot: { ...data, status: status }
-    });
+    try {
+        const date = document.getElementById("selectedDate").value; const data = bookings[date]?.[currentRoom];
+        if(!data) return;
+        
+        let logs = data.updateLogs || [];
+        logs.push({
+            timestamp: getLogTimestamp(),
+            changes: { status: { old: data.status, new: status } },
+            snapshot: { ...data, status: status }
+        });
 
-    let [cy, cm, cd] = data.checkinDate.split("-"); let current = new Date(cy, cm-1, cd);
-    let [ey, em, ed] = data.checkoutDate.split("-"); const checkout = new Date(ey, em-1, ed);
+        let [cy, cm, cd] = (data.checkinDate || date).split("-"); let current = new Date(cy, cm-1, cd);
+        let [ey, em, ed] = (data.checkoutDate || date).split("-"); const checkout = new Date(ey, em-1, ed);
 
-    while(current < checkout){
-        const dStr = getDateString(current);
-        if(bookings[dStr]?.[currentRoom]){
-            bookings[dStr][currentRoom].status = status;
-            bookings[dStr][currentRoom].updateLogs = logs;
-            if(status === "checkedin" || status === "checkedout") bookings[dStr][currentRoom].everCheckedIn = true;
-            await setDoc(doc(db, "bookings", dStr), bookings[dStr]);
+        if (current < checkout) {
+            while(current < checkout){
+                const dStr = getDateString(current);
+                if(bookings[dStr]?.[currentRoom]){
+                    bookings[dStr][currentRoom].status = status;
+                    bookings[dStr][currentRoom].updateLogs = logs;
+                    if(status === "checkedin" || status === "checkedout") bookings[dStr][currentRoom].everCheckedIn = true;
+                    await setDoc(doc(db, "bookings", dStr), bookings[dStr]);
+                }
+                current.setDate(current.getDate() + 1);
+            }
+        } else {
+            bookings[date][currentRoom].status = status;
+            bookings[date][currentRoom].updateLogs = logs;
+            if(status === "checkedin" || status === "checkedout") bookings[date][currentRoom].everCheckedIn = true;
+            await setDoc(doc(db, "bookings", date), bookings[date]);
         }
-        current.setDate(current.getDate() + 1);
+        updateUI(); closeModal();
+    } catch (e) {
+        alert("變更狀態失敗，請檢查資料是否完整");
     }
-    updateUI(); closeModal();
 }
 
 window.deleteBooking = async function(){
     const date = document.getElementById("selectedDate").value; const data = bookings[date]?.[currentRoom];
     if(!data) return;
     if(confirm("確定取消訂單？ (連續日期的訂單將連帶刪除)")){
-        let [cy, cm, cd] = data.checkinDate.split("-"); let current = new Date(cy, cm-1, cd);
-        let [ey, em, ed] = data.checkoutDate.split("-"); const end = new Date(ey, em-1, ed);
-        while(current < end){
-            const dStr = getDateString(current);
-            if(bookings[dStr]){ delete bookings[dStr][currentRoom]; await setDoc(doc(db, "bookings", dStr), bookings[dStr]); }
-            current.setDate(current.getDate() + 1);
+        if (data.checkinDate && data.checkoutDate) {
+            let [cy, cm, cd] = data.checkinDate.split("-"); let current = new Date(cy, cm-1, cd);
+            let [ey, em, ed] = data.checkoutDate.split("-"); const end = new Date(ey, em-1, ed);
+            while(current < end){
+                const dStr = getDateString(current);
+                if(bookings[dStr]){ delete bookings[dStr][currentRoom]; await setDoc(doc(db, "bookings", dStr), bookings[dStr]); }
+                current.setDate(current.getDate() + 1);
+            }
+        } else {
+            delete bookings[date][currentRoom]; 
+            await setDoc(doc(db, "bookings", date), bookings[date]);
         }
         updateUI(); closeModal();
     }
@@ -985,9 +966,9 @@ function updateUI() {
 
         if (currentViewMode === 'booking') {
             if (bookingData) {
-                let [cy, cm, cd] = bookingData.checkinDate.split("-"); let checkin = new Date(cy, cm-1, cd);
-                let [ey, em, ed] = bookingData.checkoutDate.split("-"); let checkout = new Date(ey, em-1, ed);
-                const nights = Math.round((checkout - checkin) / (1000*60*60*24));
+                let checkin = new Date(bookingData.checkinDate || date);
+                let checkout = new Date(bookingData.checkoutDate || date);
+                const nights = Math.max(1, Math.round((checkout - checkin) / (1000*60*60*24)));
                 
                 card.classList.add(`status-${bookingData.status || "booked"}`);
                 let statusName = bookingData.status === 'checkedin' ? '入住中' : (bookingData.status === 'checkedout' ? '已退房' : (bookingData.status === 'stay' ? '續住中' : '已預訂'));
@@ -1041,7 +1022,7 @@ function updateUI() {
                 
                 card.onclick = () => {
                     const idx = currentRestData.findIndex(r => r === activeRest);
-                    openRestModal(idx, room); // ⭐ 改為開啟檢視模式
+                    openRestModal(idx, room); 
                 };
             } else {
                 card.classList.add(`status-empty`);
@@ -1069,19 +1050,16 @@ window.addRest = async function(){
     let et = document.getElementById("restEndTime").value;
     let combinedTime = (st || et) ? `${st}~${et}` : "";
 
+    let existingData = currentRestIndex >= 0 ? restData[date][currentRestIndex] : {};
+    
     let restObj = { 
         room: room, name: name, phone: document.getElementById("restPhone").value, 
         people: String(Number(document.getElementById("restPeople").value) || 2), 
         time: combinedTime, price: String(Number(document.getElementById("restPrice").value) || 0), 
         id: document.getElementById("restID").value, note: document.getElementById("restNote").value, 
-        status: (currentRestIndex >= 0 && restData[date][currentRestIndex]) ? restData[date][currentRestIndex].status : "resting"
+        status: (currentRestIndex >= 0 && existingData) ? existingData.status : "resting"
     };
 
-    if(!restData[date]){ restData[date]=[]; }
-    
-    let existingData = currentRestIndex >= 0 ? restData[date][currentRestIndex] : {};
-    
-    // ⭐ 執行 Diff 比對邏輯
     let changes = {};
     let hasChanges = false;
     Object.keys(restFieldMap).forEach(key => {
@@ -1098,6 +1076,8 @@ window.addRest = async function(){
         logs.push({ timestamp: getLogTimestamp(), changes: changes, snapshot: { ...restObj } });
     }
     restObj.updateLogs = logs;
+
+    if(!restData[date]){ restData[date]=[]; }
     
     if (currentRestIndex >= 0) { restData[date][currentRestIndex] = restObj; } 
     else { restData[date].push(restObj); }
@@ -1111,15 +1091,21 @@ window.addRest = async function(){
 window.checkoutRestAction = async function() {
     if (currentRestIndex >= 0) {
         const date = getCurrentDate();
+        let logs = restData[date][currentRestIndex].updateLogs || [];
+        
         if(restData[date][currentRestIndex].status === "resting") {
             if (confirm("確定要「結束休息」嗎？")) {
+                logs.push({ timestamp: getLogTimestamp(), changes: { status: { old: "resting", new: "checkout" } }, snapshot: { ...restData[date][currentRestIndex], status: "checkout" } });
                 restData[date][currentRestIndex].status = "checkout";
+                restData[date][currentRestIndex].updateLogs = logs;
                 await setDoc(doc(db, "restData", date), { data: restData[date] }); 
                 updateUI(); closeModalRest();
             }
         } else {
             if (confirm("此房已結束。\n是否要「恢復為休息中」(誤觸恢復)？")) {
+                logs.push({ timestamp: getLogTimestamp(), changes: { status: { old: "checkout", new: "resting" } }, snapshot: { ...restData[date][currentRestIndex], status: "resting" } });
                 restData[date][currentRestIndex].status = "resting";
+                restData[date][currentRestIndex].updateLogs = logs;
                 await setDoc(doc(db, "restData", date), { data: restData[date] }); 
                 updateUI(); closeModalRest();
             }
@@ -1152,16 +1138,19 @@ function updateStats() {
 
     let dailyTotalPeople = 0, currentInHousePeople = 0;  
     if (bookings[date]) { Object.values(bookings[date]).forEach(data => { let p = Number(data.people) || 0; if (data.everCheckedIn) dailyTotalPeople += p; if (data.status === 'checkedin') currentInHousePeople += p; }); }
-    if (restData[date]) { restData[date].forEach(rest => { let p = Number(rest.people) || 0; dailyTotalPeople += p; if (rest.status === 'resting') currentInHousePeople += p; }); }
-    statsBox.innerHTML = `<div>當日人流 <b>${dailyTotalPeople}</b> ｜ 目前在店 <b>${currentInHousePeople}</b></div>`;
+    statsBox.innerHTML = `<div>當日住宿流 <b>${dailyTotalPeople}</b> ｜ 住宿在店 <b>${currentInHousePeople}</b></div>`;
 }
 
 function updateRestRoomOptions(prefillRoom = "") {
     const date = document.getElementById("selectedDate").value; const restRoomSelect = document.getElementById("restRoom"); const currentBookings = bookings[date] || {};
     restRoomSelect.innerHTML = '<option value="">選擇房號</option>';
     rooms.forEach(room => { 
-        if (!currentBookings[room] || currentBookings[room].status !== 'checkedin' || room === prefillRoom) { 
-            const op = document.createElement("option"); op.value = room; op.textContent = room; restRoomSelect.appendChild(op); 
+        if (!currentBookings[room] || currentBookings[room].status !== 'checkedin' || currentBookings[room].status === 'checkedout' || room === prefillRoom) { 
+            const op = document.createElement("option"); op.value = room; op.textContent = room; 
+            if (currentRoom === "" && currentBookings[room] && currentBookings[room].status !== 'checkedout') {
+                op.disabled = true; op.textContent = room + " (已佔用)";
+            }
+            restRoomSelect.appendChild(op); 
         } 
     });
 }
