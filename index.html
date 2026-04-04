@@ -28,7 +28,6 @@
 
     * { box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
 
-    /* 確保 Body 滿版且隱藏 X 軸，不影響 Sticky 定位 */
     body { margin: 0; background-color: var(--bg-light); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; touch-action: pan-y; padding-bottom: 90px; }
 
     .header { background-color: var(--primary-dark); color: white; padding: 12px 20px; display: flex; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
@@ -49,7 +48,6 @@
 
     .invisible-date-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: none; padding: 0; margin: 0; z-index: 10; }
 
-    /* 手機版日曆強制置中 */
     @media (max-width: 768px) {
         .flatpickr-calendar {
             position: fixed !important; top: 50% !important; left: 50% !important;
@@ -73,8 +71,11 @@
     .action-btn { background: var(--primary-dark); color: var(--primary-gold); border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; flex: 1; text-align: center; display: flex; justify-content: center; align-items: center; }
     .action-btn.outline { background: white; color: var(--primary-dark); border: 1px solid var(--border-color); }
 
-    #statsBox { font-size: 13px; line-height: 1.5; color: var(--text-muted); background: var(--bg-light); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-around; text-align: center; border: 1px solid var(--border-color); }
-    #statsBox b { color: var(--primary-dark); }
+    /* ⭐ 統計看板 CSS 更新 */
+    #statsBox { font-size: 13px; line-height: 1.5; color: var(--text-muted); background: var(--bg-light); padding: 12px; border-radius: 8px; display: flex; justify-content: space-around; text-align: left; border: 1px solid var(--border-color); width: 100%; }
+    #statsBox b { color: var(--primary-dark); font-size: 14px; }
+    .stats-col { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .stats-divider { width: 1px; background: var(--border-color); margin: 0 15px; }
 
     .room-grid { display: grid; grid-template-columns: 1fr; gap: 15px; transition: transform 0.3s ease-out, opacity 0.3s ease-out; }
     @media (min-width: 650px) { .room-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; } }
@@ -103,49 +104,28 @@
 
     .guest-name-row { font-size: 1.25rem; font-weight: 700; margin-bottom: 2px; color: var(--text-main); }
     
-    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); font-size: 13.5px; color: var(--text-muted); }
-    .detail-grid div { display: flex; justify-content: space-between; align-items: center; }
-    .detail-grid b { color: var(--text-main); font-weight: 600; font-size: 12px; }
-    .detail-grid span { text-align: right; }
+    /* ⭐ 卡片完美雙欄排版 (左/右兩側) */
+    .detail-grid-split { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); }
+    .detail-col { display: flex; flex-direction: column; gap: 8px; }
+    .detail-item { display: flex; justify-content: space-between; align-items: flex-start; font-size: 12.5px; line-height: 1.3; }
+    .detail-item b { color: var(--text-muted); font-weight: 500; white-space: nowrap; margin-right: 6px; }
+    .detail-item span { color: var(--text-main); font-weight: 600; text-align: right; word-break: break-all; }
     
-    .detail-grid .full-width { grid-column: span 2; display: flex; justify-content: space-between; gap: 10px; }
-    .detail-grid .full-width span { text-align: right; word-break: break-all; flex-grow: 1;}
-    .detail-grid .highlight-note { color: #b45309; background: rgba(254, 243, 199, 0.5); padding: 6px; border-radius: 6px; align-items: flex-start; flex-direction: column; gap: 2px;}
-    .detail-grid .highlight-note span { text-align: left; }
+    .full-width-item { display: flex; justify-content: space-between; gap: 10px; margin-top: 10px; font-size: 13px; }
+    .full-width-item b { color: var(--text-muted); font-weight: 500; font-size: 12px; white-space: nowrap; }
+    .full-width-item span { color: var(--text-main); font-weight: 600; text-align: right; word-break: break-all; flex-grow: 1; }
+    .highlight-note { color: #b45309; background: rgba(254, 243, 199, 0.5); padding: 8px; border-radius: 6px; flex-direction: column; align-items: flex-start; }
+    .highlight-note b { margin-bottom: 4px; color: #b45309; }
+    .highlight-note span { text-align: left; color: #92400e; font-weight: 500; }
 
     .rest-overlay-alert { margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.7); border: 1px solid #bbf7d0; border-radius: 8px; font-size: 12px; color: #166534; display: flex; flex-direction: column; gap: 4px; border-left: 4px solid #22c55e; }
     .rest-overlay-alert strong { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #15803d; margin-bottom: 2px;}
 
-    /* Sticky 完美懸浮跟隨與煞車 */
-    .sticky-nav-container {
-        position: sticky;
-        bottom: 20px;
-        display: flex;
-        justify-content: space-between;
-        padding: 0 15px;
-        pointer-events: none; 
-        z-index: 90;
-        width: 100%;
-        max-width: 1100px;
-        margin: 10px auto 35px auto; 
-    }
-
-    .date-nav-btn {
-        pointer-events: auto; 
-        background: var(--primary-dark); color: var(--primary-gold); border: 1px solid rgba(255,255,255,0.1);
-        padding: 10px 18px; border-radius: 30px; font-weight: 600; box-shadow: 0 6px 12px rgba(0,0,0,0.25);
-        cursor: pointer; transition: all 0.2s; font-size: 13px; backdrop-filter: blur(5px);
-    }
+    .sticky-nav-container { position: sticky; bottom: 20px; display: flex; justify-content: space-between; padding: 0 15px; pointer-events: none; z-index: 90; width: 100%; max-width: 1100px; margin: 10px auto 35px auto; }
+    .date-nav-btn { pointer-events: auto; background: var(--primary-dark); color: var(--primary-gold); border: 1px solid rgba(255,255,255,0.1); padding: 10px 18px; border-radius: 30px; font-weight: 600; box-shadow: 0 6px 12px rgba(0,0,0,0.25); cursor: pointer; transition: all 0.2s; font-size: 13px; backdrop-filter: blur(5px); }
     .date-nav-btn:active { transform: scale(0.95); }
 
-    .tech-support-banner {
-        display: flex; justify-content: center; align-items: center; text-align: center;
-        padding: 18px 15px; font-size: 12px; font-weight: 600; color: var(--text-muted);
-        background-color: #e2e8f0; margin-top: auto; letter-spacing: 0.5px;
-        box-shadow: inset 0 2px 5px rgba(0,0,0,0.03);
-        padding-bottom: calc(18px + env(safe-area-inset-bottom));
-        width: 100%; z-index: 80;
-    }
+    .tech-support-banner { display: flex; justify-content: center; align-items: center; text-align: center; padding: 18px 15px; font-size: 12px; font-weight: 600; color: var(--text-muted); background-color: #e2e8f0; margin-top: auto; letter-spacing: 0.5px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.03); padding-bottom: calc(18px + env(safe-area-inset-bottom)); width: 100%; z-index: 80; }
 
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(22, 52, 80, 0.6); backdrop-filter: blur(4px); z-index: 999; }
     .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 94%; max-width: 600px; background: var(--bg-light); border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); z-index: 1000; max-height: 88vh; overflow: hidden; flex-direction: column; }
@@ -239,7 +219,9 @@
                         <input type="text" id="searchInput" placeholder="搜尋姓名/電話" onkeypress="if(event.key==='Enter') searchGuest()">
                         <button onclick="searchGuest()">🔍</button>
                     </div>
+                    
                     <div id="statsBox"></div>
+                    
                     <div class="action-btn-group">
                         <button class="action-btn" onclick="showBookingForm()">＋ 住宿</button>
                         <button class="action-btn outline" onclick="showRestForm()">＋ 休息</button>
@@ -425,7 +407,6 @@ const db = getFirestore(app);
 
 let currentViewMode = 'booking'; 
 
-// ⭐ 產生精準的時間戳記
 function getLogTimestamp() {
     const now = new Date();
     const y = now.getFullYear();
@@ -446,7 +427,6 @@ window.toggleLogDetails = function(element) {
     icon.classList.toggle('open');
 }
 
-// ⭐ 修復無限迴圈：渲染時確保只讀取純淨內容，不產生迴圈參照
 function renderLogs(elementId, logsArray, fieldMap) {
     const container = document.getElementById(elementId);
     if (!logsArray || logsArray.length === 0) {
@@ -496,7 +476,7 @@ function renderLogs(elementId, logsArray, fieldMap) {
     container.innerHTML = html;
 }
 
-const bookingFieldMap = { checkinDate: "入住日", checkoutDate: "退房日", orderNumber: "訂單編號", name: "姓名", phone: "電話", people: "人數", idNumber: "身分證", birthday: "生日", country: "國籍", total: "總金額", deposit: "訂金", payStatus: "付款狀態", platform: "來源平台", request: "備註", status: "房間狀態" };
+const bookingFieldMap = { checkinDate: "入住日", checkoutDate: "退房日", orderNumber: "訂單編號", name: "姓名", phone: "電話", people: "人數", idNumber: "身分證", birthday: "生日", country: "國籍", total: "總金額", deposit: "訂金", payStatus: "付款狀態", platform: "來源平台", request: "備註", status: "房間狀態", balance: "應收尾款" };
 const restFieldMap = { room: "房號", time: "休息時段", name: "姓名", phone: "電話", people: "人數", price: "實收金額", id: "身分證", note: "備註", status: "房間狀態" };
 
 window.switchView = function(mode) {
@@ -549,10 +529,13 @@ window.onload = async () => {
 
     updateDateDisplay(new Date());
 
+    // ⭐ 付款狀態聯動應收尾款
     const deposit = document.getElementById("deposit");
     const total = document.getElementById("total");
+    const payStatus = document.getElementById("payStatus");
     deposit.addEventListener("input", calcBalance);
     total.addEventListener("input", calcBalance);
+    payStatus.addEventListener("change", calcBalance);
 
     await Promise.all([loadData(), loadRestData()]);
     updateUI();
@@ -562,8 +545,14 @@ function calcBalance() {
     const totalEl = document.getElementById("total");
     const depositEl = document.getElementById("deposit");
     const balanceEl = document.getElementById("balance");
-    if (totalEl && depositEl && balanceEl) {
-        balanceEl.value = (Number(totalEl.value) || 0) - (Number(depositEl.value) || 0);
+    const payStatusEl = document.getElementById("payStatus");
+    
+    if (totalEl && depositEl && balanceEl && payStatusEl) {
+        if (payStatusEl.value === 'paid' || payStatusEl.value === 'platform') {
+            balanceEl.value = 0;
+        } else {
+            balanceEl.value = (Number(totalEl.value) || 0) - (Number(depositEl.value) || 0);
+        }
     }
 }
 
@@ -671,6 +660,7 @@ window.toggleEditMode = function(isEdit) {
 
     const formFields = document.querySelectorAll('#formModal .modal-body input, #formModal .modal-body select, #formModal .modal-body textarea');
     formFields.forEach(field => {
+        // ⭐ 解除尾款 readonly 鎖定，現在可以手動編輯
         if (field.id === 'bookingRoom' && currentRoom !== "") { field.disabled = true; return; }
         field.disabled = !isEdit;
     });
@@ -706,6 +696,7 @@ function openModal(room) {
         const op = document.createElement("option"); 
         op.value = r; 
         op.textContent = r; 
+        // 鎖定已被佔用的房號
         if (currentRoom === "" && bookings[selectedDate]?.[r] && bookings[selectedDate]?.[r].status !== 'checkedout') {
             op.disabled = true;
             op.textContent = r + " (已佔用)";
@@ -862,7 +853,6 @@ window.save = async function(){
         const selectedDate = document.getElementById("selectedDate").value;
         const existingData = bookings[selectedDate]?.[currentRoom] || {};
         
-        // ⭐ 修正記憶體溢出：乾淨擷取快照並比對 Diff
         let changes = {};
         let hasChanges = false;
         Object.keys(bookingFieldMap).forEach(key => {
@@ -874,11 +864,11 @@ window.save = async function(){
             }
         });
 
-        // 避免將歷史 Logs 複製進新 Snapshot 導致無窮迴圈
+        // ⭐ 修復 Maximum call stack size exceeded
         let logs = existingData.updateLogs ? [...existingData.updateLogs] : [];
         if (hasChanges) {
             let snapshotData = { ...orderData };
-            delete snapshotData.updateLogs; 
+            delete snapshotData.updateLogs; // 絕不能把 Logs 存進快照裡
             logs.push({ timestamp: getLogTimestamp(), changes: changes, snapshot: snapshotData });
         }
         orderData.updateLogs = logs;
@@ -918,7 +908,6 @@ window.save = async function(){
         saveBtn.innerHTML = "💾 儲存"; saveBtn.disabled = false;
         updateUI(); closeModal();
     } catch(err) {
-        console.error("儲存發生錯誤:", err);
         alert("儲存失敗: " + err.message);
         document.getElementById("btnSaveBooking").innerHTML = "💾 儲存"; 
         document.getElementById("btnSaveBooking").disabled = false;
@@ -1013,17 +1002,22 @@ function updateUI() {
                 html += `<span class="status-badge ${badgeClass}">${statusName}</span></div>`;
                 html += `<div class="guest-name-row">${bookingData.name || '未填寫'}</div>`;
                 
-                html += `<div class="detail-grid">`;
-                html += `<div><b>聯絡電話</b><span>${bookingData.phone || '-'}</span></div>`;
-                html += `<div><b>入住人數</b><span>${bookingData.people || '-'}人</span></div>`;
-                html += `<div><b>來源平台</b><span>${bookingData.platform || '現場'}</span></div>`;
-                html += `<div><b>旅客國籍</b><span>${bookingData.country || '台灣'}</span></div>`;
-                html += `<div><b>訂單總額</b><span>$${bookingData.total || 0}</span></div>`;
-                html += `<div><b>應收尾款</b><span style="color:#ef4444; font-weight:bold;">$${bookingData.balance || 0}</span></div>`;
-                if (bookingData.orderNumber) html += `<div class="full-width"><b>訂單編號</b><span>${bookingData.orderNumber}</span></div>`;
-                if (bookingData.idNumber) html += `<div class="full-width"><b>證件號碼</b><span>${bookingData.idNumber}</span></div>`;
-                if (bookingData.request) html += `<div class="full-width highlight-note"><b>備註需求</b><span>${bookingData.request}</span></div>`;
+                // ⭐ 雙欄位排版
+                html += `<div class="detail-grid-split">`;
+                html += `<div class="detail-col">`;
+                html += `<div class="detail-item"><b>聯絡電話</b><span>${bookingData.phone || '-'}</span></div>`;
+                html += `<div class="detail-item"><b>證件號碼</b><span>${bookingData.idNumber || '-'}</span></div>`;
+                html += `<div class="detail-item"><b>旅客國籍</b><span>${bookingData.country || '台灣'}</span></div>`;
                 html += `</div>`;
+                html += `<div class="detail-col">`;
+                html += `<div class="detail-item"><b>住宿人數</b><span>${bookingData.people || '-'}人</span></div>`;
+                html += `<div class="detail-item"><b>平台來源</b><span>${bookingData.platform || '現場'}</span></div>`;
+                html += `<div class="detail-item"><b>訂單總額</b><span>$${bookingData.total || 0}</span></div>`;
+                html += `<div class="detail-item"><b>應收尾款</b><span style="color:#ef4444; font-weight:bold;">$${bookingData.balance || 0}</span></div>`;
+                html += `</div>`;
+                html += `</div>`;
+                if (bookingData.orderNumber) html += `<div class="full-width-item"><b>訂單編號</b><span>${bookingData.orderNumber}</span></div>`;
+                if (bookingData.request) html += `<div class="full-width-item highlight-note"><b>備註需求</b><span>${bookingData.request}</span></div>`;
 
             } else {
                 card.classList.add(`status-empty`);
@@ -1047,14 +1041,19 @@ function updateUI() {
                 html += `<span class="status-badge ${badgeClass}">${statusName}</span></div>`;
                 html += `<div class="guest-name-row">${activeRest.name}</div>`;
                 
-                html += `<div class="detail-grid">`;
-                html += `<div><b>聯絡電話</b><span>${activeRest.phone || '-'}</span></div>`;
-                html += `<div><b>休息人數</b><span>${activeRest.people || '-'}人</span></div>`;
-                html += `<div><b>休息時段</b><span>${activeRest.time || '-'}</span></div>`;
-                html += `<div><b>實收金額</b><span>$${activeRest.price || 0}</span></div>`;
-                if (activeRest.id) html += `<div class="full-width"><b>證件號碼</b><span>${activeRest.id}</span></div>`;
-                if (activeRest.note) html += `<div class="full-width highlight-note"><b>備註</b><span>${activeRest.note}</span></div>`;
+                // ⭐ 雙欄位排版
+                html += `<div class="detail-grid-split">`;
+                html += `<div class="detail-col">`;
+                html += `<div class="detail-item"><b>聯絡電話</b><span>${activeRest.phone || '-'}</span></div>`;
+                html += `<div class="detail-item"><b>證件號碼</b><span>${activeRest.id || '-'}</span></div>`;
                 html += `</div>`;
+                html += `<div class="detail-col">`;
+                html += `<div class="detail-item"><b>休息人數</b><span>${activeRest.people || '-'}人</span></div>`;
+                html += `<div class="detail-item"><b>休息時段</b><span>${activeRest.time || '-'}</span></div>`;
+                html += `<div class="detail-item"><b>實收金額</b><span>$${activeRest.price || 0}</span></div>`;
+                html += `</div>`;
+                html += `</div>`;
+                if (activeRest.note) html += `<div class="full-width-item highlight-note"><b>備註</b><span>${activeRest.note}</span></div>`;
                 
                 card.onclick = () => {
                     const idx = currentRestData.findIndex(r => r === activeRest);
@@ -1096,7 +1095,6 @@ window.addRest = async function(){
         status: (currentRestIndex >= 0 && existingData) ? existingData.status : "resting"
     };
 
-    // ⭐ 完美修復記憶體溢出
     let changes = {};
     let hasChanges = false;
     Object.keys(restFieldMap).forEach(key => {
@@ -1111,7 +1109,7 @@ window.addRest = async function(){
     let logs = existingData.updateLogs ? [...existingData.updateLogs] : [];
     if (hasChanges) {
         let snapshotData = { ...restObj };
-        delete snapshotData.updateLogs; // 防護機制
+        delete snapshotData.updateLogs; 
         logs.push({ timestamp: getLogTimestamp(), changes: changes, snapshot: snapshotData });
     }
     restObj.updateLogs = logs;
@@ -1178,11 +1176,46 @@ async function loadRestData() {
 
 function updateStats() {
     const date = document.getElementById("selectedDate").value; const statsBox = document.getElementById("statsBox");
-    if (!date) { statsBox.innerHTML = "<div>人流 <b>0</b> ｜ 在店 <b>0</b></div>"; return; }
+    if (!date) { statsBox.innerHTML = "<div style='text-align:center;'>資料載入中...</div>"; return; }
 
     let dailyTotalPeople = 0, currentInHousePeople = 0;  
-    if (bookings[date]) { Object.values(bookings[date]).forEach(data => { let p = Number(data.people) || 0; if (data.everCheckedIn) dailyTotalPeople += p; if (data.status === 'checkedin') currentInHousePeople += p; }); }
-    statsBox.innerHTML = `<div>當日住宿流 <b>${dailyTotalPeople}</b> ｜ 住宿在店 <b>${currentInHousePeople}</b></div>`;
+    let countryStats = {}; 
+
+    if (bookings[date]) { 
+        Object.values(bookings[date]).forEach(data => { 
+            let p = Number(data.people) || 0; 
+            let c = data.country || "台灣";
+            if (!countryStats[c]) countryStats[c] = { daily: 0, inHouse: 0 };
+
+            if (data.everCheckedIn) {
+                dailyTotalPeople += p; 
+                countryStats[c].daily += p;
+            }
+            if (data.status === 'checkedin') {
+                currentInHousePeople += p; 
+                countryStats[c].inHouse += p;
+            }
+        }); 
+    }
+
+    let dailyHtml = `<b>當日人數 (${dailyTotalPeople})</b><div style="margin-top:4px; font-size:12px; display:flex; flex-direction:column; gap:2px;">`;
+    let inHouseHtml = `<b>住宿在店人數 (${currentInHousePeople})</b><div style="margin-top:4px; font-size:12px; display:flex; flex-direction:column; gap:2px;">`;
+    
+    let hasDaily = false; let hasInHouse = false;
+    for (let c in countryStats) {
+        if (countryStats[c].daily > 0) { dailyHtml += `<div>${c}：${countryStats[c].daily} 位</div>`; hasDaily = true; }
+        if (countryStats[c].inHouse > 0) { inHouseHtml += `<div>${c}：${countryStats[c].inHouse} 位</div>`; hasInHouse = true; }
+    }
+    if (!hasDaily) dailyHtml += `<div style="color:var(--text-muted)">無資料</div>`;
+    if (!hasInHouse) inHouseHtml += `<div style="color:var(--text-muted)">無資料</div>`;
+    
+    dailyHtml += `</div>`; inHouseHtml += `</div>`;
+
+    statsBox.innerHTML = `<div style="display:flex; justify-content:space-around; width:100%; text-align:left; gap:10px;">
+        <div class="stats-col">${dailyHtml}</div>
+        <div class="stats-divider"></div>
+        <div class="stats-col">${inHouseHtml}</div>
+    </div>`;
 }
 
 function updateRestRoomOptions(prefillRoom = "") {
