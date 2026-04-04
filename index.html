@@ -28,7 +28,6 @@
 
     * { box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
 
-    /* 確保 Body 滿版且隱藏 X 軸，不影響 Sticky 定位 */
     body { margin: 0; background-color: var(--bg-light); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; touch-action: pan-y; padding-bottom: 90px; }
 
     .header { background-color: var(--primary-dark); color: white; padding: 12px 20px; display: flex; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
@@ -49,12 +48,20 @@
 
     .invisible-date-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: none; padding: 0; margin: 0; z-index: 10; }
 
+    /* ⭐ 完美置中手機版日曆，解決位移問題 */
     @media (max-width: 768px) {
-        .flatpickr-calendar {
-            position: fixed !important; top: 50% !important; left: 50% !important;
-            transform: translate(-50%, -50%) !important; margin: 0 !important;
+        .flatpickr-calendar.open {
+            display: inline-block !important;
+            position: fixed !important; 
+            top: 50% !important; 
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important; 
+            margin: 0 !important;
             box-shadow: 0 0 0 2000px rgba(22, 52, 80, 0.6), 0 25px 50px -12px rgba(0,0,0,0.5) !important;
             z-index: 99999 !important;
+            max-width: 90vw !important;
+            right: auto !important;
+            bottom: auto !important;
         }
     }
 
@@ -64,7 +71,6 @@
     .tab-btn.active { background: var(--primary-dark); color: var(--primary-gold); border-color: var(--primary-dark); }
     
     .right-controls { display: flex; width: 100%; flex-direction: column; align-items: stretch; gap: 10px; }
-    
     .search-box-wrapper { display: flex; gap: 8px; width: 100%; align-items: center; justify-content: space-between; }
     .search-box { display: flex; align-items: center; background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 12px; flex-grow: 1; }
     .search-box input { border: none; background: transparent; padding: 4px; font-size: 14px; outline: none; width: 100%; }
@@ -104,15 +110,18 @@
 
     .guest-name-row { font-size: 1.25rem; font-weight: 700; margin-bottom: 2px; color: var(--text-main); }
     
-    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); font-size: 13.5px; color: var(--text-muted); }
-    .detail-grid div { display: flex; justify-content: space-between; align-items: center; }
-    .detail-grid b { color: var(--text-main); font-weight: 600; font-size: 12px; }
-    .detail-grid span { text-align: right; }
+    .detail-grid-split { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); }
+    .detail-col { display: flex; flex-direction: column; gap: 8px; }
+    .detail-item { display: flex; justify-content: space-between; align-items: flex-start; font-size: 12.5px; line-height: 1.3; }
+    .detail-item b { color: var(--text-muted); font-weight: 500; white-space: nowrap; margin-right: 6px; }
+    .detail-item span { color: var(--text-main); font-weight: 600; text-align: right; word-break: break-all; }
     
-    .detail-grid .full-width { grid-column: span 2; display: flex; justify-content: space-between; gap: 10px; }
-    .detail-grid .full-width span { text-align: right; word-break: break-all; flex-grow: 1;}
-    .detail-grid .highlight-note { color: #b45309; background: rgba(254, 243, 199, 0.5); padding: 6px; border-radius: 6px; align-items: flex-start; flex-direction: column; gap: 2px;}
-    .detail-grid .highlight-note span { text-align: left; }
+    .full-width-item { display: flex; justify-content: space-between; gap: 10px; margin-top: 10px; font-size: 13px; }
+    .full-width-item b { color: var(--text-muted); font-weight: 500; font-size: 12px; white-space: nowrap; }
+    .full-width-item span { color: var(--text-main); font-weight: 600; text-align: right; word-break: break-all; flex-grow: 1; }
+    .highlight-note { color: #b45309; background: rgba(254, 243, 199, 0.5); padding: 8px; border-radius: 6px; flex-direction: column; align-items: flex-start; }
+    .highlight-note b { margin-bottom: 4px; color: #b45309; }
+    .highlight-note span { text-align: left; color: #92400e; font-weight: 500; }
 
     .rest-overlay-alert { margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.7); border: 1px solid #bbf7d0; border-radius: 8px; font-size: 12px; color: #166534; display: flex; flex-direction: column; gap: 4px; border-left: 4px solid #22c55e; }
     .rest-overlay-alert strong { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #15803d; margin-bottom: 2px;}
@@ -741,6 +750,7 @@ window.closeBatchSearch = function() {
     document.body.classList.remove("no-scroll");
 }
 
+// ⭐ 月份批量搜尋：移除合併天數，確保每天獨立顯示
 window.executeBatchSearch = async function() {
     const month = document.getElementById("batchMonthInput").value; 
     const keyword = document.getElementById("batchKeywordInput").value.trim().toLowerCase();
@@ -752,7 +762,6 @@ window.executeBatchSearch = async function() {
     tbody.innerHTML = "<tr><td colspan='6' style='text-align:center; padding: 30px;'>🔄 篩選中，請稍候...</td></tr>";
 
     batchResultsData = [];
-    let seenBookingsBatch = new Set(); // ⭐ 加入智能去重機制
 
     try {
         const bookingsSnap = await getDocs(collection(db, "bookings"));
@@ -762,15 +771,12 @@ window.executeBatchSearch = async function() {
                 for (let room in dailyData) {
                     let b = dailyData[room];
                     if ((b.name && String(b.name).toLowerCase().includes(keyword)) || (b.phone && String(b.phone).toLowerCase().includes(keyword))) {
-                        let uniqueKey = `booking_${room}_${b.checkinDate}_${b.name}`;
-                        if (!seenBookingsBatch.has(uniqueKey)) {
-                            seenBookingsBatch.add(uniqueKey);
-                            batchResultsData.push({
-                                id: `b_${docSnap.id}_${room}`, type: '住宿', docId: docSnap.id, room: room,
-                                date: `${b.checkinDate} ~ ${b.checkoutDate}`, name: b.name || '-', phone: b.phone || '-',
-                                payStatus: b.payStatus, status: b.status, balance: b.balance, data: b
-                            });
-                        }
+                        // 不去重，每一天獨立推入
+                        batchResultsData.push({
+                            id: `b_${docSnap.id}_${room}`, type: '住宿', docId: docSnap.id, room: room,
+                            date: docSnap.id, name: b.name || '-', phone: b.phone || '-',
+                            payStatus: b.payStatus, status: b.status, balance: b.balance, data: b
+                        });
                     }
                 }
             }
@@ -782,14 +788,10 @@ window.executeBatchSearch = async function() {
                 const arr = docSnap.data().data || [];
                 arr.forEach((r, index) => {
                     if ((r.name && String(r.name).toLowerCase().includes(keyword)) || (r.phone && String(r.phone).toLowerCase().includes(keyword))) {
-                        let uniqueKey = `rest_${docSnap.id}_${r.room}_${r.time}_${r.name}`;
-                        if (!seenBookingsBatch.has(uniqueKey)) {
-                            seenBookingsBatch.add(uniqueKey);
-                            batchResultsData.push({
-                                id: `r_${docSnap.id}_${index}`, type: '休息', docId: docSnap.id, room: r.room,
-                                date: docSnap.id, name: r.name || '-', phone: r.phone || '-', price: r.price, status: r.status, restIndex: index, data: r
-                            });
-                        }
+                        batchResultsData.push({
+                            id: `r_${docSnap.id}_${index}`, type: '休息', docId: docSnap.id, room: r.room,
+                            date: docSnap.id, name: r.name || '-', phone: r.phone || '-', price: r.price, status: r.status, restIndex: index, data: r
+                        });
                     }
                 });
             }
@@ -828,6 +830,7 @@ window.toggleAllBatch = function(cb) {
     document.querySelectorAll('.batch-checkbox').forEach(c => c.checked = cb.checked);
 }
 
+// ⭐ 月份批量刪除：改為只針對勾選的那一天操作
 window.confirmBatchDelete = async function() {
     const selected = Array.from(document.querySelectorAll('.batch-checkbox:checked')).map(cb => batchResultsData[cb.value]);
     if(selected.length === 0) { alert("請先勾選要刪除的項目"); return; }
@@ -836,23 +839,13 @@ window.confirmBatchDelete = async function() {
     try {
         for (let item of selected) {
             if (item.type === '住宿') {
-                const data = item.data;
-                // ⭐ 刪除跨天數的所有紀錄
-                if (data.checkinDate && data.checkoutDate) {
-                    let [cy, cm, cd] = data.checkinDate.split("-"); let current = new Date(cy, cm-1, cd);
-                    let [ey, em, ed] = data.checkoutDate.split("-"); const end = new Date(ey, em-1, ed);
-                    while(current < end){
-                        const dStr = getDateString(current);
-                        const docRef = doc(db, "bookings", dStr);
-                        const docSnap = await getDoc(docRef);
-                        if (docSnap.exists()) {
-                            let d = docSnap.data();
-                            if (d[item.room]) {
-                                delete d[item.room];
-                                await setDoc(docRef, d);
-                            }
-                        }
-                        current.setDate(current.getDate() + 1);
+                const docRef = doc(db, "bookings", item.docId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    let d = docSnap.data();
+                    if (d[item.room]) {
+                        delete d[item.room];
+                        await setDoc(docRef, d);
                     }
                 }
             } else {
@@ -860,7 +853,7 @@ window.confirmBatchDelete = async function() {
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
                     let d = docSnap.data();
-                    let newArr = (d.data || []).filter(r => !(r.room === item.room && r.name === item.name && r.phone === item.phone));
+                    let newArr = (d.data || []).filter((r, i) => i !== item.restIndex);
                     await setDoc(docRef, { data: newArr });
                 }
             }
@@ -878,6 +871,7 @@ window.openBatchEditPanel = function() {
     document.getElementById('batchEditPanel').style.display = 'block';
 }
 
+// ⭐ 月份批量編輯：改為只針對勾選的那一天操作
 window.confirmBatchEdit = async function() {
     const selected = Array.from(document.querySelectorAll('.batch-checkbox:checked')).map(cb => batchResultsData[cb.value]);
     const doPay = document.getElementById("editEnablePayStatus").checked;
@@ -891,50 +885,35 @@ window.confirmBatchEdit = async function() {
     try {
         for (let item of selected) {
             if (item.type === '住宿') {
-                const data = item.data;
-                // ⭐ 跨天數批量更新
-                if (data.checkinDate && data.checkoutDate) {
-                    let [cy, cm, cd] = data.checkinDate.split("-"); let current = new Date(cy, cm-1, cd);
-                    let [ey, em, ed] = data.checkoutDate.split("-"); const end = new Date(ey, em-1, ed);
-                    
-                    let dayIndex = 0;
-                    while(current < end){
-                        const dStr = getDateString(current);
-                        const docRef = doc(db, "bookings", dStr);
-                        const docSnap = await getDoc(docRef);
-                        if (docSnap.exists()) {
-                            let d = docSnap.data();
-                            if (d[item.room]) {
-                                let roomData = d[item.room];
-                                let logs = roomData.updateLogs ? [...roomData.updateLogs] : [];
-                                let changes = {};
-                                
-                                if (doPay && roomData.payStatus !== newPay) {
-                                    changes.payStatus = { old: roomData.payStatus, new: newPay };
-                                    roomData.payStatus = newPay;
-                                    if(newPay === 'paid' || newPay === 'platform') {
-                                        changes.balance = { old: roomData.balance, new: 0 };
-                                        roomData.balance = 0;
-                                    }
-                                }
-                                if (doStatus && roomData.status !== newStatus) {
-                                    changes.status = { old: roomData.status, new: newStatus };
-                                    let finalStatus = newStatus;
-                                    if (newStatus === 'checkedin') finalStatus = dayIndex === 0 ? 'checkedin' : 'stay';
-                                    roomData.status = finalStatus;
-                                    if(newStatus === 'checkedin' || newStatus === 'checkedout') roomData.everCheckedIn = true;
-                                }
-                                
-                                if(Object.keys(changes).length > 0) {
-                                    let snap = {...roomData}; delete snap.updateLogs;
-                                    logs.push({ timestamp: getLogTimestamp() + " (批量)", changes: changes, snapshot: snap });
-                                    roomData.updateLogs = logs;
-                                    await setDoc(docRef, d);
-                                }
+                const docRef = doc(db, "bookings", item.docId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    let d = docSnap.data();
+                    if (d[item.room]) {
+                        let roomData = d[item.room];
+                        let logs = roomData.updateLogs ? [...roomData.updateLogs] : [];
+                        let changes = {};
+                        
+                        if (doPay && roomData.payStatus !== newPay) {
+                            changes.payStatus = { old: roomData.payStatus, new: newPay };
+                            roomData.payStatus = newPay;
+                            if(newPay === 'paid' || newPay === 'platform') {
+                                changes.balance = { old: roomData.balance, new: 0 };
+                                roomData.balance = 0;
                             }
                         }
-                        current.setDate(current.getDate() + 1);
-                        dayIndex++;
+                        if (doStatus && roomData.status !== newStatus) {
+                            changes.status = { old: roomData.status, new: newStatus };
+                            roomData.status = newStatus;
+                            if(newStatus === 'checkedin' || newStatus === 'checkedout') roomData.everCheckedIn = true;
+                        }
+                        
+                        if(Object.keys(changes).length > 0) {
+                            let snap = {...roomData}; delete snap.updateLogs;
+                            logs.push({ timestamp: getLogTimestamp() + " (批量)", changes: changes, snapshot: snap });
+                            roomData.updateLogs = logs;
+                            await setDoc(docRef, d);
+                        }
                     }
                 }
             } else {
@@ -945,8 +924,8 @@ window.confirmBatchEdit = async function() {
                     if (docSnap.exists()) {
                         let d = docSnap.data();
                         let arr = d.data || [];
-                        let targetIdx = arr.findIndex(r => r.room === item.room && r.name === item.name && r.phone === item.phone);
-                        if(targetIdx !== -1 && arr[targetIdx].status !== restNewStatus) {
+                        let targetIdx = item.restIndex;
+                        if(targetIdx !== -1 && arr[targetIdx] && arr[targetIdx].status !== restNewStatus) {
                             let logs = arr[targetIdx].updateLogs ? [...arr[targetIdx].updateLogs] : [];
                             let changes = { status: { old: arr[targetIdx].status, new: restNewStatus } };
                             arr[targetIdx].status = restNewStatus;
@@ -1184,14 +1163,15 @@ window.save = async function(){
         }
         orderData.updateLogs = logs;
 
-        // ⭐ 修復預訂與入住連動邏輯
+        // ⭐ 修正預訂/續住連動邏輯
         let baseStatus = "booked";
         if (existingData && Object.keys(existingData).length > 0) {
+            // 如果原本已經退房或正在入住中，繼承其主狀態
             if (existingData.status === 'checkedout') baseStatus = 'checkedout';
             else if (existingData.status === 'checkedin' || existingData.status === 'stay') baseStatus = 'checkedin';
             else baseStatus = 'booked';
             orderData.everCheckedIn = existingData.everCheckedIn || false;
-            
+
             if (existingData.checkinDate !== checkin || existingData.checkoutDate !== checkout) {
                 let [ocy, ocm, ocd] = existingData.checkinDate.split("-"); let oldCurr = new Date(ocy, ocm-1, ocd);
                 let [oey, oem, oed] = existingData.checkoutDate.split("-"); const oldEnd = new Date(oey, oem-1, oed);
@@ -1212,7 +1192,9 @@ window.save = async function(){
             const dateStr = getDateString(writeCurrent);
             if(!bookings[dateStr]) bookings[dateStr] = {};
             
-            // ⭐ 如果第一天已入住，後續就是續住；不然就全部維持預訂
+            // ⭐ 判斷寫入天數狀態：
+            // 如果 baseStatus 是 'checkedin'，第一天是 'checkedin'，後續天數是 'stay'
+            // 如果 baseStatus 是 'booked'，所有天數都是 'booked'
             let finalStatus = baseStatus;
             if (baseStatus === 'checkedin') {
                 finalStatus = dayIndex === 0 ? 'checkedin' : 'stay';
@@ -1257,7 +1239,7 @@ window.setStatus = async function(status){
             while(current < checkout){
                 const dStr = getDateString(current);
                 if(bookings[dStr]?.[currentRoom]){
-                    // ⭐ 連動狀態變更邏輯
+                    // ⭐ 狀態連動更新：只有在切換為「入住中」時，第二天才會變「續住中」
                     let finalStatus = baseStatus;
                     if (baseStatus === 'checkedin') {
                         finalStatus = dayIndex === 0 ? 'checkedin' : 'stay';
@@ -1329,17 +1311,24 @@ function updateUI() {
                 html += `<span class="status-badge ${badgeClass}">${statusName}</span></div>`;
                 html += `<div class="guest-name-row">${bookingData.name || '未填寫'}</div>`;
                 
-                html += `<div class="detail-grid">`;
-                html += `<div><b>聯絡電話</b><span>${bookingData.phone || '-'}</span></div>`;
-                html += `<div><b>入住人數</b><span>${bookingData.people || '-'}人</span></div>`;
-                html += `<div><b>來源平台</b><span>${bookingData.platform || '現場'}</span></div>`;
-                html += `<div><b>旅客國籍</b><span>${bookingData.country || '台灣'}</span></div>`;
-                html += `<div><b>訂單總額</b><span>$${bookingData.total || 0}</span></div>`;
-                html += `<div><b>應收尾款</b><span style="color:#ef4444; font-weight:bold;">$${bookingData.balance || 0}</span></div>`;
-                if (bookingData.orderNumber) html += `<div class="full-width"><b>訂單編號</b><span>${bookingData.orderNumber}</span></div>`;
-                if (bookingData.idNumber) html += `<div class="full-width"><b>證件號碼</b><span>${bookingData.idNumber}</span></div>`;
-                if (bookingData.request) html += `<div class="full-width highlight-note"><b>備註需求</b><span>${bookingData.request}</span></div>`;
+                html += `<div class="detail-grid-split">`;
+                html += `<div class="detail-col">`;
+                html += `<div class="detail-item"><b>聯絡電話</b><span>${bookingData.phone || '-'}</span></div>`;
+                html += `<div class="detail-item"><b>證件號碼</b><span>${bookingData.idNumber || '-'}</span></div>`;
+                html += `<div class="detail-item"><b>旅客國籍</b><span>${bookingData.country || '台灣'}</span></div>`;
                 html += `</div>`;
+                html += `<div class="detail-col">`;
+                html += `<div class="detail-item"><b>住宿人數</b><span>${bookingData.people || '-'}人</span></div>`;
+                html += `<div class="detail-item"><b>平台來源</b><span>${bookingData.platform || '現場'}</span></div>`;
+                html += `<div class="detail-item"><b>訂單總額</b><span>$${bookingData.total || 0}</span></div>`;
+                let payStatusText = bookingData.payStatus === 'paid' ? '已結清' : (bookingData.payStatus === 'platform' ? '平台代收' : '未付清');
+                let payColor = bookingData.payStatus === 'paid' ? '#10b981' : (bookingData.payStatus === 'platform' ? '#3b82f6' : '#ef4444');
+                html += `<div class="detail-item"><b>付款狀態</b><span style="color:${payColor}; font-weight:bold;">${payStatusText}</span></div>`;
+                html += `<div class="detail-item"><b>應收尾款</b><span style="color:#ef4444; font-weight:bold;">$${bookingData.balance || 0}</span></div>`;
+                html += `</div>`;
+                html += `</div>`;
+                if (bookingData.orderNumber) html += `<div class="full-width-item"><b>訂單編號</b><span>${bookingData.orderNumber}</span></div>`;
+                if (bookingData.request) html += `<div class="full-width-item highlight-note"><b>備註需求</b><span>${bookingData.request}</span></div>`;
 
             } else {
                 card.classList.add(`status-empty`);
@@ -1363,14 +1352,18 @@ function updateUI() {
                 html += `<span class="status-badge ${badgeClass}">${statusName}</span></div>`;
                 html += `<div class="guest-name-row">${activeRest.name}</div>`;
                 
-                html += `<div class="detail-grid">`;
-                html += `<div><b>聯絡電話</b><span>${activeRest.phone || '-'}</span></div>`;
-                html += `<div><b>休息人數</b><span>${activeRest.people || '-'}人</span></div>`;
-                html += `<div><b>休息時段</b><span>${activeRest.time || '-'}</span></div>`;
-                html += `<div><b>實收金額</b><span>$${activeRest.price || 0}</span></div>`;
-                if (activeRest.id) html += `<div class="full-width"><b>證件號碼</b><span>${activeRest.id}</span></div>`;
-                if (activeRest.note) html += `<div class="full-width highlight-note"><b>備註</b><span>${activeRest.note}</span></div>`;
+                html += `<div class="detail-grid-split">`;
+                html += `<div class="detail-col">`;
+                html += `<div class="detail-item"><b>聯絡電話</b><span>${activeRest.phone || '-'}</span></div>`;
+                html += `<div class="detail-item"><b>證件號碼</b><span>${activeRest.id || '-'}</span></div>`;
                 html += `</div>`;
+                html += `<div class="detail-col">`;
+                html += `<div class="detail-item"><b>休息人數</b><span>${activeRest.people || '-'}人</span></div>`;
+                html += `<div class="detail-item"><b>休息時段</b><span>${activeRest.time || '-'}</span></div>`;
+                html += `<div class="detail-item"><b>實收金額</b><span>$${activeRest.price || 0}</span></div>`;
+                html += `</div>`;
+                html += `</div>`;
+                if (activeRest.note) html += `<div class="full-width-item highlight-note"><b>備註</b><span>${activeRest.note}</span></div>`;
                 
                 card.onclick = () => {
                     const idx = currentRestData.findIndex(r => r === activeRest);
