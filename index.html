@@ -28,6 +28,7 @@
 
     * { box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
 
+    /* 確保 Body 滿版且隱藏 X 軸，不影響 Sticky 定位 */
     body { margin: 0; background-color: var(--bg-light); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; touch-action: pan-y; padding-bottom: 90px; }
 
     .header { background-color: var(--primary-dark); color: white; padding: 12px 20px; display: flex; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
@@ -63,19 +64,19 @@
     .tab-btn.active { background: var(--primary-dark); color: var(--primary-gold); border-color: var(--primary-dark); }
     
     .right-controls { display: flex; width: 100%; flex-direction: column; align-items: stretch; gap: 10px; }
-    .action-btn-group { display: flex; gap: 10px; width: 100%; }
-    .search-box { display: flex; align-items: center; background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 12px; width: 100%; }
+    
+    /* ⭐ 搜尋組合外框，容納全域與批量按鈕 */
+    .search-box-wrapper { display: flex; gap: 8px; width: 100%; align-items: center; justify-content: space-between; }
+    .search-box { display: flex; align-items: center; background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 12px; flex-grow: 1; }
     .search-box input { border: none; background: transparent; padding: 4px; font-size: 14px; outline: none; width: 100%; }
     .search-box button { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1rem; }
 
+    .action-btn-group { display: flex; gap: 10px; width: 100%; }
     .action-btn { background: var(--primary-dark); color: var(--primary-gold); border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; flex: 1; text-align: center; display: flex; justify-content: center; align-items: center; }
     .action-btn.outline { background: white; color: var(--primary-dark); border: 1px solid var(--border-color); }
 
-    /* ⭐ 統計看板 CSS 更新 */
-    #statsBox { font-size: 13px; line-height: 1.5; color: var(--text-muted); background: var(--bg-light); padding: 12px; border-radius: 8px; display: flex; justify-content: space-around; text-align: left; border: 1px solid var(--border-color); width: 100%; }
-    #statsBox b { color: var(--primary-dark); font-size: 14px; }
-    .stats-col { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-    .stats-divider { width: 1px; background: var(--border-color); margin: 0 15px; }
+    #statsBox { font-size: 13px; line-height: 1.5; color: var(--text-muted); background: var(--bg-light); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-around; text-align: center; border: 1px solid var(--border-color); }
+    #statsBox b { color: var(--primary-dark); }
 
     .room-grid { display: grid; grid-template-columns: 1fr; gap: 15px; transition: transform 0.3s ease-out, opacity 0.3s ease-out; }
     @media (min-width: 650px) { .room-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; } }
@@ -104,23 +105,20 @@
 
     .guest-name-row { font-size: 1.25rem; font-weight: 700; margin-bottom: 2px; color: var(--text-main); }
     
-    /* ⭐ 卡片完美雙欄排版 (左/右兩側) */
-    .detail-grid-split { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); }
-    .detail-col { display: flex; flex-direction: column; gap: 8px; }
-    .detail-item { display: flex; justify-content: space-between; align-items: flex-start; font-size: 12.5px; line-height: 1.3; }
-    .detail-item b { color: var(--text-muted); font-weight: 500; white-space: nowrap; margin-right: 6px; }
-    .detail-item span { color: var(--text-main); font-weight: 600; text-align: right; word-break: break-all; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); font-size: 13.5px; color: var(--text-muted); }
+    .detail-grid div { display: flex; justify-content: space-between; align-items: center; }
+    .detail-grid b { color: var(--text-main); font-weight: 600; font-size: 12px; }
+    .detail-grid span { text-align: right; }
     
-    .full-width-item { display: flex; justify-content: space-between; gap: 10px; margin-top: 10px; font-size: 13px; }
-    .full-width-item b { color: var(--text-muted); font-weight: 500; font-size: 12px; white-space: nowrap; }
-    .full-width-item span { color: var(--text-main); font-weight: 600; text-align: right; word-break: break-all; flex-grow: 1; }
-    .highlight-note { color: #b45309; background: rgba(254, 243, 199, 0.5); padding: 8px; border-radius: 6px; flex-direction: column; align-items: flex-start; }
-    .highlight-note b { margin-bottom: 4px; color: #b45309; }
-    .highlight-note span { text-align: left; color: #92400e; font-weight: 500; }
+    .detail-grid .full-width { grid-column: span 2; display: flex; justify-content: space-between; gap: 10px; }
+    .detail-grid .full-width span { text-align: right; word-break: break-all; flex-grow: 1;}
+    .detail-grid .highlight-note { color: #b45309; background: rgba(254, 243, 199, 0.5); padding: 6px; border-radius: 6px; align-items: flex-start; flex-direction: column; gap: 2px;}
+    .detail-grid .highlight-note span { text-align: left; }
 
     .rest-overlay-alert { margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.7); border: 1px solid #bbf7d0; border-radius: 8px; font-size: 12px; color: #166534; display: flex; flex-direction: column; gap: 4px; border-left: 4px solid #22c55e; }
     .rest-overlay-alert strong { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #15803d; margin-bottom: 2px;}
 
+    /* Sticky 完美懸浮跟隨與煞車 */
     .sticky-nav-container { position: sticky; bottom: 20px; display: flex; justify-content: space-between; padding: 0 15px; pointer-events: none; z-index: 90; width: 100%; max-width: 1100px; margin: 10px auto 35px auto; }
     .date-nav-btn { pointer-events: auto; background: var(--primary-dark); color: var(--primary-gold); border: 1px solid rgba(255,255,255,0.1); padding: 10px 18px; border-radius: 30px; font-weight: 600; box-shadow: 0 6px 12px rgba(0,0,0,0.25); cursor: pointer; transition: all 0.2s; font-size: 13px; backdrop-filter: blur(5px); }
     .date-nav-btn:active { transform: scale(0.95); }
@@ -181,10 +179,12 @@
 
     select option:disabled { color: #94a3b8; background: #f1f5f9; font-style: italic; }
 
+    /* ⭐ 月份批量搜尋系統的 CSS */
     .table-container { overflow-x: auto; background: white; border-radius: 8px; border: 1px solid var(--border-color); }
     .search-table { width: 100%; border-collapse: collapse; min-width: 500px; }
     .search-table th, .search-table td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 13px; }
     .search-table th { background: var(--bg-light); font-weight: 700; color: var(--primary-dark); white-space: nowrap; }
+    .batch-checkbox { transform: scale(1.3); cursor: pointer; }
 
     .no-scroll { overflow: hidden !important; height: 100vh !important; }
 </style>
@@ -215,13 +215,15 @@
                 </div>
                 
                 <div class="right-controls">
-                    <div class="search-box">
-                        <input type="text" id="searchInput" placeholder="搜尋姓名/電話" onkeypress="if(event.key==='Enter') searchGuest()">
-                        <button onclick="searchGuest()">🔍</button>
+                    <div class="search-box-wrapper">
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="全域搜尋 (姓名/電話)" onkeypress="if(event.key==='Enter') searchGuest()">
+                            <button onclick="searchGuest()">🔍</button>
+                        </div>
+                        <button class="btn btn-outline" style="flex: 0 0 auto; padding: 6px 12px; font-size: 13px; width: auto; border-radius: 8px;" onclick="openBatchSearch()">📅 月份批量</button>
                     </div>
                     
                     <div id="statsBox"></div>
-                    
                     <div class="action-btn-group">
                         <button class="action-btn" onclick="showBookingForm()">＋ 住宿</button>
                         <button class="action-btn outline" onclick="showRestForm()">＋ 休息</button>
@@ -245,7 +247,7 @@
     <div class="modal-overlay" id="modalOverlaySearch" onclick="closeSearch()"></div>
     <div class="modal" id="searchModal">
         <div class="modal-header">
-            <h3>🔍 歷史紀錄查詢</h3>
+            <h3>🔍 歷史紀錄全域查詢</h3>
             <button onclick="closeSearch()" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-muted);">&times;</button>
         </div>
         <div class="modal-body">
@@ -255,6 +257,70 @@
                     <tbody id="searchResultsBody"></tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlayBatchSearch" onclick="closeBatchSearch()"></div>
+    <div class="modal" id="batchSearchModal" style="max-width: 800px;">
+        <div class="modal-header">
+            <h3>📊 月份批量管理系統</h3>
+            <button onclick="closeBatchSearch()" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-muted);">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-section" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <input type="month" id="batchMonthInput" style="width: 140px; text-align: center;">
+                <input type="text" id="batchKeywordInput" placeholder="請輸入姓名/電話..." style="width: 160px; flex-grow: 1;">
+                <button class="btn btn-primary" style="width: 80px;" onclick="executeBatchSearch()">篩選</button>
+            </div>
+            
+            <div class="table-container" style="max-height: 40vh; overflow-y: auto;">
+                <table class="search-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllBatch" class="batch-checkbox" onclick="toggleAllBatch(this)"></th>
+                            <th>類型</th>
+                            <th>日期</th>
+                            <th>房號</th>
+                            <th>姓名</th>
+                            <th>金額 / 狀態</th>
+                        </tr>
+                    </thead>
+                    <tbody id="batchResultsBody">
+                        <tr><td colspan="6" style="text-align:center; padding: 20px; color: var(--text-muted);">請設定條件後點擊篩選按鈕</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="batchEditPanel" class="form-section" style="display:none; margin-top:15px; background: #f0fdf4; border-color: #bbf7d0;">
+                <div class="form-section-title" style="color: #166534; border-bottom-color: #dcfce7;">📝 批量覆寫已勾選的訂單</div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="editEnablePayStatus" style="width:auto; transform:scale(1.2);"> 變更付款狀態</label>
+                        <select id="batchPayStatus" disabled>
+                            <option value="paid">現場已結清</option>
+                            <option value="platform">訂房平台已收</option>
+                            <option value="">未付清</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="editEnableStatus" style="width:auto; transform:scale(1.2);"> 變更房間狀態</label>
+                        <select id="batchStatus" disabled>
+                            <option value="checkedin">設定為：入住中 / 休息中</option>
+                            <option value="checkedout">設定為：已退房 / 結束休息</option>
+                            <option value="booked">設定為：已預訂</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
+                    <button class="btn btn-outline" style="width: auto;" onclick="document.getElementById('batchEditPanel').style.display='none'">取消</button>
+                    <button class="btn btn-success" style="width: auto;" onclick="confirmBatchEdit()">套用修改</button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer" style="justify-content: flex-end;">
+            <button class="btn btn-outline" style="width:auto;" onclick="closeBatchSearch()">關閉面板</button>
+            <button class="btn btn-danger" style="width:auto;" onclick="confirmBatchDelete()">🗑️ 批量刪除</button>
+            <button class="btn btn-primary" style="width:auto; flex: 1.5;" onclick="openBatchEditPanel()">📝 批量編輯設定</button>
         </div>
     </div>
 
@@ -509,6 +575,7 @@ let bookings = {};
 let currentRoom = "";
 let restData = {};
 let currentRestIndex = -1; 
+let batchResultsData = []; // 儲存批量搜尋的結果
 
 window.onload = async () => {
     const grid = document.getElementById("roomGrid");
@@ -529,13 +596,20 @@ window.onload = async () => {
 
     updateDateDisplay(new Date());
 
-    // ⭐ 付款狀態聯動應收尾款
     const deposit = document.getElementById("deposit");
     const total = document.getElementById("total");
     const payStatus = document.getElementById("payStatus");
     deposit.addEventListener("input", calcBalance);
     total.addEventListener("input", calcBalance);
     payStatus.addEventListener("change", calcBalance);
+
+    // 批量編輯的連動
+    document.getElementById("editEnablePayStatus").addEventListener("change", function() {
+        document.getElementById("batchPayStatus").disabled = !this.checked;
+    });
+    document.getElementById("editEnableStatus").addEventListener("change", function() {
+        document.getElementById("batchStatus").disabled = !this.checked;
+    });
 
     await Promise.all([loadData(), loadRestData()]);
     updateUI();
@@ -588,6 +662,7 @@ function handleSwipe() {
     }
 }
 
+// ⭐ 全域搜尋 (原本的)
 window.searchGuest = async function() {
     const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
     if(!keyword) { alert("請輸入關鍵字"); return; }
@@ -653,6 +728,221 @@ window.searchGuest = async function() {
 
 window.closeSearch = function() { document.getElementById("modalOverlaySearch").style.display = "none"; document.getElementById("searchModal").style.display = "none"; document.body.classList.remove("no-scroll"); }
 
+// ⭐ 月份批量搜尋系統
+window.openBatchSearch = function() {
+    document.getElementById("modalOverlayBatchSearch").style.display = "block";
+    document.getElementById("batchSearchModal").style.display = "flex";
+    document.body.classList.add("no-scroll");
+    
+    const now = new Date();
+    document.getElementById("batchMonthInput").value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    document.getElementById("batchResultsBody").innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px; color: var(--text-muted);">請設定條件後點擊篩選按鈕</td></tr>';
+    document.getElementById("batchEditPanel").style.display = "none";
+    document.getElementById("selectAllBatch").checked = false;
+}
+
+window.closeBatchSearch = function() {
+    document.getElementById("modalOverlayBatchSearch").style.display = "none";
+    document.getElementById("batchSearchModal").style.display = "none";
+    document.body.classList.remove("no-scroll");
+}
+
+window.executeBatchSearch = async function() {
+    const month = document.getElementById("batchMonthInput").value; 
+    const keyword = document.getElementById("batchKeywordInput").value.trim().toLowerCase();
+    
+    if(!month) { alert("請選擇月份"); return; }
+    if(!keyword) { alert("請輸入姓名或電話"); return; }
+
+    const tbody = document.getElementById("batchResultsBody");
+    tbody.innerHTML = "<tr><td colspan='6' style='text-align:center; padding: 30px;'>🔄 篩選中，請稍候...</td></tr>";
+
+    batchResultsData = [];
+
+    try {
+        const bookingsSnap = await getDocs(collection(db, "bookings"));
+        bookingsSnap.forEach(docSnap => {
+            if (docSnap.id.startsWith(month)) {
+                const dailyData = docSnap.data();
+                for (let room in dailyData) {
+                    let b = dailyData[room];
+                    if ((b.name && String(b.name).toLowerCase().includes(keyword)) || (b.phone && String(b.phone).toLowerCase().includes(keyword))) {
+                        batchResultsData.push({
+                            id: `b_${docSnap.id}_${room}`, type: '住宿', docId: docSnap.id, room: room,
+                            date: `${b.checkinDate} ~ ${b.checkoutDate}`, name: b.name || '-', phone: b.phone || '-',
+                            payStatus: b.payStatus, status: b.status, balance: b.balance, data: b
+                        });
+                    }
+                }
+            }
+        });
+
+        const restsSnap = await getDocs(collection(db, "restData"));
+        restsSnap.forEach(docSnap => {
+            if (docSnap.id.startsWith(month)) {
+                const arr = docSnap.data().data || [];
+                arr.forEach((r, index) => {
+                    if ((r.name && String(r.name).toLowerCase().includes(keyword)) || (r.phone && String(r.phone).toLowerCase().includes(keyword))) {
+                        batchResultsData.push({
+                            id: `r_${docSnap.id}_${index}`, type: '休息', docId: docSnap.id, room: r.room,
+                            date: docSnap.id, name: r.name || '-', phone: r.phone || '-', price: r.price, status: r.status, restIndex: index, data: r
+                        });
+                    }
+                });
+            }
+        });
+
+        batchResultsData.sort((a, b) => a.docId.localeCompare(b.docId));
+
+        if (batchResultsData.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='6' style='text-align:center; padding: 30px; color:var(--text-muted);'>該月份無符合的紀錄</td></tr>";
+        } else {
+            tbody.innerHTML = batchResultsData.map((r, i) => {
+                let statusText = "";
+                if (r.type === '住宿') {
+                    statusText = `尾款:$${r.balance||0} / ${r.status==='checkedin'?'入住中':r.status==='checkedout'?'已退房':r.status==='stay'?'續住':'預訂'}`;
+                } else {
+                    statusText = `實收:$${r.price||0} / ${r.status==='resting'?'休息中':'已結束'}`;
+                }
+                
+                return `<tr>
+                    <td style="text-align: center;"><input type="checkbox" class="batch-checkbox" style="transform: scale(1.3);" value="${i}"></td>
+                    <td><span style="font-size:12px; font-weight:bold; color:${r.type==='住宿'?'#b45309':'#1d4ed8'};">${r.type}</span></td>
+                    <td style="font-size:12px;">${r.date}</td>
+                    <td><b>${r.room}</b></td>
+                    <td>${r.name}</td>
+                    <td style="font-size: 12px;">${statusText}</td>
+                </tr>`;
+            }).join("");
+        }
+        document.getElementById("selectAllBatch").checked = false;
+    } catch (e) {
+        tbody.innerHTML = "<tr><td colspan='6' style='text-align:center; color:red; padding: 30px;'>系統錯誤</td></tr>";
+    }
+}
+
+window.toggleAllBatch = function(cb) {
+    document.querySelectorAll('.batch-checkbox').forEach(c => c.checked = cb.checked);
+}
+
+window.confirmBatchDelete = async function() {
+    const selected = Array.from(document.querySelectorAll('.batch-checkbox:checked')).map(cb => batchResultsData[cb.value]);
+    if(selected.length === 0) { alert("請先勾選要刪除的項目"); return; }
+    if(!confirm(`確定要徹底刪除選取的 ${selected.length} 筆資料嗎？\n(注意：這是不可逆的操作！)`)) return;
+
+    try {
+        for (let item of selected) {
+            if (item.type === '住宿') {
+                const docRef = doc(db, "bookings", item.docId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    let d = docSnap.data();
+                    if (d[item.room]) {
+                        delete d[item.room];
+                        await setDoc(docRef, d);
+                    }
+                }
+            } else {
+                const docRef = doc(db, "restData", item.docId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    let d = docSnap.data();
+                    let newArr = (d.data || []).filter(r => !(r.room === item.room && r.name === item.name && r.phone === item.phone));
+                    await setDoc(docRef, { data: newArr });
+                }
+            }
+        }
+        alert("✅ 批量刪除完成");
+        await executeBatchSearch(); 
+        await loadData(); await loadRestData(); updateUI();
+    } catch(e) {
+        alert("刪除過程發生錯誤");
+    }
+}
+
+window.openBatchEditPanel = function() {
+    if(document.querySelectorAll('.batch-checkbox:checked').length === 0) {
+        alert("請先勾選要編輯的訂單！"); return;
+    }
+    document.getElementById('batchEditPanel').style.display = 'block';
+}
+
+window.confirmBatchEdit = async function() {
+    const selected = Array.from(document.querySelectorAll('.batch-checkbox:checked')).map(cb => batchResultsData[cb.value]);
+    const doPay = document.getElementById("editEnablePayStatus").checked;
+    const doStatus = document.getElementById("editEnableStatus").checked;
+    const newPay = document.getElementById("batchPayStatus").value;
+    const newStatus = document.getElementById("batchStatus").value;
+
+    if(!doPay && !doStatus) { alert("請勾選要覆寫的欄位"); return; }
+    if(!confirm(`確定要批量覆寫這 ${selected.length} 筆資料嗎？`)) return;
+
+    try {
+        for (let item of selected) {
+            if (item.type === '住宿') {
+                const docRef = doc(db, "bookings", item.docId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    let d = docSnap.data();
+                    if (d[item.room]) {
+                        let roomData = d[item.room];
+                        let logs = roomData.updateLogs ? [...roomData.updateLogs] : [];
+                        let changes = {};
+                        
+                        if (doPay && roomData.payStatus !== newPay) {
+                            changes.payStatus = { old: roomData.payStatus, new: newPay };
+                            roomData.payStatus = newPay;
+                            if(newPay === 'paid' || newPay === 'platform') {
+                                changes.balance = { old: roomData.balance, new: 0 };
+                                roomData.balance = 0;
+                            }
+                        }
+                        if (doStatus && roomData.status !== newStatus) {
+                            changes.status = { old: roomData.status, new: newStatus };
+                            roomData.status = newStatus;
+                            if(newStatus === 'checkedin' || newStatus === 'checkedout') roomData.everCheckedIn = true;
+                        }
+                        
+                        if(Object.keys(changes).length > 0) {
+                            let snap = {...roomData}; delete snap.updateLogs;
+                            logs.push({ timestamp: getLogTimestamp() + " (批量)", changes: changes, snapshot: snap });
+                            roomData.updateLogs = logs;
+                            await setDoc(docRef, d);
+                        }
+                    }
+                }
+            } else {
+                if (doStatus) {
+                    const restNewStatus = newStatus === 'checkedout' ? 'checkout' : 'resting';
+                    const docRef = doc(db, "restData", item.docId);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        let d = docSnap.data();
+                        let arr = d.data || [];
+                        let targetIdx = arr.findIndex(r => r.room === item.room && r.name === item.name && r.phone === item.phone);
+                        if(targetIdx !== -1 && arr[targetIdx].status !== restNewStatus) {
+                            let logs = arr[targetIdx].updateLogs ? [...arr[targetIdx].updateLogs] : [];
+                            let changes = { status: { old: arr[targetIdx].status, new: restNewStatus } };
+                            arr[targetIdx].status = restNewStatus;
+                            let snap = {...arr[targetIdx]}; delete snap.updateLogs;
+                            logs.push({ timestamp: getLogTimestamp() + " (批量)", changes: changes, snapshot: snap });
+                            arr[targetIdx].updateLogs = logs;
+                            await setDoc(docRef, { data: arr });
+                        }
+                    }
+                }
+            }
+        }
+        alert("✅ 批量覆寫完成");
+        document.getElementById('batchEditPanel').style.display = 'none';
+        await executeBatchSearch(); 
+        await loadData(); await loadRestData(); updateUI();
+    } catch(e) {
+        alert("修改過程發生錯誤");
+    }
+}
+
+// ⭐ 一般表單邏輯
 window.toggleEditMode = function(isEdit) {
     const modal = document.getElementById('formModal');
     if (isEdit) modal.classList.remove('view-mode');
@@ -660,7 +950,6 @@ window.toggleEditMode = function(isEdit) {
 
     const formFields = document.querySelectorAll('#formModal .modal-body input, #formModal .modal-body select, #formModal .modal-body textarea');
     formFields.forEach(field => {
-        // ⭐ 解除尾款 readonly 鎖定，現在可以手動編輯
         if (field.id === 'bookingRoom' && currentRoom !== "") { field.disabled = true; return; }
         field.disabled = !isEdit;
     });
@@ -696,7 +985,6 @@ function openModal(room) {
         const op = document.createElement("option"); 
         op.value = r; 
         op.textContent = r; 
-        // 鎖定已被佔用的房號
         if (currentRoom === "" && bookings[selectedDate]?.[r] && bookings[selectedDate]?.[r].status !== 'checkedout') {
             op.disabled = true;
             op.textContent = r + " (已佔用)";
@@ -864,11 +1152,10 @@ window.save = async function(){
             }
         });
 
-        // ⭐ 修復 Maximum call stack size exceeded
         let logs = existingData.updateLogs ? [...existingData.updateLogs] : [];
         if (hasChanges) {
             let snapshotData = { ...orderData };
-            delete snapshotData.updateLogs; // 絕不能把 Logs 存進快照裡
+            delete snapshotData.updateLogs; 
             logs.push({ timestamp: getLogTimestamp(), changes: changes, snapshot: snapshotData });
         }
         orderData.updateLogs = logs;
@@ -921,7 +1208,7 @@ window.setStatus = async function(status){
         
         let logs = data.updateLogs ? [...data.updateLogs] : [];
         let snapshotData = { ...data, status: status };
-        delete snapshotData.updateLogs; // 防護機制
+        delete snapshotData.updateLogs;
 
         logs.push({
             timestamp: getLogTimestamp(),
@@ -1002,22 +1289,17 @@ function updateUI() {
                 html += `<span class="status-badge ${badgeClass}">${statusName}</span></div>`;
                 html += `<div class="guest-name-row">${bookingData.name || '未填寫'}</div>`;
                 
-                // ⭐ 雙欄位排版
-                html += `<div class="detail-grid-split">`;
-                html += `<div class="detail-col">`;
-                html += `<div class="detail-item"><b>聯絡電話</b><span>${bookingData.phone || '-'}</span></div>`;
-                html += `<div class="detail-item"><b>證件號碼</b><span>${bookingData.idNumber || '-'}</span></div>`;
-                html += `<div class="detail-item"><b>旅客國籍</b><span>${bookingData.country || '台灣'}</span></div>`;
+                html += `<div class="detail-grid">`;
+                html += `<div><b>聯絡電話</b><span>${bookingData.phone || '-'}</span></div>`;
+                html += `<div><b>入住人數</b><span>${bookingData.people || '-'}人</span></div>`;
+                html += `<div><b>來源平台</b><span>${bookingData.platform || '現場'}</span></div>`;
+                html += `<div><b>旅客國籍</b><span>${bookingData.country || '台灣'}</span></div>`;
+                html += `<div><b>訂單總額</b><span>$${bookingData.total || 0}</span></div>`;
+                html += `<div><b>應收尾款</b><span style="color:#ef4444; font-weight:bold;">$${bookingData.balance || 0}</span></div>`;
+                if (bookingData.orderNumber) html += `<div class="full-width"><b>訂單編號</b><span>${bookingData.orderNumber}</span></div>`;
+                if (bookingData.idNumber) html += `<div class="full-width"><b>證件號碼</b><span>${bookingData.idNumber}</span></div>`;
+                if (bookingData.request) html += `<div class="full-width highlight-note"><b>備註需求</b><span>${bookingData.request}</span></div>`;
                 html += `</div>`;
-                html += `<div class="detail-col">`;
-                html += `<div class="detail-item"><b>住宿人數</b><span>${bookingData.people || '-'}人</span></div>`;
-                html += `<div class="detail-item"><b>平台來源</b><span>${bookingData.platform || '現場'}</span></div>`;
-                html += `<div class="detail-item"><b>訂單總額</b><span>$${bookingData.total || 0}</span></div>`;
-                html += `<div class="detail-item"><b>應收尾款</b><span style="color:#ef4444; font-weight:bold;">$${bookingData.balance || 0}</span></div>`;
-                html += `</div>`;
-                html += `</div>`;
-                if (bookingData.orderNumber) html += `<div class="full-width-item"><b>訂單編號</b><span>${bookingData.orderNumber}</span></div>`;
-                if (bookingData.request) html += `<div class="full-width-item highlight-note"><b>備註需求</b><span>${bookingData.request}</span></div>`;
 
             } else {
                 card.classList.add(`status-empty`);
@@ -1041,19 +1323,14 @@ function updateUI() {
                 html += `<span class="status-badge ${badgeClass}">${statusName}</span></div>`;
                 html += `<div class="guest-name-row">${activeRest.name}</div>`;
                 
-                // ⭐ 雙欄位排版
-                html += `<div class="detail-grid-split">`;
-                html += `<div class="detail-col">`;
-                html += `<div class="detail-item"><b>聯絡電話</b><span>${activeRest.phone || '-'}</span></div>`;
-                html += `<div class="detail-item"><b>證件號碼</b><span>${activeRest.id || '-'}</span></div>`;
+                html += `<div class="detail-grid">`;
+                html += `<div><b>聯絡電話</b><span>${activeRest.phone || '-'}</span></div>`;
+                html += `<div><b>休息人數</b><span>${activeRest.people || '-'}人</span></div>`;
+                html += `<div><b>休息時段</b><span>${activeRest.time || '-'}</span></div>`;
+                html += `<div><b>實收金額</b><span>$${activeRest.price || 0}</span></div>`;
+                if (activeRest.id) html += `<div class="full-width"><b>證件號碼</b><span>${activeRest.id}</span></div>`;
+                if (activeRest.note) html += `<div class="full-width highlight-note"><b>備註</b><span>${activeRest.note}</span></div>`;
                 html += `</div>`;
-                html += `<div class="detail-col">`;
-                html += `<div class="detail-item"><b>休息人數</b><span>${activeRest.people || '-'}人</span></div>`;
-                html += `<div class="detail-item"><b>休息時段</b><span>${activeRest.time || '-'}</span></div>`;
-                html += `<div class="detail-item"><b>實收金額</b><span>$${activeRest.price || 0}</span></div>`;
-                html += `</div>`;
-                html += `</div>`;
-                if (activeRest.note) html += `<div class="full-width-item highlight-note"><b>備註</b><span>${activeRest.note}</span></div>`;
                 
                 card.onclick = () => {
                     const idx = currentRestData.findIndex(r => r === activeRest);
@@ -1213,7 +1490,7 @@ function updateStats() {
 
     statsBox.innerHTML = `<div style="display:flex; justify-content:space-around; width:100%; text-align:left; gap:10px;">
         <div class="stats-col">${dailyHtml}</div>
-        <div class="stats-divider"></div>
+        <div class="stats-divider" style="width:1px; background:var(--border-color); margin:0 15px;"></div>
         <div class="stats-col">${inHouseHtml}</div>
     </div>`;
 }
