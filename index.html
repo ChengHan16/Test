@@ -10,6 +10,7 @@
 
 <style>
     :root {
+        /* 深海軍藍與香檳金 配色 */
         --primary-dark: #163450;      
         --primary-gold: #c1a13a;      
         
@@ -27,6 +28,7 @@
 
     * { box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
 
+    /* 確保 Body 滿版且隱藏 X 軸，不影響 Sticky 定位 */
     body { margin: 0; background-color: var(--bg-light); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; touch-action: pan-y; padding-bottom: 90px; }
 
     .header { background-color: var(--primary-dark); color: white; padding: 12px 20px; display: flex; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
@@ -47,6 +49,7 @@
 
     .invisible-date-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: none; padding: 0; margin: 0; z-index: 10; }
 
+    /* 手機版日曆強制置中 */
     @media (max-width: 768px) {
         .flatpickr-calendar {
             position: fixed !important; top: 50% !important; left: 50% !important;
@@ -113,11 +116,36 @@
     .rest-overlay-alert { margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.7); border: 1px solid #bbf7d0; border-radius: 8px; font-size: 12px; color: #166534; display: flex; flex-direction: column; gap: 4px; border-left: 4px solid #22c55e; }
     .rest-overlay-alert strong { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #15803d; margin-bottom: 2px;}
 
-    .sticky-nav-container { position: sticky; bottom: 20px; display: flex; justify-content: space-between; padding: 0 15px; pointer-events: none; z-index: 90; width: 100%; max-width: 1100px; margin: 10px auto 35px auto; }
-    .date-nav-btn { pointer-events: auto; background: var(--primary-dark); color: var(--primary-gold); border: 1px solid rgba(255,255,255,0.1); padding: 10px 18px; border-radius: 30px; font-weight: 600; box-shadow: 0 6px 12px rgba(0,0,0,0.25); cursor: pointer; transition: all 0.2s; font-size: 13px; backdrop-filter: blur(5px); }
+    /* Sticky 完美懸浮跟隨與煞車 */
+    .sticky-nav-container {
+        position: sticky;
+        bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 15px;
+        pointer-events: none; 
+        z-index: 90;
+        width: 100%;
+        max-width: 1100px;
+        margin: 10px auto 35px auto; 
+    }
+
+    .date-nav-btn {
+        pointer-events: auto; 
+        background: var(--primary-dark); color: var(--primary-gold); border: 1px solid rgba(255,255,255,0.1);
+        padding: 10px 18px; border-radius: 30px; font-weight: 600; box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+        cursor: pointer; transition: all 0.2s; font-size: 13px; backdrop-filter: blur(5px);
+    }
     .date-nav-btn:active { transform: scale(0.95); }
 
-    .tech-support-banner { display: flex; justify-content: center; align-items: center; text-align: center; padding: 18px 15px; font-size: 12px; font-weight: 600; color: var(--text-muted); background-color: #e2e8f0; margin-top: auto; letter-spacing: 0.5px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.03); padding-bottom: calc(18px + env(safe-area-inset-bottom)); width: 100%; z-index: 80; }
+    .tech-support-banner {
+        display: flex; justify-content: center; align-items: center; text-align: center;
+        padding: 18px 15px; font-size: 12px; font-weight: 600; color: var(--text-muted);
+        background-color: #e2e8f0; margin-top: auto; letter-spacing: 0.5px;
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.03);
+        padding-bottom: calc(18px + env(safe-area-inset-bottom));
+        width: 100%; z-index: 80;
+    }
 
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(22, 52, 80, 0.6); backdrop-filter: blur(4px); z-index: 999; }
     .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 94%; max-width: 600px; background: var(--bg-light); border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); z-index: 1000; max-height: 88vh; overflow: hidden; flex-direction: column; }
@@ -171,7 +199,6 @@
     .modal.view-mode textarea { resize: none; }
     .modal.view-mode .time-picker-group span { display: none; }
 
-    /* ⭐ 鎖定選單選項 (灰色顯示) */
     select option:disabled { color: #94a3b8; background: #f1f5f9; font-style: italic; }
 
     .table-container { overflow-x: auto; background: white; border-radius: 8px; border: 1px solid var(--border-color); }
@@ -292,7 +319,7 @@
         <div id="restFooterView" class="modal-footer">
             <button class="btn btn-outline" onclick="closeModalRest()">關閉</button>
             <button class="btn btn-primary" onclick="toggleRestEditMode(true)">編輯</button>
-            <button id="btnCheckoutRestView" class="btn btn-danger" style="flex: 2; background:#ef4444;" onclick="checkoutRestAction()">結束休息</button>
+            <button id="btnCheckoutRestView" class="btn btn-success" style="flex: 2; background:#ef4444;" onclick="checkoutRestAction()">結束休息</button>
         </div>
 
         <div id="restFooterEdit" class="modal-footer" style="display: none;">
@@ -343,7 +370,7 @@
                     <div class="form-group"><label>已付訂金</label><input id="deposit" type="number"></div>
                 </div>
                 <div class="grid-2">
-                    <div class="form-group"><label>應收尾款</label><input id="balance" type="number" readonly style="font-weight:bold; color:#ef4444; background:#fef2f2;"></div>
+                    <div class="form-group"><label>應收尾款</label><input id="balance" type="number" style="font-weight:bold; color:#ef4444; background:#fef2f2;"></div>
                     <div class="form-group">
                         <label>付款狀態</label>
                         <select id="payStatus">
@@ -398,6 +425,7 @@ const db = getFirestore(app);
 
 let currentViewMode = 'booking'; 
 
+// ⭐ 產生精準的時間戳記
 function getLogTimestamp() {
     const now = new Date();
     const y = now.getFullYear();
@@ -418,6 +446,7 @@ window.toggleLogDetails = function(element) {
     icon.classList.toggle('open');
 }
 
+// ⭐ 修復無限迴圈：渲染時確保只讀取純淨內容，不產生迴圈參照
 function renderLogs(elementId, logsArray, fieldMap) {
     const container = document.getElementById(elementId);
     if (!logsArray || logsArray.length === 0) {
@@ -430,6 +459,7 @@ function renderLogs(elementId, logsArray, fieldMap) {
         if(v === "" || v === undefined) return "-";
         if(k === 'payStatus') return v === 'paid' ? '現場已結清' : v === 'platform' ? '平台已收' : '未付清';
         if(k === 'status') return v === 'checkedin' ? '入住中' : v === 'checkedout' ? '已退房' : v === 'stay' ? '續住' : v === 'booked' ? '已預訂' : v === 'resting' ? '休息中' : v === 'checkout' ? '結束休息' : v;
+        if(k === 'people') return v + "位";
         return v;
     };
 
@@ -641,7 +671,6 @@ window.toggleEditMode = function(isEdit) {
 
     const formFields = document.querySelectorAll('#formModal .modal-body input, #formModal .modal-body select, #formModal .modal-body textarea');
     formFields.forEach(field => {
-        if (field.id === 'balance') return; 
         if (field.id === 'bookingRoom' && currentRoom !== "") { field.disabled = true; return; }
         field.disabled = !isEdit;
     });
@@ -677,7 +706,6 @@ function openModal(room) {
         const op = document.createElement("option"); 
         op.value = r; 
         op.textContent = r; 
-        // ⭐ 鎖定已被佔用的房號
         if (currentRoom === "" && bookings[selectedDate]?.[r] && bookings[selectedDate]?.[r].status !== 'checkedout') {
             op.disabled = true;
             op.textContent = r + " (已佔用)";
@@ -834,6 +862,7 @@ window.save = async function(){
         const selectedDate = document.getElementById("selectedDate").value;
         const existingData = bookings[selectedDate]?.[currentRoom] || {};
         
+        // ⭐ 修正記憶體溢出：乾淨擷取快照並比對 Diff
         let changes = {};
         let hasChanges = false;
         Object.keys(bookingFieldMap).forEach(key => {
@@ -845,9 +874,12 @@ window.save = async function(){
             }
         });
 
-        let logs = existingData.updateLogs || [];
+        // 避免將歷史 Logs 複製進新 Snapshot 導致無窮迴圈
+        let logs = existingData.updateLogs ? [...existingData.updateLogs] : [];
         if (hasChanges) {
-            logs.push({ timestamp: getLogTimestamp(), changes: changes, snapshot: { ...orderData } });
+            let snapshotData = { ...orderData };
+            delete snapshotData.updateLogs; 
+            logs.push({ timestamp: getLogTimestamp(), changes: changes, snapshot: snapshotData });
         }
         orderData.updateLogs = logs;
 
@@ -886,6 +918,7 @@ window.save = async function(){
         saveBtn.innerHTML = "💾 儲存"; saveBtn.disabled = false;
         updateUI(); closeModal();
     } catch(err) {
+        console.error("儲存發生錯誤:", err);
         alert("儲存失敗: " + err.message);
         document.getElementById("btnSaveBooking").innerHTML = "💾 儲存"; 
         document.getElementById("btnSaveBooking").disabled = false;
@@ -897,11 +930,14 @@ window.setStatus = async function(status){
         const date = document.getElementById("selectedDate").value; const data = bookings[date]?.[currentRoom];
         if(!data) return;
         
-        let logs = data.updateLogs || [];
+        let logs = data.updateLogs ? [...data.updateLogs] : [];
+        let snapshotData = { ...data, status: status };
+        delete snapshotData.updateLogs; // 防護機制
+
         logs.push({
             timestamp: getLogTimestamp(),
             changes: { status: { old: data.status, new: status } },
-            snapshot: { ...data, status: status }
+            snapshot: snapshotData
         });
 
         let [cy, cm, cd] = (data.checkinDate || date).split("-"); let current = new Date(cy, cm-1, cd);
@@ -926,7 +962,7 @@ window.setStatus = async function(status){
         }
         updateUI(); closeModal();
     } catch (e) {
-        alert("變更狀態失敗，請檢查資料是否完整");
+        alert("變更狀態失敗，請檢查資料庫連線");
     }
 }
 
@@ -1060,6 +1096,7 @@ window.addRest = async function(){
         status: (currentRestIndex >= 0 && existingData) ? existingData.status : "resting"
     };
 
+    // ⭐ 完美修復記憶體溢出
     let changes = {};
     let hasChanges = false;
     Object.keys(restFieldMap).forEach(key => {
@@ -1071,9 +1108,11 @@ window.addRest = async function(){
         }
     });
 
-    let logs = existingData.updateLogs || [];
+    let logs = existingData.updateLogs ? [...existingData.updateLogs] : [];
     if (hasChanges) {
-        logs.push({ timestamp: getLogTimestamp(), changes: changes, snapshot: { ...restObj } });
+        let snapshotData = { ...restObj };
+        delete snapshotData.updateLogs; // 防護機制
+        logs.push({ timestamp: getLogTimestamp(), changes: changes, snapshot: snapshotData });
     }
     restObj.updateLogs = logs;
 
@@ -1091,11 +1130,14 @@ window.addRest = async function(){
 window.checkoutRestAction = async function() {
     if (currentRestIndex >= 0) {
         const date = getCurrentDate();
-        let logs = restData[date][currentRestIndex].updateLogs || [];
+        let currentData = restData[date][currentRestIndex];
+        let logs = currentData.updateLogs ? [...currentData.updateLogs] : [];
         
-        if(restData[date][currentRestIndex].status === "resting") {
+        if(currentData.status === "resting") {
             if (confirm("確定要「結束休息」嗎？")) {
-                logs.push({ timestamp: getLogTimestamp(), changes: { status: { old: "resting", new: "checkout" } }, snapshot: { ...restData[date][currentRestIndex], status: "checkout" } });
+                let snapshotData = { ...currentData, status: "checkout" };
+                delete snapshotData.updateLogs;
+                logs.push({ timestamp: getLogTimestamp(), changes: { status: { old: "resting", new: "checkout" } }, snapshot: snapshotData });
                 restData[date][currentRestIndex].status = "checkout";
                 restData[date][currentRestIndex].updateLogs = logs;
                 await setDoc(doc(db, "restData", date), { data: restData[date] }); 
@@ -1103,7 +1145,9 @@ window.checkoutRestAction = async function() {
             }
         } else {
             if (confirm("此房已結束。\n是否要「恢復為休息中」(誤觸恢復)？")) {
-                logs.push({ timestamp: getLogTimestamp(), changes: { status: { old: "checkout", new: "resting" } }, snapshot: { ...restData[date][currentRestIndex], status: "resting" } });
+                let snapshotData = { ...currentData, status: "resting" };
+                delete snapshotData.updateLogs;
+                logs.push({ timestamp: getLogTimestamp(), changes: { status: { old: "checkout", new: "resting" } }, snapshot: snapshotData });
                 restData[date][currentRestIndex].status = "resting";
                 restData[date][currentRestIndex].updateLogs = logs;
                 await setDoc(doc(db, "restData", date), { data: restData[date] }); 
