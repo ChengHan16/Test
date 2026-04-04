@@ -35,7 +35,7 @@
     .logo { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; margin-right: 12px; border: 2px solid var(--primary-gold); }
     .hotel-name { font-size: 1.15rem; font-weight: 700; letter-spacing: 1.5px; color: var(--primary-gold); }
 
-    /* ⭐ Main 結構：用於實現 Sticky 完美推擠效果 */
+    /* Main 結構：用於實現 Sticky 完美推擠效果 */
     .main-content { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
     .container { max-width: 1100px; margin: 0 auto; padding: 20px 15px 0 15px; width: 100%; flex-grow: 1; }
 
@@ -117,10 +117,10 @@
     .rest-overlay-alert { margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.7); border: 1px solid #bbf7d0; border-radius: 8px; font-size: 12px; color: #166534; display: flex; flex-direction: column; gap: 4px; border-left: 4px solid #22c55e; }
     .rest-overlay-alert strong { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #15803d; margin-bottom: 2px;}
 
-    /* ⭐ Sticky 完美懸浮跟隨與煞車系統 */
+    /* ⭐ 懸浮跟隨與完美煞車：加大 marginBottom 拉開與橫幅的距離 */
     .sticky-nav-container {
         position: sticky;
-        bottom: 15px; /* 距離底部 15px */
+        bottom: 20px;
         display: flex;
         justify-content: space-between;
         padding: 0 15px;
@@ -128,27 +128,24 @@
         z-index: 90;
         width: 100%;
         max-width: 1100px;
-        margin: 15px auto 0 auto; /* 確保滑到最底下時被橫幅推上去 */
+        margin: 10px auto 35px auto; /* ⭐ 加大 bottom margin，停在距離橫幅 35px 處 */
     }
 
-    /* ⭐ 按鈕縮小與精緻化 */
     .date-nav-btn {
         pointer-events: auto; 
         background: var(--primary-dark); color: var(--primary-gold); border: 1px solid rgba(255,255,255,0.1);
-        padding: 8px 16px; /* 縮小 Padding */
-        border-radius: 30px; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-        cursor: pointer; transition: all 0.2s; font-size: 13px; /* 縮小字體 */
-        backdrop-filter: blur(5px);
+        padding: 10px 18px; border-radius: 30px; font-weight: 600; box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+        cursor: pointer; transition: all 0.2s; font-size: 13px; backdrop-filter: blur(5px);
     }
     .date-nav-btn:active { transform: scale(0.95); }
 
     /* 底部橫幅置中 */
     .tech-support-banner {
         display: flex; justify-content: center; align-items: center; text-align: center;
-        padding: 15px; font-size: 12px; font-weight: 600; color: var(--text-muted);
+        padding: 18px 15px; font-size: 12px; font-weight: 600; color: var(--text-muted);
         background-color: #e2e8f0; margin-top: auto; letter-spacing: 0.5px;
         box-shadow: inset 0 2px 5px rgba(0,0,0,0.03);
-        padding-bottom: calc(15px + env(safe-area-inset-bottom));
+        padding-bottom: calc(18px + env(safe-area-inset-bottom));
         width: 100%; z-index: 80;
     }
 
@@ -167,7 +164,7 @@
     .modal input:focus, .modal select:focus, .modal textarea:focus { outline: none; border-color: var(--primary-gold); box-shadow: 0 0 0 2px rgba(193, 161, 58, 0.2); }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     
-    /* ⭐ 「關閉｜編輯｜入住｜退房」 單行排版系統 */
+    /* ⭐ 「關閉｜編輯｜入住｜退房」 水平單行完美等比排列 */
     .modal-footer { 
         padding: 12px; background: white; border-top: 1px solid var(--border-color); 
         display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: space-between;
@@ -288,7 +285,7 @@
                 </div>
             </div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer" style="display: flex; gap: 8px;">
             <button class="btn btn-outline" onclick="closeModalRest()">取消</button>
             <button id="btnSaveRest" class="btn btn-primary" onclick="addRest()">確認建立</button>
         </div>
@@ -471,10 +468,15 @@ let touchstartX = 0, touchendX = 0, touchstartY = 0, touchendY = 0;
 const container = document.getElementById('mainContainer');
 container.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; touchstartY = e.changedTouches[0].screenY; }, {passive: true});
 container.addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; touchendY = e.changedTouches[0].screenY; handleSwipe(); }, {passive: true});
+
+// ⭐ 增加滑動阻尼感與降低 Y 軸容忍度，防止誤觸
 function handleSwipe() {
-    const thresholdX = 50, thresholdY = 80;
+    const thresholdX = 120; // 必須滑動超過 120px 才會觸發 (阻尼提高)
+    const thresholdY = 40;  // Y 軸偏移量不能超過 40px (防止上下滑動時誤觸)
+    
     let diffX = touchendX - touchstartX;
     let diffY = Math.abs(touchendY - touchstartY);
+    
     if (diffY < thresholdY) {
         if (diffX < -thresholdX) window.changeDate(1); 
         else if (diffX > thresholdX) window.changeDate(-1); 
@@ -708,12 +710,12 @@ window.save = async function(){
             dayIndex++;
         }
 
-        saveBtn.innerHTML = "💾 儲存"; saveBtn.disabled = false;
+        saveBtn.innerHTML = "💾 儲存資料"; saveBtn.disabled = false;
         updateUI(); closeModal();
     } catch(err) {
         console.error("儲存發生錯誤:", err);
         alert("儲存失敗: " + err.message);
-        document.getElementById("btnSaveBooking").innerHTML = "💾 儲存"; 
+        document.getElementById("btnSaveBooking").innerHTML = "💾 儲存資料"; 
         document.getElementById("btnSaveBooking").disabled = false;
     }
 }
@@ -846,6 +848,7 @@ function updateUI() {
     updateStats();
 }
 
+// ⭐ 修復：確保寫入 Firebase 時不會報錯 (已將不需要的 Birth 移除)
 window.addRest = async function(){
     let date = getCurrentDate(); if(!date){ alert("請選日期"); return; }
     let room = document.getElementById("restRoom").value, name = document.getElementById("restName").value;
@@ -854,16 +857,34 @@ window.addRest = async function(){
     const btn = document.getElementById("btnSaveRest");
     btn.innerText = "處理中..."; btn.disabled = true;
 
-    let rest = { room:room, name:name, phone:document.getElementById("restPhone").value, people: Number(document.getElementById("restPeople").value) || 2, time:document.getElementById("restTime").value, price:Number(document.getElementById("restPrice").value) || 0, id:document.getElementById("restID").value, birth:document.getElementById("restBirth").value, note:document.getElementById("restNote").value, status:"resting" }
+    // 已移除可能出錯的 restBirth 讀取
+    let rest = { 
+        room: room, 
+        name: name, 
+        phone: document.getElementById("restPhone").value, 
+        people: Number(document.getElementById("restPeople").value) || 2, 
+        time: document.getElementById("restTime").value, 
+        price: Number(document.getElementById("restPrice").value) || 0, 
+        id: document.getElementById("restID").value, 
+        note: document.getElementById("restNote").value, 
+        status: "resting" 
+    };
+    
     if(!restData[date]){ restData[date]=[]; }
     restData[date].push(rest);
     
     try { 
         await setDoc(doc(db, "restData", date), { data: restData[date] }); 
         updateUI(); closeModalRest();
-        ['restRoom','restName','restPhone','restTime','restPrice','restID','restBirth','restNote'].forEach(id => document.getElementById(id).value = "");
+        // 重置欄位
+        ['restRoom','restName','restPhone','restTime','restPrice','restID','restNote'].forEach(id => document.getElementById(id).value = "");
         document.getElementById("restPeople").value = 2;
-    } catch(e) { alert("儲存失敗"); } finally { btn.innerText = "確認建立"; btn.disabled = false; }
+    } catch(e) { 
+        console.error(e);
+        alert("儲存失敗"); 
+    } finally { 
+        btn.innerText = "確認建立"; btn.disabled = false; 
+    }
 }
 
 async function loadData() {
