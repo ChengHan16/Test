@@ -30,24 +30,51 @@
 
     body { margin: 0; background-color: var(--bg-light); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; touch-action: pan-y; padding-bottom: 90px; }
 
-    /* ⭐ 頂部橫幅更新：左右排版對齊 */
+    /* ⭐ 頂部橫幅更新 */
     .header { background-color: var(--primary-dark); color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
     .header-left { display: flex; align-items: center; }
     .logo { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; margin-right: 12px; border: 2px solid var(--primary-gold); }
     
-    /* ⭐ 標題下拉選單樣式 */
-    .title-dropdown-container { position: relative; }
+    /* ⭐ Wix 風格滿版下拉選單 (Mega Menu) */
+    .title-dropdown-container { position: static; } /* 讓 Mega Menu 相對 Header 展開滿版 */
     .hotel-name { font-size: 1.15rem; font-weight: 700; letter-spacing: 1.5px; color: var(--primary-gold); cursor: pointer; display: flex; align-items: center; gap: 6px; user-select: none; }
     .hotel-name:hover { opacity: 0.8; }
     
-    .dropdown-menu { display: none; position: absolute; top: 100%; left: 0; margin-top: 15px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); min-width: 160px; overflow: hidden; border: 1px solid var(--border-color); z-index: 200; }
-    .dropdown-menu.show { display: block; animation: fadeIn 0.2s ease-in-out; }
-    .dropdown-item { padding: 14px 18px; color: var(--text-main); text-decoration: none; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-    .dropdown-item:hover { background: var(--bg-light); color: var(--primary-dark); }
-    .dropdown-item.text-danger { color: #ef4444; border-top: 1px solid var(--border-color); }
-    .dropdown-item.text-danger:hover { background: #fef2f2; color: #dc2626; }
+    .mega-menu {
+        display: none; position: absolute; top: 100%; left: 0; width: 100%;
+        background: #ffffff; border-top: 1px solid var(--border-color);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1); z-index: 200;
+        padding: 40px 0; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;
+        cursor: default;
+    }
+    .mega-menu.show { display: block; animation: fadeInDown 0.2s ease-out; }
+    .mega-menu-container {
+        max-width: 1100px; margin: 0 auto; padding: 0 20px;
+        display: flex; gap: 60px;
+    }
+    .mega-menu-column { display: flex; flex-direction: column; gap: 12px; min-width: 200px; }
+    .mega-menu-column h4 { 
+        margin: 0 0 10px 0; color: var(--text-muted); font-size: 0.85rem; 
+        text-transform: uppercase; letter-spacing: 1.5px; 
+        border-bottom: 2px solid var(--bg-light); padding-bottom: 8px;
+    }
+    .mega-menu-item { 
+        color: var(--primary-dark); text-decoration: none; font-size: 1rem; 
+        font-weight: 600; padding: 10px 15px; border-radius: 8px; 
+        transition: 0.2s; display: flex; align-items: center; gap: 8px; cursor: pointer;
+    }
+    .mega-menu-item:hover { background: var(--bg-light); color: var(--primary-gold); }
+    .mega-menu-item.text-danger { color: #ef4444; }
+    .mega-menu-item.text-danger:hover { background: #fef2f2; color: #dc2626; }
 
-    /* ⭐ 右側使用者名稱 */
+    @keyframes fadeInDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+
+    @media (max-width: 600px) {
+        .mega-menu-container { flex-direction: column; gap: 30px; }
+        .mega-menu { padding: 25px 0; border-radius: 0; }
+    }
+
+    /* 右側使用者名稱 */
     .header-right { display: flex; align-items: center; }
     .user-greeting { font-size: 13px; color: white; background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 20px; font-weight: 600; letter-spacing: 0.5px; border: 1px solid rgba(255,255,255,0.1); }
 
@@ -143,7 +170,9 @@
 
     @media (min-width: 769px) { .sticky-nav-container { display: none !important; } }
 
+    /* ⭐ 電腦版橫幅間距 */
     .tech-support-banner { display: flex; justify-content: center; align-items: center; text-align: center; padding: 18px 15px; font-size: 12px; font-weight: 600; color: var(--text-muted); background-color: #e2e8f0; margin-top: auto; letter-spacing: 0.5px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.03); padding-bottom: calc(18px + env(safe-area-inset-bottom)); width: 100%; z-index: 80; }
+    @media (min-width: 769px) { .tech-support-banner { margin-top: 5px !important; } }
 
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(22, 52, 80, 0.6); backdrop-filter: blur(4px); z-index: 999; }
     .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 94%; max-width: 600px; background: var(--bg-light); border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); z-index: 1000; max-height: 88vh; overflow: hidden; flex-direction: column; }
@@ -196,6 +225,9 @@
     .modal.view-mode select { pointer-events: none; }
     .modal.view-mode textarea { resize: none; }
     .modal.view-mode .time-picker-group span { display: none; }
+    
+    /* 隱藏/顯示 checkbox */
+    .modal.view-mode .checkbox-wrapper { display: none !important; }
 
     select option:disabled { color: #94a3b8; background: #f1f5f9; font-style: italic; }
 
@@ -213,15 +245,26 @@
         <div class="header-left">
             <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCImo3zo7iCeo1quGZKt4c0GTrh_uSg3mSfQ&s" class="logo">
             <div class="title-dropdown-container">
-                <div class="hotel-name" onclick="toggleMenu()">來點子站前旅店 <span style="font-size: 12px; color: white;">▼</span></div>
-                <div class="dropdown-menu" id="headerDropdown">
-                    <a href="account-manager.html" class="dropdown-item">⚙️ 帳號設定</a>
-                    <div class="dropdown-item text-danger" onclick="logoutSystem()">🚪 登出系統</div>
+                <div class="hotel-name" onclick="toggleMenu(event)">來點子站前旅店 <span style="font-size: 12px; color: white;">▼</span></div>
+                
+                <div class="mega-menu" id="headerDropdown">
+                    <div class="mega-menu-container">
+                        <div class="mega-menu-column">
+                            <h4>系統管理與操作</h4>
+                            <a href="account-manager.html" class="mega-menu-item">⚙️ 帳號管理與權限設定</a>
+                            <a href="#" class="mega-menu-item" onclick="openExportModal()">📥 匯出系統財務報表</a>
+                            <a href="#" class="mega-menu-item" onclick="openBatchSearch()">📅 開啟月份批量系統</a>
+                        </div>
+                        <div class="mega-menu-column">
+                            <h4>帳號安全</h4>
+                            <a href="#" class="mega-menu-item text-danger" onclick="logoutSystem()">🚪 登出當前系統</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="header-right">
-            <span id="currentUserDisplay" class="user-greeting">載入中...</span>
+            <span id="currentUserDisplay" class="user-greeting" style="display:none;"></span>
         </div>
     </div>
 
@@ -455,7 +498,12 @@
                 <div class="form-group"><label>接單日期</label><input id="orderDate" type="date"></div>
             </div>
             <div class="form-section">
-                <div class="form-section-title">住客資料</div>
+                <div class="form-section-title" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>住客資料</span>
+                    <select id="frequentGuestSelect" style="width: auto; padding: 4px 8px; font-size: 12px; border-radius: 6px; border: 1px solid var(--primary-gold); color: var(--primary-dark); font-weight:bold; outline:none; cursor:pointer;" onchange="fillFrequentGuest()">
+                        <option value="">📖 載入常用旅客...</option>
+                    </select>
+                </div>
                 <div class="grid-2">
                     <div class="form-group"><label>代表人姓名</label><input id="name" placeholder="Name"></div>
                     <div class="form-group"><label>聯絡電話</label><input id="phone" placeholder="Phone"></div>
@@ -467,6 +515,11 @@
                 <div class="grid-2">
                     <div class="form-group"><label>入住人數</label><input id="people" type="number" value="2"></div>
                     <div class="form-group"><label>國籍</label><input id="country" placeholder="預設: 台灣"></div>
+                </div>
+                
+                <div class="checkbox-wrapper" style="margin-top: 10px; display: flex; align-items: center; gap: 6px;">
+                    <input type="checkbox" id="saveFrequentGuest" style="width: auto; transform: scale(1.3); margin:0;">
+                    <label for="saveFrequentGuest" style="margin: 0; font-size: 13px; color: #b45309; font-weight: 700; cursor: pointer;">儲存/更新為常用旅客 (以電話作為綁定帳號)</label>
                 </div>
             </div>
             <div class="form-section">
@@ -529,19 +582,24 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ⭐ 登入防護與下拉選單邏輯
+// 防護牆與登入者顯示
 if (sessionStorage.getItem("isLoggedIn") !== "true") {
     window.location.href = "login.html";
 }
+const userName = sessionStorage.getItem("currentUser") || "管理員";
+document.getElementById("currentUserDisplay").innerText = `👋 ${userName}`;
+document.getElementById("currentUserDisplay").style.display = "inline-block";
 
-window.toggleMenu = function() {
+// ⭐ Wix 風格 Mega Menu 互動邏輯
+window.toggleMenu = function(e) {
+    e.stopPropagation();
     document.getElementById('headerDropdown').classList.toggle('show');
 }
-
 window.addEventListener('click', function(e) {
+    const menu = document.getElementById('headerDropdown');
     const container = document.querySelector('.title-dropdown-container');
-    if (container && !container.contains(e.target)) {
-        document.getElementById('headerDropdown').classList.remove('show');
+    if (menu.classList.contains('show') && !container.contains(e.target)) {
+        menu.classList.remove('show');
     }
 });
 
@@ -565,8 +623,6 @@ function getLogTimestamp() {
     const hh = String(h > 12 ? h - 12 : (h === 0 ? 12 : h)).padStart(2, '0');
     const mm = String(now.getMinutes()).padStart(2, '0');
     const ss = String(now.getSeconds()).padStart(2, '0');
-    // 在 Log 中寫入當前操作者名稱
-    const userName = sessionStorage.getItem("currentUser") || "系統";
     return `${y}/${m}/${d} ${ampm} ${hh}:${mm} ${ss}秒 (操作: ${userName})`;
 }
 
@@ -637,14 +693,12 @@ window.switchView = function(mode) {
 }
 
 function getCurrentDate(){ return document.getElementById("selectedDate").value; }
-
 function getDateString(dateObj) {
     let y = dateObj.getFullYear();
     let m = String(dateObj.getMonth() + 1).padStart(2, '0');
     let d = String(dateObj.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
 }
-
 function updateDateDisplay(dateObj) {
     const days = ['日', '一', '二', '三', '四', '五', '六'];
     const y = dateObj.getFullYear();
@@ -660,16 +714,41 @@ let currentRoom = "";
 let restData = {};
 let currentRestIndex = -1; 
 let batchResultsData = [];
+let frequentGuests = {}; // 儲存常客資料
+
+// ⭐ 載入常客資料
+async function loadFrequentGuests() {
+    try {
+        const snap = await getDocs(collection(db, "frequent_guests"));
+        const select = document.getElementById("frequentGuestSelect");
+        select.innerHTML = '<option value="">📖 載入常用旅客...</option>';
+        frequentGuests = {};
+        snap.forEach(docSnap => {
+            let data = docSnap.data();
+            frequentGuests[docSnap.id] = data; // doc.id is phone
+            let op = document.createElement("option");
+            op.value = docSnap.id;
+            op.textContent = `${data.name} (${docSnap.id})`;
+            select.appendChild(op);
+        });
+    } catch(e) { console.error("載入常用旅客失敗", e); }
+}
+
+// 點選常客時自動帶入
+window.fillFrequentGuest = function() {
+    const phone = document.getElementById("frequentGuestSelect").value;
+    if(!phone) return;
+    const data = frequentGuests[phone];
+    if(data) {
+        document.getElementById("name").value = data.name || "";
+        document.getElementById("phone").value = data.phone || "";
+        document.getElementById("idNumber").value = data.idNumber || "";
+        document.getElementById("birthday").value = data.birthday || "";
+        document.getElementById("country").value = data.country || "";
+    }
+}
 
 window.onload = async () => {
-    // 載入當前使用者名稱
-    const userName = sessionStorage.getItem("currentUser") || "管理員";
-    const userDisplay = document.getElementById("currentUserDisplay");
-    if(userDisplay) {
-        userDisplay.innerText = `👋 ${userName}`;
-        userDisplay.style.display = "inline-block";
-    }
-
     const grid = document.getElementById("roomGrid");
     rooms.forEach(room=>{
         const card = document.createElement("div");
@@ -702,7 +781,7 @@ window.onload = async () => {
         document.getElementById("batchStatus").disabled = !this.checked;
     });
 
-    await Promise.all([loadData(), loadRestData()]);
+    await Promise.all([loadData(), loadRestData(), loadFrequentGuests()]);
     updateUI();
 };
 
@@ -1027,12 +1106,11 @@ window.confirmBatchEdit = async function() {
     } catch(e) { alert("修改過程發生錯誤"); }
 }
 
-// ⭐ CSV 匯出系統邏輯
 window.openExportModal = function() {
     document.getElementById("modalOverlayExport").style.display = "block";
     document.getElementById("exportModal").style.display = "flex";
     document.body.classList.add("no-scroll");
-    setExportRange('month'); // 預設帶入本月
+    setExportRange('month'); 
 }
 
 window.closeExportModal = function() {
@@ -1041,7 +1119,6 @@ window.closeExportModal = function() {
     document.body.classList.remove("no-scroll");
 }
 
-// ⭐ 快捷設定匯出區間
 window.setExportRange = function(type) {
     const today = new Date();
     let start = new Date(today);
@@ -1061,7 +1138,6 @@ window.setExportRange = function(type) {
     document.getElementById("exportEndDate").value = getDateString(end);
 }
 
-// ⭐ 執行匯出報表下載
 window.executeExport = async function() {
     const startDateStr = document.getElementById("exportStartDate").value;
     const endDateStr = document.getElementById("exportEndDate").value;
@@ -1189,6 +1265,8 @@ function openModal(room) {
         }
         roomSelect.appendChild(op); 
     });
+
+    document.getElementById("saveFrequentGuest").checked = false;
 
     if (currentRoom) {
         roomSelect.value = currentRoom;
@@ -1396,6 +1474,23 @@ window.save = async function(){
             await setDoc(doc(db, "bookings", dateStr), bookings[dateStr]);
             writeCurrent.setDate(writeCurrent.getDate() + 1); 
             dayIndex++;
+        }
+
+        // ⭐ 儲存常客資料邏輯
+        const saveFreq = document.getElementById("saveFrequentGuest").checked;
+        const phoneVal = document.getElementById("phone").value.trim();
+        if (saveFreq && phoneVal) {
+            const freqData = {
+                name: document.getElementById("name").value.trim(),
+                phone: phoneVal,
+                idNumber: document.getElementById("idNumber").value,
+                birthday: document.getElementById("birthday").value,
+                country: document.getElementById("country").value || "台灣"
+            };
+            try {
+                await setDoc(doc(db, "frequent_guests", phoneVal), freqData);
+                await loadFrequentGuests(); // 重新載入常客列表
+            } catch(e) { console.error("儲存常用旅客失敗", e); }
         }
 
         saveBtn.innerHTML = "💾 儲存"; saveBtn.disabled = false;
