@@ -1,0 +1,1685 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>來點子站前旅店 - 房況管理系統</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/airbnb.css">
+
+<style>
+    :root {
+        /* 深海軍藍與香檳金 配色 */
+        --primary-dark: #163450;      
+        --primary-gold: #c1a13a;      
+        
+        --bg-light: #f8fafc;          
+        --card-bg: #ffffff;           
+        --text-main: #334155;         
+        --text-muted: #64748b;        
+        --border-color: #e2e8f0;      
+        
+        --status-booked: #f59e0b;     
+        --status-checkin: #10b981;    
+        --status-rest: #3b82f6;       
+        --status-checkout: #94a3b8;   
+    }
+
+    * { box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
+
+    /* 確保 Body 滿版且隱藏 X 軸，不影響 Sticky 定位 */
+    body { margin: 0; background-color: var(--bg-light); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; touch-action: pan-y; padding-bottom: 90px; }
+
+    .header { background-color: var(--primary-dark); color: white; padding: 12px 20px; display: flex; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
+    .logo { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; margin-right: 12px; border: 2px solid var(--primary-gold); }
+    .hotel-name { font-size: 1.15rem; font-weight: 700; letter-spacing: 1.5px; color: var(--primary-gold); }
+
+    .main-content { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 20px 15px 0 15px; width: 100%; flex-grow: 1; }
+
+    .main-date-header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 10px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid var(--border-color); margin-bottom: 25px; white-space: nowrap; }
+    .date-display-wrapper { flex-grow: 1; text-align: center; position: relative; padding: 5px 10px; border-radius: 12px; transition: all 0.2s; }
+    .date-display-wrapper:active { background: var(--bg-light); }
+    .date-title { font-size: 1.3rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 2px; }
+    .date-subtitle { font-size: 0.8rem; color: var(--status-rest); font-weight: 600; }
+
+    .icon-btn { background: var(--bg-light); border: 1px solid var(--border-color); color: var(--primary-dark); width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; font-size: 1.2rem; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
+    .icon-btn:hover { background: var(--primary-dark); color: var(--primary-gold); }
+
+    .invisible-date-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: none; padding: 0; margin: 0; z-index: 10; }
+
+    /* 手機版日曆強制置中 */
+    @media (max-width: 768px) {
+        .flatpickr-calendar {
+            position: fixed !important; top: 50% !important; left: 50% !important;
+            transform: translate(-50%, -50%) !important; margin: 0 !important;
+            box-shadow: 0 0 0 2000px rgba(22, 52, 80, 0.6), 0 25px 50px -12px rgba(0,0,0,0.5) !important;
+            z-index: 99999 !important;
+        }
+    }
+
+    .date-control-bar { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; flex-wrap: wrap; gap: 12px; border: 1px solid var(--border-color); }
+    .view-tabs { display: flex; gap: 8px; width: 100%; justify-content: center; }
+    .tab-btn { flex: 1; background: var(--bg-light); border: 1px solid var(--border-color); padding: 8px; font-size: 0.95rem; font-weight: 600; color: var(--text-muted); cursor: pointer; border-radius: 30px; transition: all 0.2s; text-align: center; }
+    .tab-btn.active { background: var(--primary-dark); color: var(--primary-gold); border-color: var(--primary-dark); }
+    
+    .right-controls { display: flex; width: 100%; flex-direction: column; align-items: stretch; gap: 10px; }
+    
+    /* ⭐ 搜尋組合外框，容納匯出與批量按鈕 */
+    .search-box-wrapper { display: flex; gap: 8px; width: 100%; align-items: center; flex-wrap: wrap; }
+    .search-box { display: flex; align-items: center; background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 12px; flex-grow: 1; min-width: 200px; }
+    .search-box input { border: none; background: transparent; padding: 4px; font-size: 14px; outline: none; width: 100%; }
+    .search-box button { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1rem; }
+
+    .action-btn-group { display: flex; gap: 10px; width: 100%; }
+    .action-btn { background: var(--primary-dark); color: var(--primary-gold); border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; flex: 1; text-align: center; display: flex; justify-content: center; align-items: center; }
+    .action-btn.outline { background: white; color: var(--primary-dark); border: 1px solid var(--border-color); }
+
+    #statsBox { font-size: 13px; line-height: 1.5; color: var(--text-muted); background: var(--bg-light); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-around; text-align: center; border: 1px solid var(--border-color); }
+    #statsBox b { color: var(--primary-dark); }
+
+    .room-grid { display: grid; grid-template-columns: 1fr; gap: 15px; transition: transform 0.3s ease-out, opacity 0.3s ease-out; }
+    @media (min-width: 650px) { .room-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; } }
+    @media (min-width: 950px) { .room-grid { grid-template-columns: repeat(3, 1fr); } }
+
+    .room-card { border-radius: 12px; padding: 18px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.04); display: flex; flex-direction: column; position: relative; overflow: hidden; transition: all 0.2s; min-height: 150px; }
+    .room-card:active { transform: scale(0.98); }
+
+    .room-card.status-booked { background: linear-gradient(145deg, #fffbeb, #ffffff); border: 1px solid #fcd34d; }
+    .room-card.status-checkedin { background: linear-gradient(145deg, #ecfdf5, #ffffff); border: 1px solid #6ee7b7; }
+    .room-card.status-stay { background: linear-gradient(145deg, #e0f2fe, #ffffff); border: 1px solid #7dd3fc; } 
+    .room-card.status-resting { background: linear-gradient(145deg, #eff6ff, #ffffff); border: 1px solid #93c5fd; }
+    .room-card.status-checkedout { background: linear-gradient(145deg, #f8fafc, #ffffff); border: 1px solid #cbd5e1; }
+    .room-card.status-empty { background: #ffffff; border: 1px solid #e2e8f0; }
+
+    .room-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .room-number { font-size: 1.15rem; font-weight: 700; color: var(--primary-dark); }
+    
+    .status-badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+    .badge-booked { background: #fef3c7; color: #b45309; }
+    .badge-checkedin { background: #d1fae5; color: #047857; }
+    .badge-stay { background: #bae6fd; color: #0369a1; }
+    .badge-resting { background: #dbeafe; color: #1d4ed8; }
+    .badge-checkedout { background: #e2e8f0; color: #475569; }
+    .badge-empty { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); }
+
+    .guest-name-row { font-size: 1.25rem; font-weight: 700; margin-bottom: 2px; color: var(--text-main); }
+    
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); font-size: 13.5px; color: var(--text-muted); }
+    .detail-grid div { display: flex; justify-content: space-between; align-items: center; }
+    .detail-grid b { color: var(--text-main); font-weight: 600; font-size: 12px; }
+    .detail-grid span { text-align: right; }
+    
+    .detail-grid .full-width { grid-column: span 2; display: flex; justify-content: space-between; gap: 10px; }
+    .detail-grid .full-width span { text-align: right; word-break: break-all; flex-grow: 1;}
+    .detail-grid .highlight-note { color: #b45309; background: rgba(254, 243, 199, 0.5); padding: 6px; border-radius: 6px; align-items: flex-start; flex-direction: column; gap: 2px;}
+    .detail-grid .highlight-note span { text-align: left; }
+
+    .rest-overlay-alert { margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.7); border: 1px solid #bbf7d0; border-radius: 8px; font-size: 12px; color: #166534; display: flex; flex-direction: column; gap: 4px; border-left: 4px solid #22c55e; }
+    .rest-overlay-alert strong { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #15803d; margin-bottom: 2px;}
+
+    .sticky-nav-container { position: sticky; bottom: 20px; display: flex; justify-content: space-between; padding: 0 15px; pointer-events: none; z-index: 90; width: 100%; max-width: 1100px; margin: 10px auto 35px auto; }
+    .date-nav-btn { pointer-events: auto; background: var(--primary-dark); color: var(--primary-gold); border: 1px solid rgba(255,255,255,0.1); padding: 10px 18px; border-radius: 30px; font-weight: 600; box-shadow: 0 6px 12px rgba(0,0,0,0.25); cursor: pointer; transition: all 0.2s; font-size: 13px; backdrop-filter: blur(5px); }
+    .date-nav-btn:active { transform: scale(0.95); }
+
+    /* ⭐ 只在手機版/小螢幕顯示前日/後日按鈕 */
+    @media (min-width: 769px) {
+        .sticky-nav-container { display: none !important; }
+    }
+
+    .tech-support-banner { display: flex; justify-content: center; align-items: center; text-align: center; padding: 18px 15px; font-size: 12px; font-weight: 600; color: var(--text-muted); background-color: #e2e8f0; margin-top: auto; letter-spacing: 0.5px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.03); padding-bottom: calc(18px + env(safe-area-inset-bottom)); width: 100%; z-index: 80; }
+
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(22, 52, 80, 0.6); backdrop-filter: blur(4px); z-index: 999; }
+    .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 94%; max-width: 600px; background: var(--bg-light); border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); z-index: 1000; max-height: 88vh; overflow: hidden; flex-direction: column; }
+    .modal-header { padding: 16px 20px; background: white; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { margin: 0; color: var(--primary-dark); font-size: 1.15rem; font-weight: 700; }
+    .modal-body { padding: 15px; overflow-y: auto; flex-grow: 1; }
+    
+    .form-section { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); }
+    .form-section-title { font-size: 0.85rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 12px; border-bottom: 2px solid var(--bg-light); padding-bottom: 6px; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; }
+    .modal input, .modal select, .modal textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; transition: all 0.2s; background: #fff; color: var(--text-main); }
+    .modal input:focus, .modal select:focus, .modal textarea:focus { outline: none; border-color: var(--primary-gold); box-shadow: 0 0 0 2px rgba(193, 161, 58, 0.2); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    
+    .time-picker-group { display: flex; align-items: center; gap: 8px; }
+    .time-picker-group input { flex: 1; text-align: center; }
+    .time-picker-group span { font-weight: bold; color: var(--text-muted); }
+
+    .log-container { display: flex; flex-direction: column; gap: 8px; }
+    .log-empty { text-align: center; color: #94a3b8; font-style: italic; font-size: 13px; padding: 10px; }
+    .log-item { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; }
+    .log-header { cursor: pointer; padding: 12px 15px; background: #f1f5f9; display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: var(--primary-dark); font-size: 13px; transition: background 0.2s; }
+    .log-header:hover { background: #e2e8f0; }
+    .expand-icon { font-size: 10px; transition: transform 0.3s ease; color: var(--text-muted); }
+    .expand-icon.open { transform: rotate(180deg); }
+    .log-details { display: none; padding: 10px 15px; border-top: 1px dashed var(--border-color); background: white; }
+    .log-details.show { display: block; animation: fadeIn 0.2s ease-in-out; }
+    .log-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; font-size: 13px; }
+    .log-row:last-child { border-bottom: none; padding-bottom: 0; }
+    
+    .log-changed { background: #fffbeb; border-radius: 6px; padding: 6px 8px; margin: 2px -8px; border-bottom: none !important; }
+    .log-changed b { color: #b45309; }
+    .log-changed span { color: #475569; }
+    .log-changed strong { color: #dc2626; font-weight: bold; }
+    .log-unchanged { color: #94a3b8; }
+    .log-unchanged b { color: #94a3b8; font-weight: normal; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+    .modal-footer { padding: 12px; background: white; border-top: 1px solid var(--border-color); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: space-between; }
+    .btn { padding: 10px 0; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; font-size: 0.85rem; flex: 1; text-align: center; display: flex; justify-content: center; align-items: center; white-space: nowrap; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-primary { background: var(--primary-dark); color: var(--primary-gold); }
+    .btn-success { background: #10b981; color: white; }
+    .btn-outline { background: white; border: 1px solid var(--border-color); color: var(--text-main); }
+    .btn-danger { background: #ef4444; color: white; }
+
+    .modal.view-mode input, .modal.view-mode select, .modal.view-mode textarea { background: transparent !important; border-color: transparent !important; color: var(--text-main) !important; box-shadow: none !important; padding: 0; font-weight: 600; appearance: none; -webkit-appearance: none; }
+    .modal.view-mode select { pointer-events: none; }
+    .modal.view-mode textarea { resize: none; }
+    .modal.view-mode .time-picker-group span { display: none; }
+
+    select option:disabled { color: #94a3b8; background: #f1f5f9; font-style: italic; }
+
+    .table-container { overflow-x: auto; background: white; border-radius: 8px; border: 1px solid var(--border-color); }
+    .search-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+    .search-table th, .search-table td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 13px; }
+    .search-table th { background: var(--bg-light); font-weight: 700; color: var(--primary-dark); white-space: nowrap; }
+    .batch-checkbox { transform: scale(1.3); cursor: pointer; }
+
+    .no-scroll { overflow: hidden !important; height: 100vh !important; }
+</style>
+</head>
+<body>
+    <div class="header">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCImo3zo7iCeo1quGZKt4c0GTrh_uSg3mSfQ&s" class="logo">
+        <div class="hotel-name">來點子站前旅店</div>
+    </div>
+
+    <main class="main-content">
+        <div class="container" id="mainContainer">
+            
+            <div class="main-date-header">
+                <button class="icon-btn" onclick="changeDate(-1)">❮</button>
+                <div class="date-display-wrapper">
+                    <div class="date-title" id="displayDateTitle">載入中...</div>
+                    <div class="date-subtitle">📅 點擊開啟日曆</div>
+                    <input type="text" id="selectedDate" class="invisible-date-input">
+                </div>
+                <button class="icon-btn" onclick="changeDate(1)">❯</button>
+            </div>
+
+            <div class="date-control-bar">
+                <div class="view-tabs">
+                    <button class="tab-btn active" id="tab-booking" onclick="switchView('booking')">🏨 住宿房況</button>
+                    <button class="tab-btn" id="tab-rest" onclick="switchView('rest')">🕒 休息房況</button>
+                </div>
+                
+                <div class="right-controls">
+                    <div class="search-box-wrapper">
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="全域搜尋 (姓名/電話)" onkeypress="if(event.key==='Enter') searchGuest()">
+                            <button onclick="searchGuest()">🔍</button>
+                        </div>
+                        <button class="btn btn-outline" style="flex: 0 0 auto; padding: 6px 12px; font-size: 13px; width: auto; border-radius: 8px;" onclick="openBatchSearch()">📅 月份批量</button>
+                        <button class="btn btn-outline" style="flex: 0 0 auto; padding: 6px 12px; font-size: 13px; width: auto; border-radius: 8px; background-color: var(--primary-gold); color: white; border: none;" onclick="openExportModal()">📥 匯出報表</button>
+                    </div>
+                    
+                    <div id="statsBox"></div>
+                    <div class="action-btn-group">
+                        <button class="action-btn" onclick="showBookingForm()">＋ 住宿</button>
+                        <button class="action-btn outline" onclick="showRestForm()">＋ 休息</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="room-grid" id="roomGrid"></div>
+        </div>
+
+        <div class="sticky-nav-container">
+            <button class="date-nav-btn prev-day-btn" onclick="changeDate(-1)">❮ 前一日</button>
+            <button class="date-nav-btn next-day-btn" onclick="changeDate(1)">後一日 ❯</button>
+        </div>
+    </main>
+
+    <div class="tech-support-banner">
+        👨‍💻 來點子旅店資訊部 班長 所提供的技術支援
+    </div>
+
+    <div class="modal-overlay" id="modalOverlaySearch" onclick="closeSearch()"></div>
+    <div class="modal" id="searchModal">
+        <div class="modal-header">
+            <h3>🔍 歷史紀錄全域查詢</h3>
+            <button onclick="closeSearch()" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-muted);">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="table-container">
+                <table class="search-table">
+                    <thead><tr><th>類型</th><th>姓名/房號</th><th>日期時間</th><th>平台</th><th>狀態</th></tr></thead>
+                    <tbody id="searchResultsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlayBatchSearch" onclick="closeBatchSearch()"></div>
+    <div class="modal" id="batchSearchModal" style="max-width: 800px;">
+        <div class="modal-header">
+            <h3>📊 月份批量管理系統</h3>
+            <button onclick="closeBatchSearch()" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-muted);">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-section" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <input type="month" id="batchMonthInput" style="width: 140px; text-align: center;">
+                <input type="text" id="batchKeywordInput" placeholder="輸入姓名或電話篩選..." style="width: 160px; flex-grow: 1;">
+                <button class="btn btn-primary" style="width: 80px;" onclick="executeBatchSearch()">篩選</button>
+            </div>
+            
+            <div class="table-container" style="max-height: 40vh; overflow-y: auto;">
+                <table class="search-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllBatch" class="batch-checkbox" onclick="toggleAllBatch(this)"></th>
+                            <th>類型</th>
+                            <th>日期 / 時段</th>
+                            <th>房號</th>
+                            <th>姓名</th>
+                            <th>金額狀態</th>
+                        </tr>
+                    </thead>
+                    <tbody id="batchResultsBody">
+                        <tr><td colspan="6" style="text-align:center; padding: 20px; color: var(--text-muted);">請設定條件後點擊篩選按鈕</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="batchEditPanel" class="form-section" style="display:none; margin-top:15px; background: #f0fdf4; border-color: #bbf7d0;">
+                <div class="form-section-title" style="color: #166534; border-bottom-color: #dcfce7;">📝 批量覆寫已勾選的訂單</div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="editEnablePayStatus" style="width:auto; transform:scale(1.2);"> 變更付款狀態</label>
+                        <select id="batchPayStatus" disabled>
+                            <option value="paid">現場已結清</option>
+                            <option value="platform">訂房平台已收</option>
+                            <option value="">未付清</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="editEnableStatus" style="width:auto; transform:scale(1.2);"> 變更房間狀態</label>
+                        <select id="batchStatus" disabled>
+                            <option value="checkedin">設定為：入住中 / 休息中</option>
+                            <option value="checkedout">設定為：已退房 / 結束休息</option>
+                            <option value="booked">設定為：已預訂</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
+                    <button class="btn btn-outline" style="width: auto;" onclick="document.getElementById('batchEditPanel').style.display='none'">取消</button>
+                    <button class="btn btn-success" style="width: auto;" onclick="confirmBatchEdit()">套用修改</button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer" style="justify-content: flex-end;">
+            <button class="btn btn-outline" style="width:auto;" onclick="closeBatchSearch()">關閉面板</button>
+            <button class="btn btn-danger" style="width:auto;" onclick="confirmBatchDelete()">🗑️ 批量刪除</button>
+            <button class="btn btn-primary" style="width:auto; flex: 1.5;" onclick="openBatchEditPanel()">📝 批量編輯設定</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlayExport" onclick="closeExportModal()"></div>
+    <div class="modal" id="exportModal" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3>📥 匯出報表 (CSV)</h3>
+            <button onclick="closeExportModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-muted);">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-section">
+                <div class="form-section-title">選擇匯出區間</div>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <button class="btn btn-outline" style="flex:1" onclick="setExportRange('week')">本週</button>
+                    <button class="btn btn-outline" style="flex:1" onclick="setExportRange('month')">本月</button>
+                    <button class="btn btn-outline" style="flex:1" onclick="setExportRange('year')">本年</button>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>開始日期</label>
+                        <input type="date" id="exportStartDate">
+                    </div>
+                    <div class="form-group">
+                        <label>結束日期</label>
+                        <input type="date" id="exportEndDate">
+                    </div>
+                </div>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:10px;">
+                    *系統將匯出此區間內所有的「住宿」與「休息」訂單明細，並可直接使用 Excel 開啟。
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" style="width:auto;" onclick="closeExportModal()">取消</button>
+            <button id="btnExecuteExport" class="btn btn-success" style="width:auto;" onclick="executeExport()">匯出下載</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlayRest" onclick="closeModalRest()"></div>
+    <div class="modal" id="restFormModal">
+        <div class="modal-header">
+            <h3 id="restModalTitle">🕒 休息客登記</h3>
+            <button onclick="closeModalRest()" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-muted);">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-section">
+                <div class="form-section-title">基本資訊</div>
+                <div class="grid-2">
+                    <div class="form-group"><label>選擇房號 <span style="color:red">*</span></label><select id="restRoom"><option value="">選擇房號</option></select></div>
+                    <div class="form-group">
+                        <label>休息時間</label>
+                        <div class="time-picker-group">
+                            <input type="time" id="restStartTime">
+                            <span id="restTimeWave">~</span>
+                            <input type="time" id="restEndTime">
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group"><label>顧客姓名 <span style="color:red">*</span></label><input id="restName" placeholder="顧客姓名"></div>
+                    <div class="form-group"><label>電話</label><input id="restPhone" placeholder="聯絡電話"></div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group"><label>人數</label><input id="restPeople" type="number" value="2" min="1"></div>
+                    <div class="form-group"><label>實收金額</label><input id="restPrice" type="number" placeholder="金額"></div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group"><label>身分證</label><input id="restID" placeholder="身分證字號"></div>
+                    <div class="form-group"><label>備註</label><input id="restNote" placeholder="特殊需求"></div>
+                </div>
+            </div>
+            
+            <div class="form-section" id="restLogSection">
+                <div class="form-section-title">修改紀錄</div>
+                <div id="restLogs" class="log-container"></div>
+            </div>
+        </div>
+        
+        <div id="restFooterView" class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModalRest()">關閉</button>
+            <button class="btn btn-primary" onclick="toggleRestEditMode(true)">編輯</button>
+            <button id="btnCheckoutRestView" class="btn btn-success" style="flex: 2; background:#ef4444;" onclick="checkoutRestAction()">結束休息</button>
+        </div>
+
+        <div id="restFooterEdit" class="modal-footer" style="display: none;">
+            <button class="btn btn-outline" onclick="cancelRestEdit()">取消</button>
+            <button id="btnDeleteRest" class="btn btn-danger" onclick="deleteRestAction()">刪除</button>
+            <button id="btnSaveRest" class="btn btn-primary" style="flex: 2;" onclick="saveRestAction()">💾 儲存</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+    <div class="modal" id="formModal">
+        <div class="modal-header">
+            <h3 id="modalTitle">房號資訊</h3>
+            <button onclick="closeModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-muted);">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-section">
+                <div class="form-section-title">訂單資訊</div>
+                <div class="grid-2">
+                    <div class="form-group"><label>選擇房號 <span style="color:red">*</span></label><select id="bookingRoom"><option value="">請選擇</option></select></div>
+                    <div class="form-group"><label>訂單編號</label><input id="orderNumber" placeholder="系統編號/自訂"></div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group"><label>入住日期 <span style="color:red">*</span></label><input id="bookingCheckin" type="date"></div>
+                    <div class="form-group"><label>退房日期 <span style="color:red">*</span></label><input id="checkoutDate" type="date"></div>
+                </div>
+                <div class="form-group"><label>接單日期</label><input id="orderDate" type="date"></div>
+            </div>
+            <div class="form-section">
+                <div class="form-section-title">住客資料</div>
+                <div class="grid-2">
+                    <div class="form-group"><label>代表人姓名</label><input id="name" placeholder="Name"></div>
+                    <div class="form-group"><label>聯絡電話</label><input id="phone" placeholder="Phone"></div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group"><label>身分證</label><input id="idNumber" placeholder="ID Number"></div>
+                    <div class="form-group"><label>出生年月日</label><input type="date" id="birthday"></div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group"><label>入住人數</label><input id="people" type="number" value="2"></div>
+                    <div class="form-group"><label>國籍</label><input id="country" placeholder="預設: 台灣"></div>
+                </div>
+            </div>
+            <div class="form-section">
+                <div class="form-section-title">帳務與備註</div>
+                <div class="grid-2">
+                    <div class="form-group"><label>訂單總額</label><input id="total" type="number"></div>
+                    <div class="form-group"><label>已付訂金</label><input id="deposit" type="number"></div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group"><label>應收尾款</label><input id="balance" type="number" style="font-weight:bold; color:#ef4444; background:#fef2f2;"></div>
+                    <div class="form-group">
+                        <label>付款狀態</label>
+                        <select id="payStatus">
+                            <option value="">未付清</option>
+                            <option value="paid">現場已結清</option>
+                            <option value="platform">訂房平台已收</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group"><label>來源平台</label><input id="platform" placeholder="OTA (如 Booking, Agoda) 或 現場"></div>
+                <div class="form-group"><label>備註事項</label><textarea id="request" rows="2" placeholder="特殊需求..."></textarea></div>
+            </div>
+            
+            <div class="form-section" id="bookingLogSection">
+                <div class="form-section-title">修改紀錄</div>
+                <div id="bookingLogs" class="log-container"></div>
+            </div>
+        </div>
+
+        <div id="modalFooterView" class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal()">關閉</button>
+            <button class="btn btn-primary" onclick="toggleEditMode(true)">編輯</button>
+            <button id="btnCheckinView" class="btn btn-success" onclick="setStatus('checkedin')">入住</button>
+            <button id="btnCheckoutView" class="btn btn-outline" onclick="setStatus('checkedout')">退房</button>
+        </div>
+
+        <div id="modalFooterEdit" class="modal-footer" style="display: none;">
+            <button class="btn btn-outline" onclick="cancelEdit()">取消</button>
+            <button id="btnDelete" class="btn btn-danger" onclick="deleteBooking()">刪除</button>
+            <button id="btnSaveBooking" class="btn btn-primary" style="flex: 2;" onclick="save()">💾 儲存</button>
+        </div>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh-tw.js"></script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCde1T_hHZOm7__3-1qcQ_NAeAbkz5MdFc",
+    authDomain: "lightnessgogo-2d757.firebaseapp.com",
+    projectId: "lightnessgogo-2d757",
+    storageBucket: "lightnessgogo-2d757.firebasestorage.app",
+    messagingSenderId: "1033105975068",
+    appId: "1:1033105975068:web:915882758685a0d668bcd9",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let currentViewMode = 'booking'; 
+
+function getLogTimestamp() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    const h = now.getHours();
+    const ampm = h >= 12 ? '下午' : '上午';
+    const hh = String(h > 12 ? h - 12 : (h === 0 ? 12 : h)).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    return `${y}/${m}/${d} ${ampm} ${hh}:${mm} ${ss}秒 修改`;
+}
+
+window.toggleLogDetails = function(element) {
+    const details = element.nextElementSibling;
+    const icon = element.querySelector('.expand-icon');
+    details.classList.toggle('show');
+    icon.classList.toggle('open');
+}
+
+function renderLogs(elementId, logsArray, fieldMap) {
+    const container = document.getElementById(elementId);
+    if (!logsArray || logsArray.length === 0) {
+        container.innerHTML = '<div class="log-empty">尚無修改紀錄</div>';
+        return;
+    }
+    
+    let html = '';
+    const formatVal = (v, k) => {
+        if(v === "" || v === undefined) return "-";
+        if(k === 'payStatus') return v === 'paid' ? '現場已結清' : v === 'platform' ? '平台已收' : '未付清';
+        if(k === 'status') return v === 'checkedin' ? '入住中' : v === 'checkedout' ? '已退房' : v === 'stay' ? '續住' : v === 'booked' ? '已預訂' : v === 'resting' ? '休息中' : v === 'checkout' ? '結束休息' : v;
+        if(k === 'people') return v + "位";
+        return v;
+    };
+
+    for (let i = logsArray.length - 1; i >= 0; i--) {
+        let log = logsArray[i];
+        if (typeof log === 'string') {
+            html += `<div class="log-item"><div class="log-header" style="cursor:default;"><span>✏️ ${log}</span></div></div>`;
+        } else {
+            let detailsHtml = '';
+            for (let key in fieldMap) {
+                let label = fieldMap[key];
+                let isChanged = log.changes && log.changes[key] !== undefined;
+                let currentVal = log.snapshot ? log.snapshot[key] : '-';
+                
+                if (isChanged) {
+                    let oldVal = formatVal(log.changes[key].old, key);
+                    let newVal = formatVal(log.changes[key].new, key);
+                    detailsHtml += `<div class="log-row log-changed"><b>${label}</b><span>${oldVal} ➔ <strong>${newVal}</strong></span></div>`;
+                } else {
+                    detailsHtml += `<div class="log-row log-unchanged"><b>${label}</b><span>${formatVal(currentVal, key)}</span></div>`;
+                }
+            }
+            
+            html += `
+            <div class="log-item">
+                <div class="log-header" onclick="toggleLogDetails(this)">
+                    <span>✏️ ${log.timestamp}</span>
+                    <span class="expand-icon">▼</span>
+                </div>
+                <div class="log-details">${detailsHtml}</div>
+            </div>`;
+        }
+    }
+    container.innerHTML = html;
+}
+
+const bookingFieldMap = { checkinDate: "入住日", checkoutDate: "退房日", orderNumber: "訂單編號", name: "姓名", phone: "電話", people: "人數", idNumber: "身分證", birthday: "生日", country: "國籍", total: "總金額", deposit: "訂金", payStatus: "付款狀態", platform: "來源平台", request: "備註", status: "房間狀態", balance: "應收尾款" };
+const restFieldMap = { room: "房號", time: "休息時段", name: "姓名", phone: "電話", people: "人數", price: "實收金額", id: "身分證", note: "備註", status: "房間狀態" };
+
+window.switchView = function(mode) {
+    currentViewMode = mode;
+    document.getElementById('tab-booking').classList.toggle('active', mode === 'booking');
+    document.getElementById('tab-rest').classList.toggle('active', mode === 'rest');
+    updateUI(); 
+}
+
+function getCurrentDate(){ return document.getElementById("selectedDate").value; }
+
+function getDateString(dateObj) {
+    let y = dateObj.getFullYear();
+    let m = String(dateObj.getMonth() + 1).padStart(2, '0');
+    let d = String(dateObj.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+function updateDateDisplay(dateObj) {
+    const days = ['日', '一', '二', '三', '四', '五', '六'];
+    const y = dateObj.getFullYear();
+    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const d = String(dateObj.getDate()).padStart(2, '0');
+    const day = days[dateObj.getDay()];
+    document.getElementById('displayDateTitle').innerText = `${y}年${m}月${d}日 (週${day})`;
+}
+
+const rooms = ["201","202","203","301","302","303","401","402","403"];
+let bookings = {};
+let currentRoom = "";
+let restData = {};
+let currentRestIndex = -1; 
+let batchResultsData = [];
+
+window.onload = async () => {
+    const grid = document.getElementById("roomGrid");
+    rooms.forEach(room=>{
+        const card = document.createElement("div");
+        card.className="room-card";
+        grid.appendChild(card);
+    });
+
+    flatpickr("#selectedDate", {
+        locale: "zh_tw", dateFormat: "Y-m-d", defaultDate: "today", disableMobile: true,
+        onChange: async function(selectedDates) {
+            if (selectedDates[0]) updateDateDisplay(selectedDates[0]);
+            await Promise.all([loadData(), loadRestData()]);
+            updateUI();
+        }
+    });
+
+    updateDateDisplay(new Date());
+
+    const deposit = document.getElementById("deposit");
+    const total = document.getElementById("total");
+    const payStatus = document.getElementById("payStatus");
+    deposit.addEventListener("input", calcBalance);
+    total.addEventListener("input", calcBalance);
+    payStatus.addEventListener("change", calcBalance);
+
+    document.getElementById("editEnablePayStatus").addEventListener("change", function() {
+        document.getElementById("batchPayStatus").disabled = !this.checked;
+    });
+    document.getElementById("editEnableStatus").addEventListener("change", function() {
+        document.getElementById("batchStatus").disabled = !this.checked;
+    });
+
+    await Promise.all([loadData(), loadRestData()]);
+    updateUI();
+};
+
+function calcBalance() {
+    const totalEl = document.getElementById("total");
+    const depositEl = document.getElementById("deposit");
+    const balanceEl = document.getElementById("balance");
+    const payStatusEl = document.getElementById("payStatus");
+    
+    if (totalEl && depositEl && balanceEl && payStatusEl) {
+        if (payStatusEl.value === 'paid' || payStatusEl.value === 'platform') {
+            balanceEl.value = 0;
+        } else {
+            balanceEl.value = (Number(totalEl.value) || 0) - (Number(depositEl.value) || 0);
+        }
+    }
+}
+
+window.changeDate = function(days) {
+    const dateInput = document.getElementById("selectedDate");
+    if(!dateInput.value) return;
+    let [y, m, d] = dateInput.value.split("-");
+    let currentDate = new Date(y, m - 1, d);
+    currentDate.setDate(currentDate.getDate() + days);
+    
+    const newDateStr = getDateString(currentDate);
+    dateInput._flatpickr.setDate(newDateStr, true);
+    
+    const grid = document.getElementById("roomGrid");
+    grid.style.opacity = '0'; grid.style.transform = days > 0 ? 'translateX(20px)' : 'translateX(-20px)';
+    setTimeout(() => { grid.style.opacity = '1'; grid.style.transform = 'translateX(0)'; }, 150);
+};
+
+let touchstartX = 0, touchendX = 0, touchstartY = 0, touchendY = 0;
+const container = document.getElementById('mainContainer');
+container.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; touchstartY = e.changedTouches[0].screenY; }, {passive: true});
+container.addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; touchendY = e.changedTouches[0].screenY; handleSwipe(); }, {passive: true});
+
+function handleSwipe() {
+    const thresholdX = 120; 
+    const thresholdY = 40;  
+    let diffX = touchendX - touchstartX;
+    let diffY = Math.abs(touchendY - touchstartY);
+    
+    if (diffY < thresholdY) {
+        if (diffX < -thresholdX) window.changeDate(1); 
+        else if (diffX > thresholdX) window.changeDate(-1); 
+    }
+}
+
+window.searchGuest = async function() {
+    const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+    if(!keyword) { alert("請輸入關鍵字"); return; }
+
+    document.getElementById("modalOverlaySearch").style.display = "block";
+    document.getElementById("searchModal").style.display = "flex";
+    document.body.classList.add("no-scroll");
+    
+    const tbody = document.getElementById("searchResultsBody");
+    tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding: 30px;'>🔄 搜尋中...</td></tr>";
+
+    let results = []; let seenBookings = new Set(); 
+
+    try {
+        const bookingsSnap = await getDocs(collection(db, "bookings"));
+        bookingsSnap.forEach(docSnap => {
+            const dailyData = docSnap.data();
+            for (let room in dailyData) {
+                let b = dailyData[room];
+                if ((b.name && String(b.name).toLowerCase().includes(keyword)) || (b.phone && String(b.phone).toLowerCase().includes(keyword))) {
+                    let uniqueKey = `booking_${room}_${b.checkinDate}_${b.name}`;
+                    if (!seenBookings.has(uniqueKey)) {
+                        seenBookings.add(uniqueKey);
+                        results.push({ type: '住宿', room: room, date: `${b.checkinDate} ~ ${b.checkoutDate}`, name: b.name||'-', platform: b.platform||'-', payStatus: b.payStatus, balance: b.balance, sortDate: new Date(b.checkinDate) });
+                    }
+                }
+            }
+        });
+
+        const restsSnap = await getDocs(collection(db, "restData"));
+        restsSnap.forEach(docSnap => {
+            const dateStr = docSnap.id;
+            (docSnap.data().data || []).forEach(r => {
+                if ((r.name && String(r.name).toLowerCase().includes(keyword)) || (r.phone && String(r.phone).toLowerCase().includes(keyword))) {
+                    results.push({ type: '休息', room: r.room, date: `${dateStr} (${r.time||'-'})`, name: r.name||'-', platform: '現場', payStatus: 'paid', price: r.price, sortDate: new Date(dateStr) });
+                }
+            });
+        });
+
+        results.sort((a, b) => b.sortDate - a.sortDate);
+
+        if (results.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding: 30px; color:var(--text-muted);'>查無資料</td></tr>";
+        } else {
+            tbody.innerHTML = results.map(r => {
+                let payBadge = "";
+                if(r.type === '住宿') {
+                    if (r.payStatus === 'paid') payBadge = '<span style="color:#10b981; font-weight:bold;">已結清</span>';
+                    else if (r.payStatus === 'platform') payBadge = '<span style="color:#3b82f6; font-weight:bold;">平台付</span>';
+                    else payBadge = `<span style="color:#ef4444; font-weight:bold;">欠款 $${r.balance || 0}</span>`;
+                } else {
+                    payBadge = `<span style="color:#10b981; font-weight:bold;">已結清 ($${r.price || 0})</span>`;
+                }
+                return `<tr>
+                    <td><span style="font-size:12px; font-weight:bold; color:${r.type==='住宿'?'#b45309':'#1d4ed8'};">${r.type}</span></td>
+                    <td><b>${r.name}</b><br><small style="color:var(--text-muted);">房號: ${r.room}</small></td>
+                    <td>${r.date}</td><td>${r.platform}</td><td>${payBadge}</td>
+                </tr>`;
+            }).join("");
+        }
+    } catch (e) { tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; color:red; padding: 30px;'>系統錯誤</td></tr>"; }
+}
+
+window.closeSearch = function() { document.getElementById("modalOverlaySearch").style.display = "none"; document.getElementById("searchModal").style.display = "none"; document.body.classList.remove("no-scroll"); }
+
+window.openBatchSearch = function() {
+    document.getElementById("modalOverlayBatchSearch").style.display = "block";
+    document.getElementById("batchSearchModal").style.display = "flex";
+    document.body.classList.add("no-scroll");
+    
+    const now = new Date();
+    document.getElementById("batchMonthInput").value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    document.getElementById("batchResultsBody").innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px; color: var(--text-muted);">請設定條件後點擊篩選按鈕</td></tr>';
+    document.getElementById("batchEditPanel").style.display = "none";
+    document.getElementById("selectAllBatch").checked = false;
+}
+
+window.closeBatchSearch = function() {
+    document.getElementById("modalOverlayBatchSearch").style.display = "none";
+    document.getElementById("batchSearchModal").style.display = "none";
+    document.body.classList.remove("no-scroll");
+}
+
+window.executeBatchSearch = async function() {
+    const month = document.getElementById("batchMonthInput").value; 
+    const keyword = document.getElementById("batchKeywordInput").value.trim().toLowerCase();
+    
+    if(!month) { alert("請選擇月份"); return; }
+    if(!keyword) { alert("請輸入姓名或電話"); return; }
+
+    const tbody = document.getElementById("batchResultsBody");
+    tbody.innerHTML = "<tr><td colspan='6' style='text-align:center; padding: 30px;'>🔄 篩選中，請稍候...</td></tr>";
+
+    batchResultsData = [];
+
+    try {
+        const bookingsSnap = await getDocs(collection(db, "bookings"));
+        bookingsSnap.forEach(docSnap => {
+            if (docSnap.id.startsWith(month)) {
+                const dailyData = docSnap.data();
+                for (let room in dailyData) {
+                    let b = dailyData[room];
+                    if ((b.name && String(b.name).toLowerCase().includes(keyword)) || (b.phone && String(b.phone).toLowerCase().includes(keyword))) {
+                        batchResultsData.push({
+                            id: `b_${docSnap.id}_${room}`, type: '住宿', docId: docSnap.id, room: room,
+                            date: docSnap.id, name: b.name || '-', phone: b.phone || '-',
+                            payStatus: b.payStatus, status: b.status, balance: b.balance, data: b
+                        });
+                    }
+                }
+            }
+        });
+
+        const restsSnap = await getDocs(collection(db, "restData"));
+        restsSnap.forEach(docSnap => {
+            if (docSnap.id.startsWith(month)) {
+                const arr = docSnap.data().data || [];
+                arr.forEach((r, index) => {
+                    if ((r.name && String(r.name).toLowerCase().includes(keyword)) || (r.phone && String(r.phone).toLowerCase().includes(keyword))) {
+                        batchResultsData.push({
+                            id: `r_${docSnap.id}_${index}`, type: '休息', docId: docSnap.id, room: r.room,
+                            date: docSnap.id, name: r.name || '-', phone: r.phone || '-', price: r.price, status: r.status, restIndex: index, data: r
+                        });
+                    }
+                });
+            }
+        });
+
+        batchResultsData.sort((a, b) => a.docId.localeCompare(b.docId));
+
+        if (batchResultsData.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='6' style='text-align:center; padding: 30px; color:var(--text-muted);'>該月份無符合的紀錄</td></tr>";
+        } else {
+            tbody.innerHTML = batchResultsData.map((r, i) => {
+                let statusText = "";
+                if (r.type === '住宿') {
+                    statusText = `尾款:$${r.balance||0} / ${r.status==='checkedin'?'入住中':r.status==='checkedout'?'已退房':r.status==='stay'?'續住':'預訂'}`;
+                } else {
+                    statusText = `實收:$${r.price||0} / ${r.status==='resting'?'休息中':'已結束'}`;
+                }
+                
+                return `<tr>
+                    <td style="text-align: center;"><input type="checkbox" class="batch-checkbox" value="${i}"></td>
+                    <td><span style="font-size:12px; font-weight:bold; color:${r.type==='住宿'?'#b45309':'#1d4ed8'};">${r.type}</span></td>
+                    <td style="font-size:12px;">${r.date}<br><span style="color:#94a3b8">接單: ${r.data?.orderDate || '-'}</span></td>
+                    <td><b>${r.room}</b></td>
+                    <td>${r.name}</td>
+                    <td style="font-size: 12px;">${statusText}</td>
+                </tr>`;
+            }).join("");
+        }
+        document.getElementById("selectAllBatch").checked = false;
+    } catch (e) {
+        tbody.innerHTML = "<tr><td colspan='6' style='text-align:center; color:red; padding: 30px;'>系統錯誤</td></tr>";
+    }
+}
+
+window.toggleAllBatch = function(cb) {
+    document.querySelectorAll('.batch-checkbox').forEach(c => c.checked = cb.checked);
+}
+
+window.confirmBatchDelete = async function() {
+    const selected = Array.from(document.querySelectorAll('.batch-checkbox:checked')).map(cb => batchResultsData[cb.value]);
+    if(selected.length === 0) { alert("請先勾選要刪除的項目"); return; }
+    if(!confirm(`確定要徹底刪除選取的 ${selected.length} 筆資料嗎？\n(注意：這是不可逆的操作！)`)) return;
+
+    try {
+        for (let item of selected) {
+            if (item.type === '住宿') {
+                const docRef = doc(db, "bookings", item.docId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    let d = docSnap.data();
+                    if (d[item.room]) {
+                        delete d[item.room];
+                        await setDoc(docRef, d);
+                    }
+                }
+            } else {
+                const docRef = doc(db, "restData", item.docId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    let d = docSnap.data();
+                    let newArr = (d.data || []).filter((r, i) => i !== item.restIndex);
+                    await setDoc(docRef, { data: newArr });
+                }
+            }
+        }
+        alert("✅ 批量刪除完成");
+        await executeBatchSearch(); 
+        await loadData(); await loadRestData(); updateUI();
+    } catch(e) { alert("刪除過程發生錯誤"); }
+}
+
+window.openBatchEditPanel = function() {
+    if(document.querySelectorAll('.batch-checkbox:checked').length === 0) {
+        alert("請先勾選要編輯的訂單！"); return;
+    }
+    document.getElementById('batchEditPanel').style.display = 'block';
+}
+
+window.confirmBatchEdit = async function() {
+    const selected = Array.from(document.querySelectorAll('.batch-checkbox:checked')).map(cb => batchResultsData[cb.value]);
+    const doPay = document.getElementById("editEnablePayStatus").checked;
+    const doStatus = document.getElementById("editEnableStatus").checked;
+    const newPay = document.getElementById("batchPayStatus").value;
+    const newStatus = document.getElementById("batchStatus").value;
+
+    if(!doPay && !doStatus) { alert("請勾選要覆寫的欄位"); return; }
+    if(!confirm(`確定要批量覆寫這 ${selected.length} 筆資料嗎？`)) return;
+
+    try {
+        for (let item of selected) {
+            if (item.type === '住宿') {
+                const docRef = doc(db, "bookings", item.docId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    let d = docSnap.data();
+                    if (d[item.room]) {
+                        let roomData = d[item.room];
+                        let logs = roomData.updateLogs ? [...roomData.updateLogs] : [];
+                        let changes = {};
+                        
+                        if (doPay && roomData.payStatus !== newPay) {
+                            changes.payStatus = { old: roomData.payStatus, new: newPay };
+                            roomData.payStatus = newPay;
+                            if(newPay === 'paid' || newPay === 'platform') {
+                                changes.balance = { old: roomData.balance, new: 0 };
+                                roomData.balance = 0;
+                            }
+                        }
+                        if (doStatus && roomData.status !== newStatus) {
+                            changes.status = { old: roomData.status, new: newStatus };
+                            roomData.status = newStatus;
+                            if(newStatus === 'checkedin' || newStatus === 'checkedout') roomData.everCheckedIn = true;
+                        }
+                        
+                        if(Object.keys(changes).length > 0) {
+                            let snap = {...roomData}; delete snap.updateLogs;
+                            logs.push({ timestamp: getLogTimestamp() + " (批量)", changes: changes, snapshot: snap });
+                            roomData.updateLogs = logs;
+                            await setDoc(docRef, d);
+                        }
+                    }
+                }
+            } else {
+                if (doStatus) {
+                    const restNewStatus = newStatus === 'checkedout' ? 'checkout' : 'resting';
+                    const docRef = doc(db, "restData", item.docId);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        let d = docSnap.data();
+                        let arr = d.data || [];
+                        let targetIdx = item.restIndex;
+                        if(targetIdx !== -1 && arr[targetIdx] && arr[targetIdx].status !== restNewStatus) {
+                            let logs = arr[targetIdx].updateLogs ? [...arr[targetIdx].updateLogs] : [];
+                            let changes = { status: { old: arr[targetIdx].status, new: restNewStatus } };
+                            arr[targetIdx].status = restNewStatus;
+                            let snap = {...arr[targetIdx]}; delete snap.updateLogs;
+                            logs.push({ timestamp: getLogTimestamp() + " (批量)", changes: changes, snapshot: snap });
+                            arr[targetIdx].updateLogs = logs;
+                            await setDoc(docRef, { data: arr });
+                        }
+                    }
+                }
+            }
+        }
+        alert("✅ 批量覆寫完成");
+        document.getElementById('batchEditPanel').style.display = 'none';
+        await executeBatchSearch(); 
+        await loadData(); await loadRestData(); updateUI();
+    } catch(e) { alert("修改過程發生錯誤"); }
+}
+
+// ⭐ CSV 匯出系統邏輯
+window.openExportModal = function() {
+    document.getElementById("modalOverlayExport").style.display = "block";
+    document.getElementById("exportModal").style.display = "flex";
+    document.body.classList.add("no-scroll");
+    setExportRange('month'); // 預設帶入本月
+}
+
+window.closeExportModal = function() {
+    document.getElementById("modalOverlayExport").style.display = "none";
+    document.getElementById("exportModal").style.display = "none";
+    document.body.classList.remove("no-scroll");
+}
+
+// ⭐ 快捷設定匯出區間
+window.setExportRange = function(type) {
+    const today = new Date();
+    let start = new Date(today);
+    let end = new Date(today);
+    if (type === 'week') {
+        const day = today.getDay() || 7; 
+        start.setDate(today.getDate() - day + 1);
+        end.setDate(start.getDate() + 6);
+    } else if (type === 'month') {
+        start = new Date(today.getFullYear(), today.getMonth(), 1);
+        end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    } else if (type === 'year') {
+        start = new Date(today.getFullYear(), 0, 1);
+        end = new Date(today.getFullYear(), 11, 31);
+    }
+    document.getElementById("exportStartDate").value = getDateString(start);
+    document.getElementById("exportEndDate").value = getDateString(end);
+}
+
+// ⭐ 執行匯出報表下載
+window.executeExport = async function() {
+    const startDateStr = document.getElementById("exportStartDate").value;
+    const endDateStr = document.getElementById("exportEndDate").value;
+    if(!startDateStr || !endDateStr) { alert("請選擇開始與結束日期"); return; }
+    if(startDateStr > endDateStr) { alert("開始日期不能晚於結束日期"); return; }
+
+    const btn = document.getElementById("btnExecuteExport");
+    btn.innerText = "處理中...";
+    btn.disabled = true;
+
+    try {
+        let csvContent = "\uFEFF"; 
+        csvContent += "訂單類型,日期/時段,房號,住客姓名,聯絡電話,人數,身分證號,款項狀態,平台來源,房間狀態,備註\n";
+
+        let exportData = [];
+        
+        const bookingsSnap = await getDocs(collection(db, "bookings"));
+        bookingsSnap.forEach(docSnap => {
+            const docDate = docSnap.id;
+            if (docDate >= startDateStr && docDate <= endDateStr) {
+                const dailyData = docSnap.data();
+                for (let room in dailyData) {
+                    let b = dailyData[room];
+                    let payText = b.payStatus === 'paid' ? '已結清' : (b.payStatus === 'platform' ? '平台代收' : '未付清');
+                    let statusText = b.status === 'checkedin' ? '入住中' : (b.status === 'checkedout' ? '已退房' : (b.status === 'stay' ? '續住中' : '已預訂'));
+                    let moneyText = `${payText} (尾款: $${b.balance||0})`;
+                    
+                    exportData.push([
+                        "住宿", docDate, room, b.name || "-", b.phone || "-", 
+                        b.people ? b.people + "人" : "-", b.idNumber || "-", moneyText, 
+                        b.platform || "現場", statusText, b.request || "-"
+                    ]);
+                }
+            }
+        });
+
+        const restsSnap = await getDocs(collection(db, "restData"));
+        restsSnap.forEach(docSnap => {
+            const docDate = docSnap.id;
+            if (docDate >= startDateStr && docDate <= endDateStr) {
+                const arr = docSnap.data().data || [];
+                arr.forEach(r => {
+                    let statusText = r.status === 'resting' ? '休息中' : '已結束';
+                    let moneyText = `已結清 (實收: $${r.price||0})`;
+                    exportData.push([
+                        "休息", `${docDate} ${r.time||""}`, r.room, r.name || "-", r.phone || "-", 
+                        r.people ? r.people + "人" : "-", r.id || "-", moneyText, 
+                        "現場", statusText, r.note || "-"
+                    ]);
+                });
+            }
+        });
+
+        exportData.sort((a, b) => a[1].localeCompare(b[1]));
+
+        exportData.forEach(row => {
+            csvContent += row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",") + "\n";
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `房況報表_${startDateStr}_至_${endDateStr}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        closeExportModal();
+    } catch (e) {
+        console.error(e);
+        alert("匯出失敗，請檢查網路狀態");
+    } finally {
+        btn.innerText = "匯出下載";
+        btn.disabled = false;
+    }
+}
+
+window.toggleEditMode = function(isEdit) {
+    const modal = document.getElementById('formModal');
+    if (isEdit) modal.classList.remove('view-mode');
+    else modal.classList.add('view-mode');
+
+    const formFields = document.querySelectorAll('#formModal .modal-body input, #formModal .modal-body select, #formModal .modal-body textarea');
+    formFields.forEach(field => {
+        if (field.id === 'bookingRoom' && currentRoom !== "") { field.disabled = true; return; }
+        field.disabled = !isEdit;
+    });
+
+    document.getElementById('modalFooterView').style.display = isEdit ? 'none' : 'flex';
+    document.getElementById('modalFooterEdit').style.display = isEdit ? 'flex' : 'none';
+    
+    if(!isEdit && currentRoom === "") {
+        document.getElementById('btnCheckinView').style.display = 'none';
+        document.getElementById('btnCheckoutView').style.display = 'none';
+    } else {
+        document.getElementById('btnCheckinView').style.display = 'flex';
+        document.getElementById('btnCheckoutView').style.display = 'flex';
+    }
+}
+
+window.cancelEdit = function() {
+    if (currentRoom === "") closeModal(); 
+    else openModal(currentRoom); 
+}
+
+window.showBookingForm = function() { openModal("NEW"); }
+
+function openModal(room) {
+    const selectedDate = document.getElementById("selectedDate").value;
+    if (!selectedDate) { alert("請先選日期"); return; }
+    currentRoom = (room === "NEW" || !room) ? "" : room;
+    document.getElementById("modalTitle").innerText = currentRoom ? `房號 ${currentRoom} - 住宿單` : "📝 建立住宿單";
+
+    const roomSelect = document.getElementById("bookingRoom");
+    roomSelect.innerHTML = '<option value="">請選擇</option>';
+    rooms.forEach(r => { 
+        const op = document.createElement("option"); 
+        op.value = r; 
+        op.textContent = r; 
+        if (currentRoom === "" && bookings[selectedDate]?.[r] && bookings[selectedDate]?.[r].status !== 'checkedout') {
+            op.disabled = true;
+            op.textContent = r + " (已佔用)";
+        }
+        roomSelect.appendChild(op); 
+    });
+
+    if (currentRoom) {
+        roomSelect.value = currentRoom;
+        toggleEditMode(false); 
+    } else {
+        roomSelect.value = "";
+        toggleEditMode(true);  
+    }
+
+    document.getElementById("modalOverlay").style.display = "block"; document.getElementById("formModal").style.display = "flex"; document.body.classList.add("no-scroll");
+
+    const data = bookings[selectedDate]?.[currentRoom];
+    const fields = ['orderNumber', 'name', 'phone', 'people', 'idNumber', 'birthday', 'orderDate', 'total', 'deposit', 'balance', 'country', 'platform', 'request', 'payStatus'];
+    
+    if (data) { 
+        fields.forEach(id => { const el = document.getElementById(id); if (el) el.value = data[id] || ""; }); 
+        document.getElementById("bookingCheckin").value = data.checkinDate || selectedDate;
+        document.getElementById("checkoutDate").value = data.checkoutDate || "";
+        renderLogs('bookingLogs', data.updateLogs || [], bookingFieldMap);
+        document.getElementById("bookingLogSection").style.display = "block";
+    } else { 
+        fields.forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; }); 
+        document.getElementById("bookingCheckin").value = selectedDate; 
+        document.getElementById("checkoutDate").value = "";
+        document.getElementById("bookingLogSection").style.display = "none"; 
+    }
+}
+
+window.closeModal = function() { document.getElementById("modalOverlay").style.display = "none"; document.getElementById("formModal").style.display = "none"; document.body.classList.remove("no-scroll"); }
+
+window.toggleRestEditMode = function(isEdit) {
+    const modal = document.getElementById('restFormModal');
+    if (isEdit) modal.classList.remove('view-mode');
+    else modal.classList.add('view-mode');
+
+    const formFields = document.querySelectorAll('#restFormModal .modal-body input, #restFormModal .modal-body select');
+    formFields.forEach(field => {
+        if (field.id === 'restRoom' && currentRestIndex !== -1) { field.disabled = true; return; }
+        field.disabled = !isEdit;
+    });
+
+    document.getElementById('restFooterView').style.display = isEdit ? 'none' : 'flex';
+    document.getElementById('restFooterEdit').style.display = isEdit ? 'flex' : 'none';
+
+    if(!isEdit && currentRestIndex === -1) {
+        document.getElementById('btnCheckoutRestView').style.display = 'none';
+    } else {
+        document.getElementById('btnCheckoutRestView').style.display = 'flex';
+    }
+}
+
+window.cancelRestEdit = function() {
+    if (currentRestIndex === -1) closeModalRest(); 
+    else openRestModal(currentRestIndex, currentRoom); 
+}
+
+window.openRestModal = function(index = -1, prefillRoom = "") {
+    const selectedDate = document.getElementById("selectedDate").value;
+    if (!selectedDate) { alert("請先選擇日期"); return; }
+    
+    currentRestIndex = index;
+    currentRoom = prefillRoom;
+    updateRestRoomOptions(prefillRoom);
+    
+    const roomSelect = document.getElementById("restRoom");
+
+    if (index >= 0) {
+        const data = restData[selectedDate][index];
+        roomSelect.value = data.room;
+        document.getElementById("restName").value = data.name || "";
+        document.getElementById("restPhone").value = data.phone || "";
+        document.getElementById("restPeople").value = data.people || "";
+        document.getElementById("restPrice").value = data.price || "";
+        document.getElementById("restID").value = data.id || "";
+        document.getElementById("restNote").value = data.note || "";
+        
+        let timeParts = (data.time || "").split("~");
+        document.getElementById("restStartTime").value = timeParts[0] || "";
+        document.getElementById("restEndTime").value = timeParts[1] || "";
+
+        document.getElementById("restModalTitle").innerText = `房號 ${data.room} - 休息單`;
+        renderLogs('restLogs', data.updateLogs || [], restFieldMap);
+        document.getElementById("restLogSection").style.display = "block";
+        toggleRestEditMode(false); 
+    } else {
+        if(prefillRoom) roomSelect.value = prefillRoom;
+        else roomSelect.value = "";
+        
+        document.getElementById("restName").value = "";
+        document.getElementById("restPhone").value = "";
+        document.getElementById("restPeople").value = 2;
+        document.getElementById("restPrice").value = "";
+        document.getElementById("restID").value = "";
+        document.getElementById("restNote").value = "";
+        document.getElementById("restStartTime").value = "";
+        document.getElementById("restEndTime").value = "";
+        
+        document.getElementById("restModalTitle").innerText = "🕒 建立休息單";
+        document.getElementById("restLogSection").style.display = "none";
+        toggleRestEditMode(true);
+    }
+
+    document.getElementById("modalOverlayRest").style.display = "block"; 
+    document.getElementById("restFormModal").style.display = "flex"; 
+    document.body.classList.add("no-scroll");
+}
+
+window.showRestForm = function(prefillRoom = "") { openRestModal(-1, prefillRoom); }
+window.closeModalRest = function() { document.getElementById("modalOverlayRest").style.display = "none"; document.getElementById("restFormModal").style.display = "none"; document.body.classList.remove("no-scroll"); }
+
+window.save = async function(){
+    try {
+        const roomSelectVal = document.getElementById("bookingRoom").value;
+        if (!roomSelectVal) { alert("請選擇房號！"); return; }
+        currentRoom = roomSelectVal; 
+
+        const checkin = document.getElementById("bookingCheckin").value;
+        const checkout = document.getElementById("checkoutDate").value;
+        if(!checkin || !checkout){ alert("請選擇日期！"); return; }
+
+        let [cy, cm, cd] = checkin.split("-"); let current = new Date(cy, cm-1, cd);
+        let [ey, em, ed] = checkout.split("-"); const end = new Date(ey, em-1, ed);
+        if (current >= end) { alert("退房日須晚於入住日！"); return; }
+
+        const saveBtn = document.getElementById("btnSaveBooking");
+        saveBtn.innerHTML = "處理中..."; saveBtn.disabled = true;
+
+        const orderData = {
+            orderNumber: document.getElementById("orderNumber").value.trim() || "",
+            name: document.getElementById("name").value.trim() || "", 
+            phone: document.getElementById("phone").value || "",
+            idNumber: document.getElementById("idNumber").value || "", 
+            birthday: document.getElementById("birthday").value || "",
+            orderDate: document.getElementById("orderDate").value || "", 
+            people: document.getElementById("people").value || "", 
+            total: document.getElementById("total").value || "",
+            deposit: document.getElementById("deposit").value || "", 
+            balance: document.getElementById("balance").value || "",
+            country: document.getElementById("country").value || "", 
+            platform: document.getElementById("platform").value || "",
+            request: document.getElementById("request").value || "", 
+            payStatus: document.getElementById("payStatus").value || "",
+            checkinDate: checkin, 
+            checkoutDate: checkout,
+            everCheckedIn: false 
+        };
+
+        const selectedDate = document.getElementById("selectedDate").value;
+        const existingData = bookings[selectedDate]?.[currentRoom] || {};
+        
+        let changes = {};
+        let hasChanges = false;
+        Object.keys(bookingFieldMap).forEach(key => {
+            let oldVal = String(existingData[key] || "");
+            let newVal = String(orderData[key] || "");
+            if (oldVal !== newVal && Object.keys(existingData).length > 0) { 
+                changes[key] = { old: oldVal, new: newVal };
+                hasChanges = true;
+            }
+        });
+
+        let logs = existingData.updateLogs ? [...existingData.updateLogs] : [];
+        if (hasChanges) {
+            let snapshotData = { ...orderData };
+            delete snapshotData.updateLogs; 
+            logs.push({ timestamp: getLogTimestamp(), changes: changes, snapshot: snapshotData });
+        }
+        orderData.updateLogs = logs;
+
+        let baseStatus = "booked";
+        if (existingData && Object.keys(existingData).length > 0) {
+            if (existingData.status === 'checkedout') baseStatus = 'checkedout';
+            else if (existingData.status === 'checkedin' || existingData.status === 'stay') baseStatus = 'checkedin';
+            else baseStatus = 'booked';
+            orderData.everCheckedIn = existingData.everCheckedIn || false;
+
+            if (existingData.checkinDate !== checkin || existingData.checkoutDate !== checkout) {
+                let [ocy, ocm, ocd] = existingData.checkinDate.split("-"); let oldCurr = new Date(ocy, ocm-1, ocd);
+                let [oey, oem, oed] = existingData.checkoutDate.split("-"); const oldEnd = new Date(oey, oem-1, oed);
+                while(oldCurr < oldEnd){
+                    const odStr = getDateString(oldCurr);
+                    if(bookings[odStr] && bookings[odStr][currentRoom]) {
+                        delete bookings[odStr][currentRoom];
+                        await setDoc(doc(db, "bookings", odStr), bookings[odStr]);
+                    }
+                    oldCurr.setDate(oldCurr.getDate() + 1);
+                }
+            }
+        }
+        
+        let dayIndex = 0;
+        let writeCurrent = new Date(cy, cm-1, cd);
+        while(writeCurrent < end){
+            const dateStr = getDateString(writeCurrent);
+            if(!bookings[dateStr]) bookings[dateStr] = {};
+            
+            let finalStatus = baseStatus;
+            if (baseStatus === 'checkedin') {
+                finalStatus = dayIndex === 0 ? 'checkedin' : 'stay';
+            }
+            
+            bookings[dateStr][currentRoom] = { ...orderData, status: finalStatus };
+            await setDoc(doc(db, "bookings", dateStr), bookings[dateStr]);
+            writeCurrent.setDate(writeCurrent.getDate() + 1); 
+            dayIndex++;
+        }
+
+        saveBtn.innerHTML = "💾 儲存"; saveBtn.disabled = false;
+        updateUI(); closeModal();
+    } catch(err) {
+        alert("儲存失敗: " + err.message);
+        document.getElementById("btnSaveBooking").innerHTML = "💾 儲存"; 
+        document.getElementById("btnSaveBooking").disabled = false;
+    }
+}
+
+window.setStatus = async function(status){
+    try {
+        const date = document.getElementById("selectedDate").value; const data = bookings[date]?.[currentRoom];
+        if(!data) return;
+        
+        let logs = data.updateLogs ? [...data.updateLogs] : [];
+        let snapshotData = { ...data, status: status };
+        delete snapshotData.updateLogs;
+
+        logs.push({
+            timestamp: getLogTimestamp(),
+            changes: { status: { old: data.status, new: status } },
+            snapshot: snapshotData
+        });
+
+        let [cy, cm, cd] = (data.checkinDate || date).split("-"); let current = new Date(cy, cm-1, cd);
+        let [ey, em, ed] = (data.checkoutDate || date).split("-"); const checkout = new Date(ey, em-1, ed);
+        let baseStatus = status;
+
+        if (current < checkout) {
+            let dayIndex = 0;
+            while(current < checkout){
+                const dStr = getDateString(current);
+                if(bookings[dStr]?.[currentRoom]){
+                    let finalStatus = baseStatus;
+                    if (baseStatus === 'checkedin') {
+                        finalStatus = dayIndex === 0 ? 'checkedin' : 'stay';
+                    }
+                    bookings[dStr][currentRoom].status = finalStatus;
+                    bookings[dStr][currentRoom].updateLogs = logs;
+                    if(status === "checkedin" || status === "checkedout") bookings[dStr][currentRoom].everCheckedIn = true;
+                    await setDoc(doc(db, "bookings", dStr), bookings[dStr]);
+                }
+                current.setDate(current.getDate() + 1);
+                dayIndex++;
+            }
+        } else {
+            bookings[date][currentRoom].status = status;
+            bookings[date][currentRoom].updateLogs = logs;
+            if(status === "checkedin" || status === "checkedout") bookings[date][currentRoom].everCheckedIn = true;
+            await setDoc(doc(db, "bookings", date), bookings[date]);
+        }
+        updateUI(); closeModal();
+    } catch (e) {
+        alert("變更狀態失敗，請檢查資料庫連線");
+    }
+}
+
+window.deleteBooking = async function(){
+    const date = document.getElementById("selectedDate").value; const data = bookings[date]?.[currentRoom];
+    if(!data) return;
+    if(confirm("確定取消訂單？ (連續日期的訂單將連帶刪除)")){
+        if (data.checkinDate && data.checkoutDate) {
+            let [cy, cm, cd] = data.checkinDate.split("-"); let current = new Date(cy, cm-1, cd);
+            let [ey, em, ed] = data.checkoutDate.split("-"); const end = new Date(ey, em-1, ed);
+            while(current < end){
+                const dStr = getDateString(current);
+                if(bookings[dStr]){ delete bookings[dStr][currentRoom]; await setDoc(doc(db, "bookings", dStr), bookings[dStr]); }
+                current.setDate(current.getDate() + 1);
+            }
+        } else {
+            delete bookings[date][currentRoom]; 
+            await setDoc(doc(db, "bookings", date), bookings[date]);
+        }
+        updateUI(); closeModal();
+    }
+}
+
+function updateUI() {
+    const date = document.getElementById("selectedDate").value;
+    const roomCards = document.querySelectorAll(".room-card");
+    const currentRestData = restData[date] || [];
+
+    roomCards.forEach((card, i) => {
+        const room = rooms[i]; 
+        const bookingData = bookings[date]?.[room]; 
+        const restInfos = currentRestData.filter(r => r.room === room);
+        const activeRest = restInfos.find(r => r.status === 'resting') || restInfos[restInfos.length - 1];
+
+        card.className = "room-card"; 
+        let html = `<div class="room-header"><span class="room-number">${room}</span>`;
+
+        if (currentViewMode === 'booking') {
+            if (bookingData) {
+                let checkin = new Date(bookingData.checkinDate || date);
+                let checkout = new Date(bookingData.checkoutDate || date);
+                const nights = Math.max(1, Math.round((checkout - checkin) / (1000*60*60*24)));
+                
+                card.classList.add(`status-${bookingData.status || "booked"}`);
+                let statusName = bookingData.status === 'checkedin' ? '入住中' : (bookingData.status === 'checkedout' ? '已退房' : (bookingData.status === 'stay' ? '續住中' : '已預訂'));
+                let badgeClass = bookingData.status === 'checkedin' ? 'badge-checkedin' : (bookingData.status === 'checkedout' ? 'badge-checkedout' : (bookingData.status === 'stay' ? 'badge-stay' : 'badge-booked'));
+                
+                html += `<span class="status-badge ${badgeClass}">${statusName}</span></div>`;
+                html += `<div class="guest-name-row">${bookingData.name || '未填寫'}</div>`;
+                
+                html += `<div class="detail-grid-split">`;
+                html += `<div class="detail-col">`;
+                html += `<div class="detail-item"><b>聯絡電話</b><span>${bookingData.phone || '-'}</span></div>`;
+                html += `<div class="detail-item"><b>證件號碼</b><span>${bookingData.idNumber || '-'}</span></div>`;
+                html += `<div class="detail-item"><b>旅客國籍</b><span>${bookingData.country || '台灣'}</span></div>`;
+                html += `</div>`;
+                html += `<div class="detail-col">`;
+                html += `<div class="detail-item"><b>住宿人數</b><span>${bookingData.people || '-'}人</span></div>`;
+                html += `<div class="detail-item"><b>平台來源</b><span>${bookingData.platform || '現場'}</span></div>`;
+                html += `<div class="detail-item"><b>訂單總額</b><span>$${bookingData.total || 0}</span></div>`;
+                let payStatusText = bookingData.payStatus === 'paid' ? '已結清' : (bookingData.payStatus === 'platform' ? '平台代收' : '未付清');
+                let payColor = bookingData.payStatus === 'paid' ? '#10b981' : (bookingData.payStatus === 'platform' ? '#3b82f6' : '#ef4444');
+                html += `<div class="detail-item"><b>付款狀態</b><span style="color:${payColor}; font-weight:bold;">${payStatusText}</span></div>`;
+                html += `<div class="detail-item"><b>應收尾款</b><span style="color:#ef4444; font-weight:bold;">$${bookingData.balance || 0}</span></div>`;
+                html += `</div>`;
+                html += `</div>`;
+                if (bookingData.orderNumber) html += `<div class="full-width-item"><b>訂單編號</b><span>${bookingData.orderNumber}</span></div>`;
+                if (bookingData.request) html += `<div class="full-width-item highlight-note"><b>備註需求</b><span>${bookingData.request}</span></div>`;
+
+            } else {
+                card.classList.add(`status-empty`);
+                html += `<span class="status-badge badge-empty">空房</span></div>`;
+                html += `<div class="guest-name-row" style="color:var(--border-color);">--</div>`;
+            }
+
+            if (activeRest && activeRest.status === 'resting') {
+                html += `<div class="rest-overlay-alert"><strong>🕒 休息佔用中</strong><span>時段：${activeRest.time || '未填寫'}</span><span>房客：${activeRest.name} (${activeRest.people}人)</span></div>`;
+            }
+
+            card.innerHTML = html;
+            card.onclick = () => openModal(room);
+
+        } else {
+            if (activeRest) {
+                card.classList.add(activeRest.status === "resting" ? "status-resting" : "status-checkedout");
+                let statusName = activeRest.status === "resting" ? "休息中" : "已結束";
+                let badgeClass = activeRest.status === "resting" ? "badge-resting" : "badge-checkedout";
+                
+                html += `<span class="status-badge ${badgeClass}">${statusName}</span></div>`;
+                html += `<div class="guest-name-row">${activeRest.name}</div>`;
+                
+                html += `<div class="detail-grid-split">`;
+                html += `<div class="detail-col">`;
+                html += `<div class="detail-item"><b>聯絡電話</b><span>${activeRest.phone || '-'}</span></div>`;
+                html += `<div class="detail-item"><b>證件號碼</b><span>${activeRest.id || '-'}</span></div>`;
+                html += `</div>`;
+                html += `<div class="detail-col">`;
+                html += `<div class="detail-item"><b>休息人數</b><span>${activeRest.people || '-'}人</span></div>`;
+                html += `<div class="detail-item"><b>休息時段</b><span>${activeRest.time || '-'}</span></div>`;
+                html += `<div class="detail-item"><b>實收金額</b><span>$${activeRest.price || 0}</span></div>`;
+                html += `</div>`;
+                html += `</div>`;
+                if (activeRest.note) html += `<div class="full-width-item highlight-note"><b>備註</b><span>${activeRest.note}</span></div>`;
+                
+                card.onclick = () => {
+                    const idx = currentRestData.findIndex(r => r === activeRest);
+                    openRestModal(idx, room); 
+                };
+            } else {
+                card.classList.add(`status-empty`);
+                html += `<span class="status-badge badge-empty">未排休息</span></div>`;
+                if(bookingData) { html += `<div class="guest-name-row" style="color:var(--status-booked); font-size:14px;">(本日有住宿預訂)</div>`; } 
+                else { html += `<div class="guest-name-row" style="color:var(--border-color);">--</div>`; }
+                card.onclick = () => showRestForm(room);
+            }
+            card.innerHTML = html;
+        }
+    });
+    updateStats();
+}
+
+window.addRest = async function(){
+    const date = getCurrentDate(); if(!date){ alert("請選日期"); return; }
+    const room = document.getElementById("restRoom").value;
+    const name = document.getElementById("restName").value;
+    if(!name || !room){ alert("請填寫房號與姓名"); return; }
+
+    const btn = document.getElementById("btnSaveRest");
+    btn.innerText = "處理中..."; btn.disabled = true;
+
+    let st = document.getElementById("restStartTime").value;
+    let et = document.getElementById("restEndTime").value;
+    let combinedTime = (st || et) ? `${st}~${et}` : "";
+
+    let existingData = currentRestIndex >= 0 ? restData[date][currentRestIndex] : {};
+    
+    let restObj = { 
+        room: room, name: name, phone: document.getElementById("restPhone").value, 
+        people: String(Number(document.getElementById("restPeople").value) || 2), 
+        time: combinedTime, price: String(Number(document.getElementById("restPrice").value) || 0), 
+        id: document.getElementById("restID").value, note: document.getElementById("restNote").value, 
+        status: (currentRestIndex >= 0 && existingData) ? existingData.status : "resting"
+    };
+
+    let changes = {};
+    let hasChanges = false;
+    Object.keys(restFieldMap).forEach(key => {
+        let oldVal = String(existingData[key] || "");
+        let newVal = String(restObj[key] || "");
+        if (oldVal !== newVal && Object.keys(existingData).length > 0) { 
+            changes[key] = { old: oldVal, new: newVal };
+            hasChanges = true;
+        }
+    });
+
+    let logs = existingData.updateLogs ? [...existingData.updateLogs] : [];
+    if (hasChanges) {
+        let snapshotData = { ...restObj };
+        delete snapshotData.updateLogs; 
+        logs.push({ timestamp: getLogTimestamp(), changes: changes, snapshot: snapshotData });
+    }
+    restObj.updateLogs = logs;
+
+    if(!restData[date]){ restData[date]=[]; }
+    
+    if (currentRestIndex >= 0) { restData[date][currentRestIndex] = restObj; } 
+    else { restData[date].push(restObj); }
+    
+    try { 
+        await setDoc(doc(db, "restData", date), { data: restData[date] }); 
+        updateUI(); closeModalRest();
+    } catch(e) { alert("儲存失敗"); } finally { btn.innerText = "確認建立"; btn.disabled = false; }
+}
+
+window.checkoutRestAction = async function() {
+    if (currentRestIndex >= 0) {
+        const date = getCurrentDate();
+        let currentData = restData[date][currentRestIndex];
+        let logs = currentData.updateLogs ? [...currentData.updateLogs] : [];
+        
+        if(currentData.status === "resting") {
+            if (confirm("確定要「結束休息」嗎？")) {
+                let snapshotData = { ...currentData, status: "checkout" };
+                delete snapshotData.updateLogs;
+                logs.push({ timestamp: getLogTimestamp(), changes: { status: { old: "resting", new: "checkout" } }, snapshot: snapshotData });
+                restData[date][currentRestIndex].status = "checkout";
+                restData[date][currentRestIndex].updateLogs = logs;
+                await setDoc(doc(db, "restData", date), { data: restData[date] }); 
+                updateUI(); closeModalRest();
+            }
+        } else {
+            if (confirm("此房已結束。\n是否要「恢復為休息中」(誤觸恢復)？")) {
+                let snapshotData = { ...currentData, status: "resting" };
+                delete snapshotData.updateLogs;
+                logs.push({ timestamp: getLogTimestamp(), changes: { status: { old: "checkout", new: "resting" } }, snapshot: snapshotData });
+                restData[date][currentRestIndex].status = "resting";
+                restData[date][currentRestIndex].updateLogs = logs;
+                await setDoc(doc(db, "restData", date), { data: restData[date] }); 
+                updateUI(); closeModalRest();
+            }
+        }
+    }
+}
+
+window.deleteRestAction = async function() {
+    if (currentRestIndex >= 0 && confirm("確定要刪除這筆休息資料嗎？")) {
+        const date = getCurrentDate();
+        restData[date].splice(currentRestIndex, 1);
+        await setDoc(doc(db, "restData", date), { data: restData[date] }); 
+        updateUI(); closeModalRest();
+    }
+}
+window.saveRestAction = window.addRest;
+
+async function loadData() {
+    const date = document.getElementById("selectedDate").value; 
+    try { const docSnap = await getDoc(doc(db, "bookings", date)); bookings[date] = docSnap.exists() ? docSnap.data() : {}; } catch(e) { bookings[date] = {}; }
+}
+async function loadRestData() {
+    const date = document.getElementById("selectedDate").value;
+    try { const docSnap = await getDoc(doc(db, "restData", date)); restData[date] = docSnap.exists() ? docSnap.data().data || [] : []; } catch(e) { restData[date] = []; }
+}
+
+function updateStats() {
+    const date = document.getElementById("selectedDate").value; const statsBox = document.getElementById("statsBox");
+    if (!date) { statsBox.innerHTML = "<div style='text-align:center;'>資料載入中...</div>"; return; }
+
+    let dailyTotalPeople = 0, currentInHousePeople = 0;  
+    let countryStats = {}; 
+
+    if (bookings[date]) { 
+        Object.values(bookings[date]).forEach(data => { 
+            let p = Number(data.people) || 0; 
+            let c = data.country || "台灣";
+            if (!countryStats[c]) countryStats[c] = { daily: 0, inHouse: 0 };
+
+            if (data.everCheckedIn) {
+                dailyTotalPeople += p; 
+                countryStats[c].daily += p;
+            }
+            if (data.status === 'checkedin') {
+                currentInHousePeople += p; 
+                countryStats[c].inHouse += p;
+            }
+        }); 
+    }
+
+    let dailyHtml = `<b>當日人數 (${dailyTotalPeople})</b><div style="margin-top:4px; font-size:12px; display:flex; flex-direction:column; gap:2px;">`;
+    let inHouseHtml = `<b>住宿在店人數 (${currentInHousePeople})</b><div style="margin-top:4px; font-size:12px; display:flex; flex-direction:column; gap:2px;">`;
+    
+    let hasDaily = false; let hasInHouse = false;
+    for (let c in countryStats) {
+        if (countryStats[c].daily > 0) { dailyHtml += `<div>${c}：${countryStats[c].daily} 位</div>`; hasDaily = true; }
+        if (countryStats[c].inHouse > 0) { inHouseHtml += `<div>${c}：${countryStats[c].inHouse} 位</div>`; hasInHouse = true; }
+    }
+    if (!hasDaily) dailyHtml += `<div style="color:var(--text-muted)">無資料</div>`;
+    if (!hasInHouse) inHouseHtml += `<div style="color:var(--text-muted)">無資料</div>`;
+    
+    dailyHtml += `</div>`; inHouseHtml += `</div>`;
+
+    statsBox.innerHTML = `<div style="display:flex; justify-content:space-around; width:100%; text-align:left; gap:10px;">
+        <div class="stats-col">${dailyHtml}</div>
+        <div class="stats-divider" style="width:1px; background:var(--border-color); margin:0 15px;"></div>
+        <div class="stats-col">${inHouseHtml}</div>
+    </div>`;
+}
+
+function updateRestRoomOptions(prefillRoom = "") {
+    const date = document.getElementById("selectedDate").value; const restRoomSelect = document.getElementById("restRoom"); const currentBookings = bookings[date] || {};
+    restRoomSelect.innerHTML = '<option value="">選擇房號</option>';
+    rooms.forEach(room => { 
+        if (!currentBookings[room] || currentBookings[room].status !== 'checkedin' || currentBookings[room].status === 'checkedout' || room === prefillRoom) { 
+            const op = document.createElement("option"); op.value = room; op.textContent = room; 
+            if (currentRoom === "" && currentBookings[room] && currentBookings[room].status !== 'checkedout') {
+                op.disabled = true; op.textContent = room + " (已佔用)";
+            }
+            restRoomSelect.appendChild(op); 
+        } 
+    });
+}
+</script>
+</body>
+</html>
