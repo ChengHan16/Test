@@ -28,12 +28,28 @@
 
     * { box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
 
-    /* 確保 Body 滿版且隱藏 X 軸，不影響 Sticky 定位 */
     body { margin: 0; background-color: var(--bg-light); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; touch-action: pan-y; padding-bottom: 90px; }
 
-    .header { background-color: var(--primary-dark); color: white; padding: 12px 20px; display: flex; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
+    /* ⭐ 頂部橫幅更新：左右排版對齊 */
+    .header { background-color: var(--primary-dark); color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
+    .header-left { display: flex; align-items: center; }
     .logo { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; margin-right: 12px; border: 2px solid var(--primary-gold); }
-    .hotel-name { font-size: 1.15rem; font-weight: 700; letter-spacing: 1.5px; color: var(--primary-gold); }
+    
+    /* ⭐ 標題下拉選單樣式 */
+    .title-dropdown-container { position: relative; }
+    .hotel-name { font-size: 1.15rem; font-weight: 700; letter-spacing: 1.5px; color: var(--primary-gold); cursor: pointer; display: flex; align-items: center; gap: 6px; user-select: none; }
+    .hotel-name:hover { opacity: 0.8; }
+    
+    .dropdown-menu { display: none; position: absolute; top: 100%; left: 0; margin-top: 15px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); min-width: 160px; overflow: hidden; border: 1px solid var(--border-color); z-index: 200; }
+    .dropdown-menu.show { display: block; animation: fadeIn 0.2s ease-in-out; }
+    .dropdown-item { padding: 14px 18px; color: var(--text-main); text-decoration: none; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .dropdown-item:hover { background: var(--bg-light); color: var(--primary-dark); }
+    .dropdown-item.text-danger { color: #ef4444; border-top: 1px solid var(--border-color); }
+    .dropdown-item.text-danger:hover { background: #fef2f2; color: #dc2626; }
+
+    /* ⭐ 右側使用者名稱 */
+    .header-right { display: flex; align-items: center; }
+    .user-greeting { font-size: 13px; color: white; background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 20px; font-weight: 600; letter-spacing: 0.5px; border: 1px solid rgba(255,255,255,0.1); }
 
     .main-content { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
     .container { max-width: 1100px; margin: 0 auto; padding: 20px 15px 0 15px; width: 100%; flex-grow: 1; }
@@ -49,13 +65,12 @@
 
     .invisible-date-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: none; padding: 0; margin: 0; z-index: 10; }
 
-    /* 手機版日曆強制置中 */
     @media (max-width: 768px) {
-        .flatpickr-calendar {
-            position: fixed !important; top: 50% !important; left: 50% !important;
+        .flatpickr-calendar.open {
+            display: inline-block !important; position: fixed !important; top: 50% !important; left: 50% !important;
             transform: translate(-50%, -50%) !important; margin: 0 !important;
             box-shadow: 0 0 0 2000px rgba(22, 52, 80, 0.6), 0 25px 50px -12px rgba(0,0,0,0.5) !important;
-            z-index: 99999 !important;
+            z-index: 99999 !important; max-width: 90vw !important; right: auto !important; bottom: auto !important;
         }
     }
 
@@ -65,8 +80,6 @@
     .tab-btn.active { background: var(--primary-dark); color: var(--primary-gold); border-color: var(--primary-dark); }
     
     .right-controls { display: flex; width: 100%; flex-direction: column; align-items: stretch; gap: 10px; }
-    
-    /* ⭐ 搜尋組合外框，容納匯出與批量按鈕 */
     .search-box-wrapper { display: flex; gap: 8px; width: 100%; align-items: center; flex-wrap: wrap; }
     .search-box { display: flex; align-items: center; background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 12px; flex-grow: 1; min-width: 200px; }
     .search-box input { border: none; background: transparent; padding: 4px; font-size: 14px; outline: none; width: 100%; }
@@ -76,8 +89,10 @@
     .action-btn { background: var(--primary-dark); color: var(--primary-gold); border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; flex: 1; text-align: center; display: flex; justify-content: center; align-items: center; }
     .action-btn.outline { background: white; color: var(--primary-dark); border: 1px solid var(--border-color); }
 
-    #statsBox { font-size: 13px; line-height: 1.5; color: var(--text-muted); background: var(--bg-light); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-around; text-align: center; border: 1px solid var(--border-color); }
-    #statsBox b { color: var(--primary-dark); }
+    #statsBox { font-size: 13px; line-height: 1.5; color: var(--text-muted); background: var(--bg-light); padding: 12px; border-radius: 8px; display: flex; justify-content: space-around; text-align: left; border: 1px solid var(--border-color); width: 100%; }
+    #statsBox b { color: var(--primary-dark); font-size: 14px; }
+    .stats-col { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .stats-divider { width: 1px; background: var(--border-color); margin: 0 15px; }
 
     .room-grid { display: grid; grid-template-columns: 1fr; gap: 15px; transition: transform 0.3s ease-out, opacity 0.3s ease-out; }
     @media (min-width: 650px) { .room-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; } }
@@ -106,15 +121,18 @@
 
     .guest-name-row { font-size: 1.25rem; font-weight: 700; margin-bottom: 2px; color: var(--text-main); }
     
-    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); font-size: 13.5px; color: var(--text-muted); }
-    .detail-grid div { display: flex; justify-content: space-between; align-items: center; }
-    .detail-grid b { color: var(--text-main); font-weight: 600; font-size: 12px; }
-    .detail-grid span { text-align: right; }
+    .detail-grid-split { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); }
+    .detail-col { display: flex; flex-direction: column; gap: 8px; }
+    .detail-item { display: flex; justify-content: space-between; align-items: flex-start; font-size: 12.5px; line-height: 1.3; }
+    .detail-item b { color: var(--text-muted); font-weight: 500; white-space: nowrap; margin-right: 6px; }
+    .detail-item span { color: var(--text-main); font-weight: 600; text-align: right; word-break: break-all; }
     
-    .detail-grid .full-width { grid-column: span 2; display: flex; justify-content: space-between; gap: 10px; }
-    .detail-grid .full-width span { text-align: right; word-break: break-all; flex-grow: 1;}
-    .detail-grid .highlight-note { color: #b45309; background: rgba(254, 243, 199, 0.5); padding: 6px; border-radius: 6px; align-items: flex-start; flex-direction: column; gap: 2px;}
-    .detail-grid .highlight-note span { text-align: left; }
+    .full-width-item { display: flex; justify-content: space-between; gap: 10px; margin-top: 10px; font-size: 13px; }
+    .full-width-item b { color: var(--text-muted); font-weight: 500; font-size: 12px; white-space: nowrap; }
+    .full-width-item span { color: var(--text-main); font-weight: 600; text-align: right; word-break: break-all; flex-grow: 1; }
+    .highlight-note { color: #b45309; background: rgba(254, 243, 199, 0.5); padding: 8px; border-radius: 6px; flex-direction: column; align-items: flex-start; }
+    .highlight-note b { margin-bottom: 4px; color: #b45309; }
+    .highlight-note span { text-align: left; color: #92400e; font-weight: 500; }
 
     .rest-overlay-alert { margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.7); border: 1px solid #bbf7d0; border-radius: 8px; font-size: 12px; color: #166534; display: flex; flex-direction: column; gap: 4px; border-left: 4px solid #22c55e; }
     .rest-overlay-alert strong { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #15803d; margin-bottom: 2px;}
@@ -123,10 +141,7 @@
     .date-nav-btn { pointer-events: auto; background: var(--primary-dark); color: var(--primary-gold); border: 1px solid rgba(255,255,255,0.1); padding: 10px 18px; border-radius: 30px; font-weight: 600; box-shadow: 0 6px 12px rgba(0,0,0,0.25); cursor: pointer; transition: all 0.2s; font-size: 13px; backdrop-filter: blur(5px); }
     .date-nav-btn:active { transform: scale(0.95); }
 
-    /* ⭐ 只在手機版/小螢幕顯示前日/後日按鈕 */
-    @media (min-width: 769px) {
-        .sticky-nav-container { display: none !important; }
-    }
+    @media (min-width: 769px) { .sticky-nav-container { display: none !important; } }
 
     .tech-support-banner { display: flex; justify-content: center; align-items: center; text-align: center; padding: 18px 15px; font-size: 12px; font-weight: 600; color: var(--text-muted); background-color: #e2e8f0; margin-top: auto; letter-spacing: 0.5px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.03); padding-bottom: calc(18px + env(safe-area-inset-bottom)); width: 100%; z-index: 80; }
 
@@ -195,8 +210,19 @@
 </head>
 <body>
     <div class="header">
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCImo3zo7iCeo1quGZKt4c0GTrh_uSg3mSfQ&s" class="logo">
-        <div class="hotel-name">來點子站前旅店</div>
+        <div class="header-left">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCImo3zo7iCeo1quGZKt4c0GTrh_uSg3mSfQ&s" class="logo">
+            <div class="title-dropdown-container">
+                <div class="hotel-name" onclick="toggleMenu()">來點子站前旅店 <span style="font-size: 12px; color: white;">▼</span></div>
+                <div class="dropdown-menu" id="headerDropdown">
+                    <a href="account-manager.html" class="dropdown-item">⚙️ 帳號設定</a>
+                    <div class="dropdown-item text-danger" onclick="logoutSystem()">🚪 登出系統</div>
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <span id="currentUserDisplay" class="user-greeting">載入中...</span>
+        </div>
     </div>
 
     <main class="main-content">
@@ -338,26 +364,16 @@
         <div class="modal-body">
             <div class="form-section">
                 <div class="form-section-title">選擇匯出區間</div>
-                
                 <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
                     <button class="btn btn-outline" style="flex:1" onclick="setExportRange('week')">本週</button>
                     <button class="btn btn-outline" style="flex:1" onclick="setExportRange('month')">本月</button>
                     <button class="btn btn-outline" style="flex:1" onclick="setExportRange('year')">本年</button>
                 </div>
-
                 <div class="grid-2">
-                    <div class="form-group">
-                        <label>開始日期</label>
-                        <input type="date" id="exportStartDate">
-                    </div>
-                    <div class="form-group">
-                        <label>結束日期</label>
-                        <input type="date" id="exportEndDate">
-                    </div>
+                    <div class="form-group"><label>開始日期</label><input type="date" id="exportStartDate"></div>
+                    <div class="form-group"><label>結束日期</label><input type="date" id="exportEndDate"></div>
                 </div>
-                <div style="font-size:12px; color:var(--text-muted); margin-top:10px;">
-                    *系統將匯出此區間內所有的「住宿」與「休息」訂單明細，並可直接使用 Excel 開啟。
-                </div>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:10px;">*系統將匯出此區間內所有的訂單明細，並可直接使用 Excel 開啟。</div>
             </div>
         </div>
         <div class="modal-footer">
@@ -513,6 +529,30 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// ⭐ 登入防護與下拉選單邏輯
+if (sessionStorage.getItem("isLoggedIn") !== "true") {
+    window.location.href = "login.html";
+}
+
+window.toggleMenu = function() {
+    document.getElementById('headerDropdown').classList.toggle('show');
+}
+
+window.addEventListener('click', function(e) {
+    const container = document.querySelector('.title-dropdown-container');
+    if (container && !container.contains(e.target)) {
+        document.getElementById('headerDropdown').classList.remove('show');
+    }
+});
+
+window.logoutSystem = function() {
+    if(confirm("確定要登出系統嗎？")) {
+        sessionStorage.removeItem("isLoggedIn");
+        sessionStorage.removeItem("currentUser");
+        window.location.href = "login.html";
+    }
+}
+
 let currentViewMode = 'booking'; 
 
 function getLogTimestamp() {
@@ -525,7 +565,9 @@ function getLogTimestamp() {
     const hh = String(h > 12 ? h - 12 : (h === 0 ? 12 : h)).padStart(2, '0');
     const mm = String(now.getMinutes()).padStart(2, '0');
     const ss = String(now.getSeconds()).padStart(2, '0');
-    return `${y}/${m}/${d} ${ampm} ${hh}:${mm} ${ss}秒 修改`;
+    // 在 Log 中寫入當前操作者名稱
+    const userName = sessionStorage.getItem("currentUser") || "系統";
+    return `${y}/${m}/${d} ${ampm} ${hh}:${mm} ${ss}秒 (操作: ${userName})`;
 }
 
 window.toggleLogDetails = function(element) {
@@ -620,6 +662,14 @@ let currentRestIndex = -1;
 let batchResultsData = [];
 
 window.onload = async () => {
+    // 載入當前使用者名稱
+    const userName = sessionStorage.getItem("currentUser") || "管理員";
+    const userDisplay = document.getElementById("currentUserDisplay");
+    if(userDisplay) {
+        userDisplay.innerText = `👋 ${userName}`;
+        userDisplay.style.display = "inline-block";
+    }
+
     const grid = document.getElementById("roomGrid");
     rooms.forEach(room=>{
         const card = document.createElement("div");
@@ -1327,8 +1377,10 @@ window.save = async function(){
                     oldCurr.setDate(oldCurr.getDate() + 1);
                 }
             }
+        } else {
+            orderData.status = "booked";
         }
-        
+
         let dayIndex = 0;
         let writeCurrent = new Date(cy, cm-1, cd);
         while(writeCurrent < end){
