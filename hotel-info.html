@@ -11,39 +11,106 @@
         --primary-gold: #c1a13a;
         --bg-light: #f8fafc;
         --text-main: #334155;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
     }
-    * { box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; }
-    body { margin: 0; background-color: var(--bg-light); color: var(--text-main); }
     
-    .navbar { background: var(--primary-dark); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; top: 0; z-index: 1000; }
-    .navbar .logo { display: flex; align-items: center; gap: 10px; color: var(--primary-gold); font-weight: 700; font-size: 1.2rem; text-decoration: none; }
-    .navbar img { width: 40px; border-radius: 8px; border: 2px solid var(--primary-gold); }
+    * { box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background-color: var(--bg-light); color: var(--text-main); line-height: 1.6; padding-top: 70px; }
+    
+    /* 導覽列 */
+    .navbar { background: var(--primary-dark); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .navbar .logo { display: flex; align-items: center; gap: 10px; color: var(--primary-gold); font-weight: 700; font-size: 1.2rem; text-decoration: none; letter-spacing: 1px; }
+    .navbar img { width: 40px; height: 40px; border-radius: 8px; border: 2px solid var(--primary-gold); object-fit: cover; }
+    
+    .nav-links { display: flex; align-items: center; }
     .nav-links a { color: white; text-decoration: none; margin-left: 20px; font-weight: 500; font-size: 14px; transition: 0.2s; }
-    .nav-links a:hover { color: var(--primary-gold); }
+    .nav-links a:hover, .nav-links a.active { color: var(--primary-gold); }
+    .btn-system { background: var(--primary-gold); color: var(--primary-dark) !important; padding: 6px 15px; border-radius: 20px; font-weight: bold !important; }
+    .btn-system:hover { background: white; }
 
-    .hero { height: 70vh; background: linear-gradient(rgba(22,52,80,0.7), rgba(22,52,80,0.7)), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80') center/cover; display: flex; align-items: center; justify-content: center; text-align: center; color: white; padding-top: 70px; }
-    .hero h1 { font-size: 3rem; margin-bottom: 10px; color: var(--primary-gold); letter-spacing: 2px; }
-    .hero p { font-size: 1.2rem; max-width: 600px; margin: 0 auto 30px auto; line-height: 1.6; }
-    .btn-action { background: var(--primary-gold); color: var(--primary-dark); padding: 12px 30px; border-radius: 30px; text-decoration: none; font-weight: 700; font-size: 1.1rem; transition: 0.3s; }
-    .btn-action:hover { background: white; }
+    /* 手機版導覽列滑動 */
+    @media (max-width: 850px) {
+        .nav-links { overflow-x: auto; white-space: nowrap; padding-bottom: 5px; position: absolute; top: 100%; left: 0; width: 100%; background: var(--primary-dark); padding: 10px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .nav-links a { margin-left: 0; margin-right: 20px; }
+        .btn-system { display: none; } /* 手機版隱藏進入系統按鈕，保持乾淨 */
+    }
 
-    .section { padding: 80px 20px; max-width: 1100px; margin: 0 auto; text-align: center; }
-    .section-title { font-size: 2rem; color: var(--primary-dark); margin-bottom: 40px; position: relative; display: inline-block; }
+    /* 首頁橫幅 */
+    .hero { height: 75vh; background: linear-gradient(rgba(22,52,80,0.7), rgba(22,52,80,0.7)), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80') center/cover; display: flex; align-items: center; justify-content: center; text-align: center; color: white; }
+    .hero h1 { font-size: 3.5rem; margin-bottom: 10px; color: var(--primary-gold); letter-spacing: 2px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+    .hero p { font-size: 1.2rem; max-width: 600px; margin: 0 auto 30px auto; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
+    .btn-action { background: var(--primary-gold); color: var(--primary-dark); padding: 12px 35px; border-radius: 30px; text-decoration: none; font-weight: 700; font-size: 1.1rem; transition: 0.3s; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+    .btn-action:hover { background: white; transform: translateY(-3px); }
+
+    @media (max-width: 600px) {
+        .hero h1 { font-size: 2.2rem; }
+        .hero p { font-size: 1rem; padding: 0 20px; }
+    }
+
+    /* 共用區塊設計 */
+    .section { padding: 80px 20px; max-width: 1100px; margin: 0 auto; }
+    .section-title { font-size: 2rem; color: var(--primary-dark); margin-bottom: 40px; position: relative; display: inline-block; text-align: center; width: 100%; }
     .section-title::after { content: ''; width: 60px; height: 4px; background: var(--primary-gold); position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-radius: 2px; }
 
-    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
-    .feature-card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: 0.3s; border: 1px solid var(--border-color); }
-    .feature-card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.1); border-color: var(--primary-gold); }
-    .feature-icon { font-size: 3rem; margin-bottom: 15px; }
-    .feature-card h3 { color: var(--primary-dark); margin-bottom: 10px; font-size: 1.3rem; }
-    .feature-card p { color: var(--text-muted); line-height: 1.6; font-size: 0.95rem; }
+    /* 最新消息 (News) */
+    .news-box { background: white; border-left: 5px solid var(--primary-gold); padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 15px; }
+    .news-date { color: var(--primary-gold); font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; }
+    .news-title { font-size: 1.2rem; color: var(--primary-dark); margin: 0 0 10px 0; }
+    .news-content { color: var(--text-muted); margin: 0; font-size: 0.95rem; }
 
-    .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-    .gallery-img { width: 100%; height: 250px; object-fit: cover; border-radius: 12px; transition: 0.3s; cursor: pointer; }
-    .gallery-img:hover { transform: scale(1.02); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+    /* 客房介紹 (Room) */
+    .room-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+    .room-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: 0.3s; border: 1px solid var(--border-color); }
+    .room-card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.1); }
+    .room-img { width: 100%; height: 220px; object-fit: cover; }
+    .room-info { padding: 25px; }
+    .room-title { font-size: 1.4rem; color: var(--primary-dark); margin: 0 0 10px 0; }
+    .room-desc { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 15px; }
+    .room-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .room-tag { background: var(--bg-light); color: var(--primary-dark); padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid var(--border-color); }
 
-    .footer { background: var(--primary-dark); color: white; text-align: center; padding: 40px 20px; margin-top: 50px; }
-    .footer p { color: #cbd5e1; font-size: 0.9rem; margin: 5px 0; }
+    /* 設施與服務 (Facilities) */
+    .facilities-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; text-align: center; }
+    .facility-item { background: white; padding: 30px 20px; border-radius: 16px; border: 1px solid var(--border-color); transition: 0.3s; }
+    .facility-item:hover { border-color: var(--primary-gold); }
+    .facility-icon { font-size: 2.5rem; margin-bottom: 15px; }
+    .facility-name { font-weight: 700; color: var(--primary-dark); margin: 0; }
+
+    /* 住宿須知 (Notice) */
+    .notice-container { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
+    .notice-list { list-style-type: none; padding: 0; margin: 0; }
+    .notice-list li { position: relative; padding-left: 25px; margin-bottom: 15px; color: var(--text-main); }
+    .notice-list li::before { content: '✓'; position: absolute; left: 0; color: var(--primary-gold); font-weight: bold; }
+    .highlight-text { color: #ef4444; font-weight: bold; }
+
+    /* 交通與地圖 (Map) */
+    .map-container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; background: white; padding: 30px; border-radius: 16px; border: 1px solid var(--border-color); }
+    @media (max-width: 768px) { .map-container { grid-template-columns: 1fr; } }
+    .map-info h3 { color: var(--primary-dark); margin-top: 0; }
+    .map-info p { color: var(--text-muted); margin-bottom: 20px; }
+    .iframe-wrapper iframe { width: 100%; height: 100%; min-height: 300px; border-radius: 12px; border: none; }
+
+    /* 周邊景點 (Scenic) */
+    .scenic-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+    .scenic-card { position: relative; border-radius: 12px; overflow: hidden; height: 250px; cursor: pointer; }
+    .scenic-card img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+    .scenic-card:hover img { transform: scale(1.1); }
+    .scenic-overlay { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 20px; color: white; }
+    .scenic-overlay h3 { margin: 0 0 5px 0; font-size: 1.2rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
+    .scenic-overlay p { margin: 0; font-size: 0.85rem; color: #cbd5e1; }
+
+    /* 聯絡我們 (Contact) */
+    .contact-section { background: var(--primary-dark); color: white; padding: 60px 20px; text-align: center; }
+    .contact-grid { max-width: 800px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; }
+    .contact-item h4 { color: var(--primary-gold); margin: 0 0 10px 0; font-size: 1.1rem; }
+    .contact-item p { margin: 0; color: #e2e8f0; }
+    
+    .fb-btn { display: inline-flex; align-items: center; gap: 10px; background: #1877F2; color: white; padding: 12px 25px; border-radius: 30px; text-decoration: none; font-weight: bold; margin-top: 30px; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+    .fb-btn:hover { background: #166fe5; transform: translateY(-2px); }
+
+    .footer { background: #0f253b; color: #94a3b8; text-align: center; padding: 20px; font-size: 0.85rem; }
 </style>
 </head>
 <body>
@@ -54,55 +121,201 @@
         來點子站前旅店
     </a>
     <div class="nav-links">
-        <a href="#about">關於我們</a>
-        <a href="#rooms">客房介紹</a>
-        <a href="dashboard.html" style="background:var(--primary-gold); color:var(--primary-dark); padding:6px 15px; border-radius:20px;">進入系統</a>
+        <a href="#news">最新消息</a>
+        <a href="#room">客房介紹</a>
+        <a href="#facilities">設施服務</a>
+        <a href="#notice">住宿須知</a>
+        <a href="#map">交通指南</a>
+        <a href="#scenic">周邊景點</a>
+        <a href="#contact">聯絡我們</a>
+        <a href="dashboard.html" class="btn-system">返回管理系統</a>
     </div>
 </nav>
 
-<header class="hero">
+<header id="home" class="hero">
     <div>
         <h1>Lightness Hotel</h1>
-        <p>座落於台南火車站商圈，為您提供無人化智慧型入住體驗。兼具質感與便利，是您探索台南的完美起點。</p>
-        <a href="#rooms" class="btn-action">探索房型</a>
+        <p>座落於台南火車站商圈，為您提供溫馨、舒適的優質住宿體驗。兼具質感與便利，是您探索台南美食與古蹟的完美起點。</p>
+        <a href="#room" class="btn-action">探索房型</a>
     </div>
 </header>
 
-<section id="about" class="section">
-    <h2 class="section-title">旅店特色</h2>
-    <div class="features-grid">
-        <div class="feature-card">
-            <div class="feature-icon">🤖</div>
-            <h3>智慧無人自助化</h3>
-            <p>全館採用無人化智慧自助報到系統，入住免排隊、免等待。密碼鎖進出，安全又保護隱私，給您最自由的住宿空間。</p>
+<section id="news" class="section">
+    <h2 class="section-title">最新消息</h2>
+    <div class="news-box">
+        <div class="news-date">2026-04-01</div>
+        <h3 class="news-title">🌸 春季台南漫遊專案啟動</h3>
+        <p class="news-content">歡迎來到溫暖的台南！即日起透過官方管道訂房，享有專屬折扣。為確保服務品質，請提前預約您的住宿時段。</p>
+    </div>
+    <div class="news-box">
+        <div class="news-date">2026-01-15</div>
+        <h3 class="news-title">📢 旅店系統全面升級公告</h3>
+        <p class="news-content">為提供旅客更優質的服務體驗，來點子站前旅店已全面升級內部管理與訂房系統，期待給您更順暢的入退房流程。</p>
+    </div>
+</section>
+
+<section id="room" class="section" style="background-color: white; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <h2 class="section-title">客房介紹</h2>
+    <div class="room-grid">
+        <div class="room-card">
+            <img src="https://images.unsplash.com/photo-1522771731470-ea131591e481?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="精緻雙人房" class="room-img">
+            <div class="room-info">
+                <h3 class="room-title">精緻雙人房</h3>
+                <p class="room-desc">簡約明亮的設計風格，配備舒適獨立筒床墊，適合情侶或商務旅客，享受寧靜的休憩時光。</p>
+                <div class="room-tags">
+                    <span class="room-tag">標準雙人床</span>
+                    <span class="room-tag">獨立衛浴</span>
+                    <span class="room-tag">對外窗</span>
+                </div>
+            </div>
         </div>
-        <div class="feature-card">
-            <div class="feature-icon">🚆</div>
-            <h3>絕佳地理位置</h3>
-            <p>距離台南火車站步行僅需幾分鐘。鄰近知名景點與美食商圈，無論是商務出差還是深度旅遊，交通都無比便利。</p>
+        <div class="room-card">
+            <img src="https://images.unsplash.com/photo-1505691938895-1758d7feb511?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="溫馨四人房" class="room-img">
+            <div class="room-info">
+                <h3 class="room-title">溫馨四人家庭房</h3>
+                <p class="room-desc">寬敞的起居空間，提供兩張標準雙人床，是家庭旅遊或三五好友結伴出遊的最佳選擇。</p>
+                <div class="room-tags">
+                    <span class="room-tag">雙人床 x2</span>
+                    <span class="room-tag">獨立衛浴</span>
+                    <span class="room-tag">沙發區</span>
+                </div>
+            </div>
         </div>
-        <div class="feature-card">
-            <div class="feature-icon">🛏️</div>
-            <h3>質感舒適空間</h3>
-            <p>無論是背包客床位還是獨立雙人房，我們都提供舒適的寢具與潔淨的環境，讓您在台南的夜晚能徹底放鬆。</p>
+        <div class="room-card">
+            <img src="https://images.unsplash.com/photo-1555854877-bab0e564b8d5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="背包客床位" class="room-img">
+            <div class="room-info">
+                <h3 class="room-title">背包客專屬床位</h3>
+                <p class="room-desc">為獨自旅行的背包客設計。具備個人閱讀燈與隱私拉簾，並提供安全的專屬置物櫃。</p>
+                <div class="room-tags">
+                    <span class="room-tag">單人上下舖</span>
+                    <span class="room-tag">共用衛浴</span>
+                    <span class="room-tag">個人置物櫃</span>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
-<section id="rooms" class="section">
-    <h2 class="section-title">客房環境預覽</h2>
-    <div class="gallery-grid">
-        <img src="https://images.unsplash.com/photo-1522771731470-ea131591e481?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="客房 1" class="gallery-img">
-        <img src="https://images.unsplash.com/photo-1505691938895-1758d7feb511?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="客房 2" class="gallery-img">
-        <img src="https://images.unsplash.com/photo-1598928506311-c55dd1b31120?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="公共區域" class="gallery-img">
+<section id="facilities" class="section">
+    <h2 class="section-title">設施與服務</h2>
+    <div class="facilities-grid">
+        <div class="facility-item">
+            <div class="facility-icon">📶</div>
+            <h3 class="facility-name">免費高速 Wi-Fi</h3>
+        </div>
+        <div class="facility-item">
+            <div class="facility-icon">❄️</div>
+            <h3 class="facility-name">全天候空調</h3>
+        </div>
+        <div class="facility-item">
+            <div class="facility-icon">🧳</div>
+            <h3 class="facility-name">行李寄放服務</h3>
+        </div>
+        <div class="facility-item">
+            <div class="facility-icon">🚿</div>
+            <h3 class="facility-name">24H 熱水供應</h3>
+        </div>
+        <div class="facility-item">
+            <div class="facility-icon">☕</div>
+            <h3 class="facility-name">溫馨交誼廳</h3>
+        </div>
     </div>
+</section>
+
+<section id="notice" class="section" style="background-color: white; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <h2 class="section-title">住宿須知</h2>
+    <div class="notice-container">
+        <ul class="notice-list">
+            <li><span class="highlight-text">入住時間 (Check-in)：</span> 下午 15:00 之後。</li>
+            <li><span class="highlight-text">退房時間 (Check-out)：</span> 上午 11:00 之前。延遲退房將酌收額外費用。</li>
+            <li>為了維護住宿品質與安全，<span class="highlight-text">全館室內空間全面禁止吸菸</span>，違者將收取清潔費。</li>
+            <li>很抱歉，本旅店目前<span class="highlight-text">尚未開放攜帶寵物</span>入住（導盲犬除外）。</li>
+            <li>夜間 22:00 後請降低音量，共同維護寧靜的休憩品質。</li>
+            <li>房內貴重物品請妥善保管，若有遺失，本旅店恕不負賠償責任。</li>
+        </ul>
+    </div>
+</section>
+
+<section id="map" class="section">
+    <h2 class="section-title">交通指南</h2>
+    <div class="map-container">
+        <div class="map-info">
+            <h3>來點子站前旅店 Lightness Hotel</h3>
+            <p>📍 <strong>地址：</strong> 台南市中西區火車站前商圈周邊</p>
+            <p>🚆 <strong>火車：</strong> 抵達「台南火車站」後，由前站出口步行約 5-10 分鐘即可抵達本旅店。</p>
+            <p>🚗 <strong>開車/停車資訊：</strong> 旅店周邊設有多處收費公有/私有停車場。建議提早抵達以利尋找車位。</p>
+            <p>🚌 <strong>公車與客運：</strong> 鄰近台南火車站南北站公車轉運樞紐，搭乘台灣好行或其他市區公車皆非常便利。</p>
+        </div>
+        <div class="iframe-wrapper">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14704.912239423663!2d120.20455829999999!3d22.996162399999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x346e768ca0217ec3%3A0xc4eb7fb2cb16053e!2z5Y-w5Y2X54Gr6LuK56uZ!5e0!3m2!1szh-TW!2stw!4v1700000000000!5m2!1szh-TW!2stw" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+    </div>
+</section>
+
+<section id="scenic" class="section" style="background-color: white; border-top: 1px solid var(--border-color);">
+    <h2 class="section-title">周邊景點</h2>
+    <div class="scenic-grid">
+        <div class="scenic-card">
+            <img src="https://images.unsplash.com/photo-1574227492706-f65b24c3688a?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="赤崁樓">
+            <div class="scenic-overlay">
+                <h3>赤崁樓 (普羅民遮城)</h3>
+                <p>台南最具代表性的古蹟之一，見證歷史的變遷。</p>
+            </div>
+        </div>
+        <div class="scenic-card">
+            <img src="https://images.unsplash.com/photo-1596783061614-256df2a578da?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="花園夜市">
+            <div class="scenic-overlay">
+                <h3>台南知名夜市</h3>
+                <p>大大武花大武花，品嚐最道地的台南特色小吃。</p>
+            </div>
+        </div>
+        <div class="scenic-card">
+            <img src="https://images.unsplash.com/photo-1582236318536-f7f5255c26b1?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="神農街">
+            <div class="scenic-overlay">
+                <h3>神農街 (北勢街)</h3>
+                <p>保存完好的老街，充滿文青氣息與特色咖啡廳。</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="contact" class="contact-section">
+    <h2 style="font-size: 2rem; margin-bottom: 40px;">聯絡我們</h2>
+    <div class="contact-grid">
+        <div class="contact-item">
+            <h4>📞 訂房專線</h4>
+            <p>0900-000-000</p>
+        </div>
+        <div class="contact-item">
+            <h4>📧 聯絡信箱</h4>
+            <p>service@lightness.com.tw</p>
+        </div>
+        <div class="contact-item">
+            <h4>⏰ 服務時間</h4>
+            <p>10:00 - 22:00</p>
+        </div>
+    </div>
+
+    <a href="https://www.facebook.com/profile.php?id=61581197966963" target="_blank" class="fb-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        追蹤我們的官方粉絲專頁
+    </a>
 </section>
 
 <footer class="footer">
-    <h3 style="color:var(--primary-gold); margin-bottom: 10px;">來點子站前旅店 Lightness Hotel</h3>
-    <p>📍 台南市中西區火車站商圈</p>
-    <p>Copyright © 2026 來點子旅店資訊部. All rights reserved.</p>
+    <p>Copyright © 2026 來點子站前旅店 Lightness Hotel. All rights reserved.</p>
 </footer>
 
+<script>
+    // 簡易導覽列滾動變色邏輯
+    window.addEventListener('scroll', function() {
+        const navbar = document.querySelector('.navbar');
+        if (window.scrollY > 50) {
+            navbar.style.boxShadow = "0 4px 15px rgba(0,0,0,0.3)";
+        } else {
+            navbar.style.boxShadow = "0 2px 10px rgba(0,0,0,0.1)";
+        }
+    });
+</script>
 </body>
 </html>
