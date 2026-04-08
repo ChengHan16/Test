@@ -45,11 +45,11 @@
     .modal-header h3 { margin: 0; color: var(--primary-dark); font-size: 1.15rem; font-weight: 700; }
     .modal-body { padding: 20px; }
     .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; }
+    .form-group label { display: block; font-size: 0.85rem; color: #64748b; margin-bottom: 4px; font-weight: 600; }
     .form-group input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; }
     .modal-footer { padding: 15px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 8px; }
     .btn-save { background: var(--primary-dark); color: var(--primary-gold); padding: 8px 16px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
-    .btn-cancel { background: white; color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 8px; cursor: pointer; }
+    .btn-cancel { background: white; color: #334155; border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 8px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -64,12 +64,21 @@
 
 <div class="container">
     <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="搜尋姓名或電話號碼..." onkeyup="filterGuests()">
+        <input type="text" id="searchInput" placeholder="搜尋姓名、身分證或電話號碼..." onkeyup="filterGuests()">
     </div>
 
     <div class="card" style="overflow-x: auto;">
         <table class="user-table">
-            <thead><tr><th>姓名</th><th>電話 (登入ID)</th><th>身分證</th><th>生日</th><th>國籍</th><th>操作</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>姓名</th>
+                    <th>身分證/護照 (帳號ID)</th>
+                    <th>聯絡電話</th>
+                    <th>生日</th>
+                    <th>國籍</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
             <tbody id="guestTableBody">
                 <tr><td colspan="6" style="text-align:center;">資料載入中...</td></tr>
             </tbody>
@@ -84,9 +93,12 @@
         <button onclick="closeModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#64748b;">&times;</button>
     </div>
     <div class="modal-body">
-        <div class="form-group"><label>聯絡電話 (主鍵，不可改)</label><input type="text" id="editPhone" readonly style="background:#f1f5f9; color:#94a3b8;"></div>
+        <div class="form-group">
+            <label>身分證/護照號碼 (主鍵，不可修改)</label>
+            <input type="text" id="editIdNumber" readonly style="background:#f1f5f9; color:#94a3b8;">
+        </div>
         <div class="form-group"><label>住客姓名</label><input type="text" id="editName"></div>
-        <div class="form-group"><label>身分證號</label><input type="text" id="editIdNumber"></div>
+        <div class="form-group"><label>聯絡電話</label><input type="text" id="editPhone"></div>
         <div class="form-group"><label>出生年月日 (YYYY-MM-DD)</label><input type="text" id="editBirthday" placeholder="例如：1990-01-01"></div>
         <div class="form-group"><label>旅客國籍</label><input type="text" id="editCountry"></div>
     </div>
@@ -120,6 +132,7 @@ window.loadGuests = async function() {
     try {
         const snap = await getDocs(collection(db, "frequent_guests"));
         guestsData = [];
+        // doc.id 現在是身分證號/護照
         snap.forEach(doc => guestsData.push({ id: doc.id, ...doc.data() }));
         renderTable(guestsData);
     } catch(e) {
@@ -135,9 +148,8 @@ function renderTable(data) {
     }
     tbody.innerHTML = data.map(g => `
         <tr>
-            <td><b>${g.name}</b></td>
-            <td>${g.id}</td>
-            <td>${g.idNumber || '-'}</td>
+            <td><b>${g.name || '-'}</b></td>
+            <td>${g.id}</td> <td>${g.phone || '-'}</td>
             <td>${g.birthday || '-'}</td>
             <td>${g.country || '台灣'}</td>
             <td class="action-cell">
@@ -150,18 +162,24 @@ function renderTable(data) {
 
 window.filterGuests = function() {
     const keyword = document.getElementById("searchInput").value.toLowerCase();
-    const filtered = guestsData.filter(g => (g.name && g.name.toLowerCase().includes(keyword)) || (g.id && g.id.includes(keyword)));
+    const filtered = guestsData.filter(g => 
+        (g.name && g.name.toLowerCase().includes(keyword)) || 
+        (g.id && g.id.toLowerCase().includes(keyword)) || 
+        (g.phone && g.phone.includes(keyword))
+    );
     renderTable(filtered);
 }
 
-window.openEdit = function(phone) {
-    const g = guestsData.find(x => x.id === phone);
+window.openEdit = function(idVal) {
+    const g = guestsData.find(x => x.id === idVal);
     if(g) {
-        document.getElementById("editPhone").value = g.id;
+        // 將 ID 代入唯讀欄位
+        document.getElementById("editIdNumber").value = g.id;
         document.getElementById("editName").value = g.name || "";
-        document.getElementById("editIdNumber").value = g.idNumber || "";
+        document.getElementById("editPhone").value = g.phone || "";
         document.getElementById("editBirthday").value = g.birthday || "";
         document.getElementById("editCountry").value = g.country || "";
+        
         document.getElementById("editModalOverlay").style.display = "block";
         document.getElementById("editModal").style.display = "flex";
     }
@@ -173,26 +191,27 @@ window.closeModal = function() {
 }
 
 window.saveGuest = async function() {
-    const phone = document.getElementById("editPhone").value;
+    // 主鍵是 idNumber
+    const idVal = document.getElementById("editIdNumber").value;
     const newData = {
         name: document.getElementById("editName").value,
-        phone: phone,
-        idNumber: document.getElementById("editIdNumber").value,
+        phone: document.getElementById("editPhone").value,
+        idNumber: idVal,
         birthday: document.getElementById("editBirthday").value,
         country: document.getElementById("editCountry").value
     };
     try {
-        await setDoc(doc(db, "frequent_guests", phone), newData);
-        alert("更新成功");
+        await setDoc(doc(db, "frequent_guests", idVal), newData);
+        alert("✅ 常客資料更新成功");
         closeModal();
         loadGuests();
     } catch(e) { alert("更新失敗"); }
 }
 
-window.deleteGuest = async function(phone) {
-    if(confirm(`確定要刪除這筆常客資料嗎？ (${phone})`)) {
+window.deleteGuest = async function(idVal) {
+    if(confirm(`確定要刪除這筆常客資料嗎？ (身分證/護照：${idVal})`)) {
         try {
-            await deleteDoc(doc(db, "frequent_guests", phone));
+            await deleteDoc(doc(db, "frequent_guests", idVal));
             loadGuests();
         } catch(e) { alert("刪除失敗"); }
     }
