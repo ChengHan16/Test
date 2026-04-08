@@ -173,6 +173,12 @@
     .time-picker-group { display: flex; align-items: center; gap: 8px; }
     .time-picker-group input { flex: 1; text-align: center; }
 
+    /* ⭐ 住宿人員動態表單樣式 */
+    .co-guest-row { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 10px; position: relative; }
+    .co-guest-row .remove-btn { position: absolute; top: 8px; right: 8px; background: none; border: none; font-size: 16px; color: #ef4444; cursor: pointer; }
+    .co-guest-row input { font-size: 0.9rem; padding: 8px; }
+    .co-guest-row label { font-size: 0.75rem; }
+
     .log-container { display: flex; flex-direction: column; gap: 8px; }
     .log-empty { text-align: center; color: #94a3b8; font-style: italic; font-size: 13px; padding: 10px; }
     .log-item { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; }
@@ -205,6 +211,8 @@
     .modal.view-mode select { pointer-events: none; }
     .modal.view-mode .checkbox-wrapper { display: none !important; }
     .modal.view-mode .custom-date-picker select { padding:0; text-align: left; }
+    .modal.view-mode .co-guest-row { padding: 4px 0; background: transparent; border: none; border-bottom: 1px dashed var(--border-color); border-radius: 0; margin-bottom: 5px; }
+    .modal.view-mode .co-guest-row .remove-btn { display: none; }
 
     select option:disabled { color: #94a3b8; background: #f1f5f9; font-style: italic; }
 
@@ -213,6 +221,10 @@
     .search-table th, .search-table td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 13px; }
     .search-table th { background: var(--bg-light); font-weight: 700; color: #163450; white-space: nowrap; }
     .batch-checkbox { transform: scale(1.3); cursor: pointer; }
+
+    /* ⭐ 匯出報表專用選單網格 */
+    .export-fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; font-size: 13px; }
+    .export-fields-grid label { display: flex; align-items: center; gap: 5px; cursor: pointer; color: var(--text-main); font-weight: 500; }
 
     .no-scroll { overflow: hidden !important; height: 100vh !important; }
 </style>
@@ -382,14 +394,14 @@
     </div>
 
     <div class="modal-overlay" id="modalOverlayExport" onclick="closeExportModal()"></div>
-    <div class="modal" id="exportModal" style="max-width: 500px;">
+    <div class="modal" id="exportModal" style="max-width: 550px;">
         <div class="modal-header">
-            <h3>📥 匯出報表 (CSV)</h3>
+            <h3>📥 匯出報表系統</h3>
             <button onclick="closeExportModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-muted);">&times;</button>
         </div>
         <div class="modal-body">
             <div class="form-section">
-                <div class="form-section-title">選擇匯出區間</div>
+                <div class="form-section-title">步驟一：選擇匯出區間</div>
                 <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
                     <button class="btn btn-outline" style="flex:1" onclick="setExportRange('week')">本週</button>
                     <button class="btn btn-outline" style="flex:1" onclick="setExportRange('month')">本月</button>
@@ -399,12 +411,30 @@
                     <div class="form-group"><label>開始日期</label><input type="date" id="exportStartDate"></div>
                     <div class="form-group"><label>結束日期</label><input type="date" id="exportEndDate"></div>
                 </div>
-                <div style="font-size:12px; color:var(--text-muted); margin-top:10px;">*系統將匯出此區間內所有的訂單明細，並可直接使用 Excel 開啟。</div>
+            </div>
+            
+            <div class="form-section">
+                <div class="form-section-title">步驟二：選擇匯出欄位</div>
+                <div class="export-fields-grid">
+                    <label><input type="checkbox" class="export-field" value="type" checked> 訂單類型</label>
+                    <label><input type="checkbox" class="export-field" value="date" checked> 日期/時段</label>
+                    <label><input type="checkbox" class="export-field" value="room" checked> 房號</label>
+                    <label><input type="checkbox" class="export-field" value="name" checked> 住客姓名</label>
+                    <label><input type="checkbox" class="export-field" value="phone" checked> 聯絡電話</label>
+                    <label><input type="checkbox" class="export-field" value="people" checked> 入住人數</label>
+                    <label><input type="checkbox" class="export-field" value="id" checked> 身分證號</label>
+                    <label><input type="checkbox" class="export-field" value="money" checked> 款項狀態</label>
+                    <label><input type="checkbox" class="export-field" value="platform" checked> 平台來源</label>
+                    <label><input type="checkbox" class="export-field" value="status" checked> 房間狀態</label>
+                    <label><input type="checkbox" class="export-field" value="coguests" checked> 住宿人員資料</label>
+                    <label><input type="checkbox" class="export-field" value="note" checked> 備註</label>
+                </div>
             </div>
         </div>
-        <div class="modal-footer" style="justify-content: flex-end;">
+        <div class="modal-footer" style="justify-content: flex-end; gap: 8px;">
             <button class="btn btn-outline" style="width:auto;" onclick="closeExportModal()">取消</button>
-            <button id="btnExecuteExport" class="btn btn-success" style="width:auto;" onclick="executeExport()">匯出下載</button>
+            <button class="btn btn-danger" style="width:auto; flex: 1;" onclick="executeExport('pdf')">📄 儲存為 PDF</button>
+            <button class="btn btn-success" style="width:auto; flex: 1;" onclick="executeExport('excel')">📊 匯出 Excel</button>
         </div>
     </div>
 
@@ -477,9 +507,10 @@
                 </div>
                 <div class="form-group"><label>接單日期</label><input id="orderDate" type="date"></div>
             </div>
+            
             <div class="form-section">
                 <div class="form-section-title" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span>住客資料</span>
+                    <span>主客資料 (代表人)</span>
                     <select id="frequentGuestSelect" style="width: auto; padding: 4px 8px; font-size: 12px; border-radius: 6px; border: 1px solid var(--primary-gold); color: #163450; font-weight:bold; outline:none; cursor:pointer;" onchange="fillFrequentGuest()">
                         <option value="">📖 載入常用旅客...</option>
                     </select>
@@ -503,16 +534,18 @@
                     <div class="form-group"><label>入住人數</label><input id="people" type="number" value="2"></div>
                     <div class="form-group"><label>國籍</label><input id="country" placeholder="預設: 台灣"></div>
                 </div>
-                <div class="form-group">
-                    <label>同住人員資料 (可選填)</label>
-                    <textarea id="coGuests" rows="2" placeholder="請輸入同住人姓名、電話或身分證號..."></textarea>
-                </div>
-                
                 <div class="checkbox-wrapper" style="margin-top: 10px; display: flex; align-items: center; gap: 6px;">
                     <input type="checkbox" id="saveFrequentGuest" style="width: auto; transform: scale(1.3); margin:0;">
                     <label for="saveFrequentGuest" style="margin: 0; font-size: 13px; color: #b45309; font-weight: 700; cursor: pointer;">儲存/更新為常用旅客 (以「身分證/護照號碼」作為綁定依據)</label>
                 </div>
             </div>
+
+            <div class="form-section">
+                <div class="form-section-title">住宿人員資料 (可選填)</div>
+                <div id="coGuestsList">
+                    </div>
+            </div>
+
             <div class="form-section">
                 <div class="form-section-title">帳務與備註</div>
                 <div class="grid-2">
@@ -533,6 +566,7 @@
                 <div class="form-group"><label>來源平台</label><input id="platform" placeholder="OTA (如 Booking, Agoda) 或 現場"></div>
                 <div class="form-group"><label>備註事項</label><textarea id="request" rows="2" placeholder="特殊需求..."></textarea></div>
             </div>
+            
             <div class="form-section" id="bookingLogSection">
                 <div class="form-section-title">修改紀錄</div>
                 <div id="bookingLogs" class="log-container"></div>
@@ -687,10 +721,11 @@ function renderLogs(elementId, logsArray, fieldMap) {
     
     let html = '';
     const formatVal = (v, k) => {
-        if(v === "" || v === undefined) return "-";
+        if(v === "" || v === undefined || v === null) return "-";
         if(k === 'payStatus') return v === 'paid' ? '現場已結清' : v === 'platform' ? '平台已收' : '未付清';
         if(k === 'status') return v === 'checkedin' ? '入住中' : v === 'checkedout' ? '已退房' : v === 'stay' ? '續住' : v === 'booked' ? '已預訂' : v === 'resting' ? '休息中' : v === 'checkout' ? '結束休息' : v;
         if(k === 'people') return v + "位";
+        if(k === 'coGuests' && Array.isArray(v)) return v.map(g => `${g.name||'-'}(${g.id||'-'})`).join(", ");
         return v;
     };
 
@@ -727,7 +762,7 @@ function renderLogs(elementId, logsArray, fieldMap) {
     container.innerHTML = html;
 }
 
-const bookingFieldMap = { checkinDate: "入住日", checkoutDate: "退房日", orderNumber: "訂單編號", name: "姓名", phone: "電話", people: "人數", idNumber: "身分證", birthday: "生日", country: "國籍", total: "總金額", deposit: "訂金", payStatus: "付款狀態", platform: "來源平台", request: "備註", status: "房間狀態", balance: "應收尾款", coGuests: "同住人員" };
+const bookingFieldMap = { checkinDate: "入住日", checkoutDate: "退房日", orderNumber: "訂單編號", name: "姓名", phone: "電話", people: "人數", idNumber: "身分證", birthday: "生日", country: "國籍", total: "總金額", deposit: "訂金", payStatus: "付款狀態", platform: "來源平台", request: "備註", status: "房間狀態", balance: "應收尾款", coGuests: "住宿人員" };
 const restFieldMap = { room: "房號", time: "休息時段", name: "姓名", phone: "電話", people: "人數", price: "實收金額", id: "身分證", note: "備註", status: "房間狀態" };
 
 window.switchView = function(mode) {
@@ -769,7 +804,7 @@ async function loadFrequentGuests() {
         frequentGuests = {};
         snap.forEach(docSnap => {
             let data = docSnap.data();
-            frequentGuests[docSnap.id] = data; // doc.id 現在是 身分證號
+            frequentGuests[docSnap.id] = data; 
             let op = document.createElement("option");
             op.value = docSnap.id;
             op.textContent = `${data.name} (${docSnap.id})`;
@@ -785,11 +820,44 @@ window.fillFrequentGuest = function() {
     if(data) {
         document.getElementById("name").value = data.name || "";
         document.getElementById("phone").value = data.phone || "";
-        document.getElementById("idNumber").value = idVal; // 載入主鍵
+        document.getElementById("idNumber").value = idVal; 
         setBirthdaySelects(data.birthday || "");
         document.getElementById("country").value = data.country || "";
     }
 }
+
+// ⭐ 住宿人員表單動態生成邏輯
+window.createCoGuestRow = function(data = {}) {
+    const div = document.createElement('div');
+    div.className = 'co-guest-row';
+    div.innerHTML = `
+        <button type="button" class="remove-btn" onclick="this.parentElement.remove()">&times;</button>
+        <div class="grid-2" style="margin-bottom:8px;">
+            <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">姓名</label><input type="text" class="cg-name" value="${data.name || ''}" placeholder="姓名"></div>
+            <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">聯絡電話</label><input type="text" class="cg-phone" value="${data.phone || ''}" placeholder="電話"></div>
+        </div>
+        <div class="grid-2">
+            <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">身分證/護照號碼</label><input type="text" class="cg-id" value="${data.id || ''}" placeholder="證號"></div>
+            <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">出生年月日</label><input type="date" class="cg-birth" value="${data.birth || ''}"></div>
+        </div>
+        <div class="form-group" style="margin-top:8px; margin-bottom:0;"><label style="font-size:11px;">國籍</label><input type="text" class="cg-country" value="${data.country || '台灣'}" placeholder="國籍"></div>
+    `;
+
+    // 監聽：若是在最後一行輸入文字，就自動產生新的一行
+    const inputs = div.querySelectorAll('input');
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            const rows = document.querySelectorAll('.co-guest-row');
+            if (div === rows[rows.length - 1]) {
+                if (Array.from(inputs).some(i => i.value.trim() !== '')) {
+                    document.getElementById('coGuestsList').appendChild(window.createCoGuestRow({}));
+                }
+            }
+        });
+    });
+    return div;
+}
+
 
 window.onload = async () => {
     loadAttendanceStatus();
@@ -1154,6 +1222,7 @@ window.confirmBatchEdit = async function() {
     } catch(e) { alert("修改過程發生錯誤"); }
 }
 
+// ⭐ 多格式匯出系統
 window.openExportModal = function() {
     document.getElementById("modalOverlayExport").style.display = "block";
     document.getElementById("exportModal").style.display = "flex";
@@ -1188,39 +1257,57 @@ window.setExportRange = function(type) {
     document.getElementById("exportEndDate").value = getDateString(end);
 }
 
-window.executeExport = async function() {
+// ⭐ 執行匯出 (Excel / PDF)
+window.executeExport = async function(formatType) {
     const startDateStr = document.getElementById("exportStartDate").value;
     const endDateStr = document.getElementById("exportEndDate").value;
     if(!startDateStr || !endDateStr) { alert("請選擇開始與結束日期"); return; }
     if(startDateStr > endDateStr) { alert("開始日期不能晚於結束日期"); return; }
 
-    const btn = document.getElementById("btnExecuteExport");
-    btn.innerText = "處理中...";
-    btn.disabled = true;
+    const selectedFields = Array.from(document.querySelectorAll('.export-field:checked')).map(cb => cb.value);
+    if(selectedFields.length === 0) { alert("請至少勾選一個匯出欄位"); return; }
+
+    // 欄位定義與提取邏輯
+    const fieldDefs = {
+        type: { header: "訂單類型", getVal: (b, isRest) => isRest ? "休息" : "住宿" },
+        date: { header: "日期/時段", getVal: (b, isRest, d) => isRest ? `${d} ${b.time||""}` : d },
+        room: { header: "房號", getVal: (b) => b.room },
+        name: { header: "住客姓名", getVal: (b) => b.name || "-" },
+        phone: { header: "聯絡電話", getVal: (b) => b.phone || "-" },
+        people: { header: "人數", getVal: (b) => b.people ? b.people + "人" : "-" },
+        id: { header: "身分證號", getVal: (b, isRest) => isRest ? (b.id || "-") : (b.idNumber || "-") },
+        money: { header: "款項狀態", getVal: (b, isRest) => {
+            if(isRest) return `已結清 (實收: $${b.price||0})`;
+            let pt = b.payStatus === 'paid' ? '已結清' : (b.payStatus === 'platform' ? '平台代收' : '未付清');
+            return `${pt} (尾款: $${b.balance||0})`;
+        }},
+        platform: { header: "平台來源", getVal: (b, isRest) => isRest ? "現場" : (b.platform || "現場") },
+        status: { header: "房間狀態", getVal: (b, isRest) => {
+            if(isRest) return b.status === 'resting' ? '休息中' : '已結束';
+            return b.status === 'checkedin' ? '入住中' : (b.status === 'checkedout' ? '已退房' : (b.status === 'stay' ? '續住中' : '已預訂'));
+        }},
+        coguests: { header: "住宿人員", getVal: (b, isRest) => {
+            if(isRest) return "-";
+            if(b.coGuests && Array.isArray(b.coGuests) && b.coGuests.length > 0) {
+                return b.coGuests.map(g => `${g.name||'-'} (${g.id||'-'})`).join(" | ");
+            }
+            return "-";
+        }},
+        note: { header: "備註", getVal: (b, isRest) => isRest ? (b.note || "-") : (b.request || "-") }
+    };
+
+    let exportDataRows = [];
 
     try {
-        let csvContent = "\uFEFF"; 
-        // ⭐ 加入同住人員欄位匯出
-        csvContent += "訂單類型,日期/時段,房號,住客姓名,聯絡電話,人數,身分證號,款項狀態,平台來源,房間狀態,同住人員,備註\n";
-
-        let exportData = [];
-        
         const bookingsSnap = await getDocs(collection(db, "bookings"));
         bookingsSnap.forEach(docSnap => {
             const docDate = docSnap.id;
             if (docDate >= startDateStr && docDate <= endDateStr) {
                 const dailyData = docSnap.data();
                 for (let room in dailyData) {
-                    let b = dailyData[room];
-                    let payText = b.payStatus === 'paid' ? '已結清' : (b.payStatus === 'platform' ? '平台代收' : '未付清');
-                    let statusText = b.status === 'checkedin' ? '入住中' : (b.status === 'checkedout' ? '已退房' : (b.status === 'stay' ? '續住中' : '已預訂'));
-                    let moneyText = `${payText} (尾款: $${b.balance||0})`;
-                    
-                    exportData.push([
-                        "住宿", docDate, room, b.name || "-", b.phone || "-", 
-                        b.people ? b.people + "人" : "-", b.idNumber || "-", moneyText, 
-                        b.platform || "現場", statusText, b.coGuests || "-", b.request || "-"
-                    ]);
+                    let b = dailyData[room]; b.room = room;
+                    let row = selectedFields.map(field => fieldDefs[field].getVal(b, false, docDate));
+                    exportDataRows.push(row);
                 }
             }
         });
@@ -1231,40 +1318,72 @@ window.executeExport = async function() {
             if (docDate >= startDateStr && docDate <= endDateStr) {
                 const arr = docSnap.data().data || [];
                 arr.forEach(r => {
-                    let statusText = r.status === 'resting' ? '休息中' : '已結束';
-                    let moneyText = `已結清 (實收: $${r.price||0})`;
-                    exportData.push([
-                        "休息", `${docDate} ${r.time||""}`, r.room, r.name || "-", r.phone || "-", 
-                        r.people ? r.people + "人" : "-", r.id || "-", moneyText, 
-                        "現場", statusText, "-", r.note || "-"
-                    ]);
+                    let row = selectedFields.map(field => fieldDefs[field].getVal(r, true, docDate));
+                    exportDataRows.push(row);
                 });
             }
         });
 
-        exportData.sort((a, b) => a[1].localeCompare(b[1]));
-
-        exportData.forEach(row => {
-            csvContent += row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",") + "\n";
+        exportDataRows.sort((a, b) => {
+            let dateIdx = selectedFields.indexOf('date');
+            if(dateIdx !== -1) return String(a[dateIdx]).localeCompare(String(b[dateIdx]));
+            return 0;
         });
 
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url);
-        link.setAttribute("download", `房況報表_${startDateStr}_至_${endDateStr}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const headers = selectedFields.map(f => fieldDefs[f].header);
+
+        if(formatType === 'excel') {
+            let csvContent = "\uFEFF" + headers.join(",") + "\n";
+            exportDataRows.forEach(row => {
+                csvContent += row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",") + "\n";
+            });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `房況報表_${startDateStr}_至_${endDateStr}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+        } else if (formatType === 'pdf') {
+            // PDF 輸出：利用瀏覽器原生 Print 排版
+            let win = window.open('', '', 'width=900,height=700');
+            let tableHtml = `<table style="width:100%; border-collapse: collapse; font-family: 'Microsoft JhengHei', sans-serif; font-size:12px; margin-top:20px;">
+                <thead><tr>${headers.map(h => `<th style="border:1px solid #cbd5e1; padding:10px; background:#f1f5f9; text-align:left;">${h}</th>`).join('')}</tr></thead>
+                <tbody>
+                    ${exportDataRows.map(row => `<tr>${row.map(cell => `<td style="border:1px solid #e2e8f0; padding:8px;">${cell}</td>`).join('')}</tr>`).join('')}
+                </tbody>
+            </table>`;
+
+            win.document.write(`
+                <html>
+                    <head>
+                        <title>房況報表 PDF 輸出</title>
+                        <style>
+                            @page { size: landscape; margin: 10mm; }
+                            body { -webkit-print-color-adjust: exact; color: #334155; }
+                        </style>
+                    </head>
+                    <body style="padding: 20px; margin: 0;">
+                        <div style="text-align: center; border-bottom: 2px solid #163450; padding-bottom: 10px;">
+                            <h2 style="margin:0; font-family: sans-serif; color: #163450;">來點子站前旅店 - 系統報表</h2>
+                            <p style="margin:5px 0 0 0; font-family: sans-serif; font-size: 14px; color:#64748b;">區間：${startDateStr} ~ ${endDateStr}</p>
+                        </div>
+                        ${tableHtml}
+                        <script>
+                            window.onload = function() { setTimeout(function(){ window.print(); window.close(); }, 500); }
+                        <\/script>
+                    </body>
+                </html>
+            `);
+            win.document.close();
+        }
 
         closeExportModal();
     } catch (e) {
-        console.error(e);
-        alert("匯出失敗，請檢查網路狀態");
-    } finally {
-        btn.innerText = "匯出下載";
-        btn.disabled = false;
+        alert("匯出失敗");
     }
 }
 
@@ -1330,14 +1449,22 @@ function openModal(room) {
     document.getElementById("modalOverlay").style.display = "block"; document.getElementById("formModal").style.display = "flex"; document.body.classList.add("no-scroll");
 
     const data = bookings[selectedDate]?.[currentRoom];
-    // ⭐ 加入同住人員欄位
-    const fields = ['orderNumber', 'name', 'phone', 'people', 'idNumber', 'orderDate', 'total', 'deposit', 'balance', 'country', 'platform', 'request', 'payStatus', 'coGuests'];
+    const fields = ['orderNumber', 'name', 'phone', 'people', 'idNumber', 'orderDate', 'total', 'deposit', 'balance', 'country', 'platform', 'request', 'payStatus'];
+    
+    // ⭐ 載入動態住宿人員
+    const list = document.getElementById('coGuestsList');
+    list.innerHTML = '';
     
     if (data) { 
         fields.forEach(id => { const el = document.getElementById(id); if (el) el.value = data[id] || ""; }); 
         document.getElementById("bookingCheckin").value = data.checkinDate || selectedDate;
         document.getElementById("checkoutDate").value = data.checkoutDate || "";
         setBirthdaySelects(data.birthday || ""); 
+
+        if(data.coGuests && Array.isArray(data.coGuests)) {
+            data.coGuests.forEach(cg => list.appendChild(window.createCoGuestRow(cg)));
+        }
+
         renderLogs('bookingLogs', data.updateLogs || [], bookingFieldMap);
         document.getElementById("bookingLogSection").style.display = "block";
     } else { 
@@ -1347,6 +1474,9 @@ function openModal(room) {
         setBirthdaySelects("");
         document.getElementById("bookingLogSection").style.display = "none"; 
     }
+    
+    // 總是補上一個空的輸入欄位，供新增用
+    list.appendChild(window.createCoGuestRow({}));
 }
 
 window.closeModal = function() { document.getElementById("modalOverlay").style.display = "none"; document.getElementById("formModal").style.display = "none"; document.body.classList.remove("no-scroll"); }
@@ -1448,6 +1578,19 @@ window.save = async function(){
         const saveBtn = document.getElementById("btnSaveBooking");
         saveBtn.innerHTML = "處理中..."; saveBtn.disabled = true;
 
+        // ⭐ 收集住宿人員名單
+        let coGuestsArr = [];
+        document.querySelectorAll('#formModal .co-guest-row').forEach(row => {
+            let n = row.querySelector('.cg-name').value.trim();
+            let p = row.querySelector('.cg-phone').value.trim();
+            let idNum = row.querySelector('.cg-id').value.trim();
+            let b = row.querySelector('.cg-birth').value;
+            let c = row.querySelector('.cg-country').value.trim();
+            if(n || p || idNum || b || c) {
+                coGuestsArr.push({name: n, phone: p, id: idNum, birth: b, country: c});
+            }
+        });
+
         const orderData = {
             orderNumber: document.getElementById("orderNumber").value.trim() || "",
             name: document.getElementById("name").value.trim() || "", 
@@ -1462,7 +1605,7 @@ window.save = async function(){
             country: document.getElementById("country").value || "", 
             platform: document.getElementById("platform").value || "",
             request: document.getElementById("request").value || "", 
-            coGuests: document.getElementById("coGuests").value || "", // ⭐ 儲存同住人
+            coGuests: coGuestsArr, // 存入陣列
             payStatus: document.getElementById("payStatus").value || "",
             checkinDate: checkin, 
             checkoutDate: checkout,
@@ -1475,8 +1618,8 @@ window.save = async function(){
         let changes = {};
         let hasChanges = false;
         Object.keys(bookingFieldMap).forEach(key => {
-            let oldVal = String(existingData[key] || "");
-            let newVal = String(orderData[key] || "");
+            let oldVal = key === 'coGuests' ? JSON.stringify(existingData[key]||[]) : String(existingData[key] || "");
+            let newVal = key === 'coGuests' ? JSON.stringify(orderData[key]||[]) : String(orderData[key] || "");
             if (oldVal !== newVal && Object.keys(existingData).length > 0) { 
                 changes[key] = { old: oldVal, new: newVal };
                 hasChanges = true;
@@ -1531,10 +1674,8 @@ window.save = async function(){
             dayIndex++;
         }
 
-        // ⭐ 儲存常客資料：現在強制使用 idNumber 作為資料庫主鍵
         const saveFreq = document.getElementById("saveFrequentGuest").checked;
         const idVal = document.getElementById("idNumber").value.trim();
-        
         if (saveFreq && idVal) {
             const freqData = {
                 name: document.getElementById("name").value.trim(),
@@ -1672,9 +1813,14 @@ function updateUI() {
                 html += `</div>`;
                 html += `</div>`;
                 if (bookingData.orderNumber) html += `<div class="full-width-item"><b>訂單編號</b><span>${bookingData.orderNumber}</span></div>`;
-                // ⭐ 卡片呈現同住人員資訊
-                if (bookingData.coGuests) html += `<div class="full-width-item" style="margin-top:5px; flex-direction:column; gap:4px;"><b>同住人員</b><span style="font-weight:normal; color:var(--text-muted); text-align:left;">${bookingData.coGuests}</span></div>`;
-                if (bookingData.request) html += `<div class="full-width-item highlight-note" style="margin-top:8px;"><b>備註需求</b><span>${bookingData.request}</span></div>`;
+                
+                // ⭐ 顯示住宿人員資料在卡片上
+                if (bookingData.coGuests && Array.isArray(bookingData.coGuests) && bookingData.coGuests.length > 0) {
+                    let txt = bookingData.coGuests.map(g => `${g.name||''}(${g.id||'-'})`).join(', ');
+                    html += `<div class="full-width-item" style="margin-top:5px; flex-direction:column; gap:4px;"><b>住宿人員資料</b><span style="font-weight:normal; color:var(--text-muted); text-align:left; font-size:12px;">${txt}</span></div>`;
+                }
+
+                if (bookingData.request) html += `<div class="full-width-item highlight-note"><b>備註需求</b><span>${bookingData.request}</span></div>`;
 
             } else {
                 card.classList.add(`status-empty`);
