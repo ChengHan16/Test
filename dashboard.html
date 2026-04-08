@@ -30,13 +30,12 @@
 
     body { margin: 0; background-color: var(--bg-light); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; touch-action: pan-y; padding-bottom: 90px; }
 
-    /* ⭐ 頂部橫幅更新 */
     .header { background-color: var(--primary-dark); color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
     .header-left { display: flex; align-items: center; }
     .logo { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; margin-right: 12px; border: 2px solid var(--primary-gold); }
     
     /* ⭐ Wix 風格滿版下拉選單 (Mega Menu) */
-    .title-dropdown-container { position: static; } /* 讓 Mega Menu 相對 Header 展開滿版 */
+    .title-dropdown-container { position: static; } 
     .hotel-name { font-size: 1.15rem; font-weight: 700; letter-spacing: 1.5px; color: var(--primary-gold); cursor: pointer; display: flex; align-items: center; gap: 6px; user-select: none; }
     .hotel-name:hover { opacity: 0.8; }
     
@@ -73,6 +72,13 @@
         .mega-menu-container { flex-direction: column; gap: 30px; }
         .mega-menu { padding: 25px 0; border-radius: 0; }
     }
+
+    /* ⭐ Mega Menu 專屬半透明遮罩 */
+    .mega-menu-overlay {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(22, 52, 80, 0.4); z-index: 95; backdrop-filter: blur(2px);
+    }
+    .mega-menu-overlay.show { display: block; animation: fadeIn 0.2s ease-in-out; }
 
     /* 右側使用者名稱 */
     .header-right { display: flex; align-items: center; }
@@ -170,8 +176,15 @@
 
     @media (min-width: 769px) { .sticky-nav-container { display: none !important; } }
 
-    /* ⭐ 電腦版橫幅間距 */
-    .tech-support-banner { display: flex; justify-content: center; align-items: center; text-align: center; padding: 18px 15px; font-size: 12px; font-weight: 600; color: var(--text-muted); background-color: #e2e8f0; margin-top: auto; letter-spacing: 0.5px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.03); padding-bottom: calc(18px + env(safe-area-inset-bottom)); width: 100%; z-index: 80; }
+    /* ⭐ 底部橫幅強制套用 15px */
+    .tech-support-banner { 
+        display: flex; justify-content: center; align-items: center; text-align: center; 
+        padding: 15px !important; font-size: 12px; font-weight: 600; color: var(--text-muted); 
+        background-color: #e2e8f0; margin-top: auto; letter-spacing: 0.5px; 
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.03); 
+        padding-bottom: calc(15px + env(safe-area-inset-bottom)) !important; 
+        width: 100%; z-index: 80; 
+    }
     @media (min-width: 769px) { .tech-support-banner { margin-top: 5px !important; } }
 
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(22, 52, 80, 0.6); backdrop-filter: blur(4px); z-index: 999; }
@@ -226,7 +239,6 @@
     .modal.view-mode textarea { resize: none; }
     .modal.view-mode .time-picker-group span { display: none; }
     
-    /* 隱藏/顯示 checkbox */
     .modal.view-mode .checkbox-wrapper { display: none !important; }
 
     select option:disabled { color: #94a3b8; background: #f1f5f9; font-style: italic; }
@@ -241,6 +253,8 @@
 </style>
 </head>
 <body>
+    <div class="mega-menu-overlay" id="megaMenuOverlay" onclick="toggleMenu(event)"></div>
+
     <div class="header">
         <div class="header-left">
             <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCImo3zo7iCeo1quGZKt4c0GTrh_uSg3mSfQ&s" class="logo">
@@ -257,6 +271,8 @@
                         </div>
                         <div class="mega-menu-column">
                             <h4>帳號安全</h4>
+                            <a href="#" class="mega-menu-item">🕒 出/退勤打卡</a>
+                            <a href="#" class="mega-menu-item">👤 個人設定</a>
                             <a href="#" class="mega-menu-item text-danger" onclick="logoutSystem()">🚪 登出當前系統</a>
                         </div>
                     </div>
@@ -419,7 +435,7 @@
                 <div style="font-size:12px; color:var(--text-muted); margin-top:10px;">*系統將匯出此區間內所有的訂單明細，並可直接使用 Excel 開啟。</div>
             </div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer" style="justify-content: flex-end;">
             <button class="btn btn-outline" style="width:auto;" onclick="closeExportModal()">取消</button>
             <button id="btnExecuteExport" class="btn btn-success" style="width:auto;" onclick="executeExport()">匯出下載</button>
         </div>
@@ -529,7 +545,7 @@
                     <div class="form-group"><label>已付訂金</label><input id="deposit" type="number"></div>
                 </div>
                 <div class="grid-2">
-                    <div class="form-group"><label>應收尾款</label><input id="balance" type="number" style="font-weight:bold; color:#ef4444; background:#fef2f2;"></div>
+                    <div class="form-group"><label>應收尾款</label><input id="balance" type="number" readonly style="font-weight:bold; color:#ef4444; background:#fef2f2;"></div>
                     <div class="form-group">
                         <label>付款狀態</label>
                         <select id="payStatus">
@@ -582,24 +598,23 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 防護牆與登入者顯示
-if (sessionStorage.getItem("isLoggedIn") !== "true") {
-    window.location.href = "login.html";
-}
+if (sessionStorage.getItem("isLoggedIn") !== "true") { window.location.href = "login.html"; }
 const userName = sessionStorage.getItem("currentUser") || "管理員";
 document.getElementById("currentUserDisplay").innerText = `👋 ${userName}`;
 document.getElementById("currentUserDisplay").style.display = "inline-block";
 
-// ⭐ Wix 風格 Mega Menu 互動邏輯
 window.toggleMenu = function(e) {
-    e.stopPropagation();
+    if(e) e.stopPropagation();
     document.getElementById('headerDropdown').classList.toggle('show');
+    document.getElementById('megaMenuOverlay').classList.toggle('show');
 }
 window.addEventListener('click', function(e) {
     const menu = document.getElementById('headerDropdown');
+    const overlay = document.getElementById('megaMenuOverlay');
     const container = document.querySelector('.title-dropdown-container');
     if (menu.classList.contains('show') && !container.contains(e.target)) {
         menu.classList.remove('show');
+        overlay.classList.remove('show');
     }
 });
 
@@ -714,9 +729,8 @@ let currentRoom = "";
 let restData = {};
 let currentRestIndex = -1; 
 let batchResultsData = [];
-let frequentGuests = {}; // 儲存常客資料
+let frequentGuests = {}; 
 
-// ⭐ 載入常客資料
 async function loadFrequentGuests() {
     try {
         const snap = await getDocs(collection(db, "frequent_guests"));
@@ -725,7 +739,7 @@ async function loadFrequentGuests() {
         frequentGuests = {};
         snap.forEach(docSnap => {
             let data = docSnap.data();
-            frequentGuests[docSnap.id] = data; // doc.id is phone
+            frequentGuests[docSnap.id] = data; 
             let op = document.createElement("option");
             op.value = docSnap.id;
             op.textContent = `${data.name} (${docSnap.id})`;
@@ -734,7 +748,6 @@ async function loadFrequentGuests() {
     } catch(e) { console.error("載入常用旅客失敗", e); }
 }
 
-// 點選常客時自動帶入
 window.fillFrequentGuest = function() {
     const phone = document.getElementById("frequentGuestSelect").value;
     if(!phone) return;
@@ -907,6 +920,9 @@ window.openBatchSearch = function() {
     document.getElementById("batchResultsBody").innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px; color: var(--text-muted);">請設定條件後點擊篩選按鈕</td></tr>';
     document.getElementById("batchEditPanel").style.display = "none";
     document.getElementById("selectAllBatch").checked = false;
+    // 隱藏選單
+    document.getElementById('headerDropdown').classList.remove('show');
+    document.getElementById('megaMenuOverlay').classList.remove('show');
 }
 
 window.closeBatchSearch = function() {
@@ -1111,6 +1127,9 @@ window.openExportModal = function() {
     document.getElementById("exportModal").style.display = "flex";
     document.body.classList.add("no-scroll");
     setExportRange('month'); 
+    // 隱藏選單
+    document.getElementById('headerDropdown').classList.remove('show');
+    document.getElementById('megaMenuOverlay').classList.remove('show');
 }
 
 window.closeExportModal = function() {
@@ -1476,7 +1495,6 @@ window.save = async function(){
             dayIndex++;
         }
 
-        // ⭐ 儲存常客資料邏輯
         const saveFreq = document.getElementById("saveFrequentGuest").checked;
         const phoneVal = document.getElementById("phone").value.trim();
         if (saveFreq && phoneVal) {
@@ -1489,7 +1507,7 @@ window.save = async function(){
             };
             try {
                 await setDoc(doc(db, "frequent_guests", phoneVal), freqData);
-                await loadFrequentGuests(); // 重新載入常客列表
+                await loadFrequentGuests(); 
             } catch(e) { console.error("儲存常用旅客失敗", e); }
         }
 
