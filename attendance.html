@@ -7,8 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
     :root {
-        var(--primary-dark): #163450;      
-        var(--primary-gold): #c1a13a;      
+        --primary-dark: #163450;      
+        --primary-gold: #c1a13a;      
         --bg-light: #f8fafc;          
         --border-color: #e2e8f0;      
         --text-main: #334155;
@@ -17,18 +17,18 @@
     * { box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; }
     body { margin: 0; background-color: var(--bg-light); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
 
-    .header { background-color: #163450; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
+    .header { background-color: var(--primary-dark); color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
     .header-left { display: flex; align-items: center; }
-    .logo { width: 40px; height: 40px; border-radius: 8px; margin-right: 12px; border: 2px solid #c1a13a; }
-    .hotel-name { font-size: 1.15rem; font-weight: 700; letter-spacing: 1.5px; color: #c1a13a; }
-    .nav-btn { background: transparent; border: 1px solid #c1a13a; color: #c1a13a; padding: 6px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; }
-    .nav-btn:hover { background: #c1a13a; color: #163450; }
+    .logo { width: 40px; height: 40px; border-radius: 8px; margin-right: 12px; border: 2px solid var(--primary-gold); }
+    .hotel-name { font-size: 1.15rem; font-weight: 700; letter-spacing: 1.5px; color: var(--primary-gold); }
+    .nav-btn { background: transparent; border: 1px solid var(--primary-gold); color: var(--primary-gold); padding: 6px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; }
+    .nav-btn:hover { background: var(--primary-gold); color: var(--primary-dark); }
 
     .container { max-width: 800px; margin: 30px auto; padding: 0 15px; flex-grow: 1; width: 100%; }
 
     .card { background: white; border-radius: 16px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; border: 1px solid var(--border-color); text-align: center; }
     
-    .clock-display { font-size: 3.5rem; font-weight: 700; color: #163450; margin: 10px 0; letter-spacing: 2px; font-variant-numeric: tabular-nums; }
+    .clock-display { font-size: 3.5rem; font-weight: 700; color: var(--primary-dark); margin: 10px 0; letter-spacing: 2px; font-variant-numeric: tabular-nums; }
     .date-display { font-size: 1.1rem; color: var(--text-muted); font-weight: 500; margin-bottom: 25px; }
 
     .btn-group { display: flex; gap: 15px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
@@ -41,17 +41,30 @@
 
     .status-badge { display: inline-block; padding: 6px 15px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; margin-bottom: 10px; background: #e0f2fe; color: #1e3a8a; border: 1px solid #bfdbfe; }
 
+    /* ⭐ 歷史紀錄表格設計 (加入點擊展開與 Log 功能) */
     .table-container { overflow-x: auto; background: white; border-radius: 12px; border: 1px solid var(--border-color); margin-top: 15px; }
     .history-table { width: 100%; border-collapse: collapse; min-width: 500px; text-align: left; }
-    .history-table th, .history-table td { padding: 15px; border-bottom: 1px solid var(--border-color); font-size: 14px; }
-    .history-table th { background: #f8fafc; color: #163450; font-weight: 700; white-space: nowrap; }
-    .history-table tr:hover td { background: #f1f5f9; }
+    .history-table th, .history-table td { padding: 15px; border-bottom: 1px solid var(--border-color); font-size: 13.5px; }
+    .history-table th { background: #f8fafc; color: var(--primary-dark); font-weight: 700; white-space: nowrap; }
+    .history-table .main-row { cursor: pointer; transition: background 0.2s; }
+    .history-table .main-row:hover { background: #f1f5f9; }
     
+    /* Log 展開區域 */
+    .log-row { display: none; background: #f8fafc; }
+    .log-row.show { display: table-row; }
+    .log-container { padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+    .log-item { background: white; padding: 8px 12px; border-radius: 6px; border: 1px dashed #cbd5e1; font-size: 12px; color: #475569; }
+    .expand-icon { display: inline-block; font-size: 10px; color: #94a3b8; transition: transform 0.3s; margin-left: 5px; }
+    .expand-icon.open { transform: rotate(180deg); }
+
     .tag { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
     .tag-normal { background: #dcfce7; color: #166534; }
     .tag-late { background: #fee2e2; color: #991b1b; }
+    .tag-absent { background: #f3f4f6; color: #64748b; }
 
-    .tech-support-banner { display: flex; justify-content: center; align-items: center; text-align: center; padding: 15px !important; font-size: 12px; font-weight: 600; color: var(--text-muted); background-color: #e2e8f0; margin-top: auto; letter-spacing: 0.5px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.03); padding-bottom: calc(15px + env(safe-area-inset-bottom)); width: 100%; }
+    /* ⭐ 橫幅修改：貼近最底部 */
+    .tech-support-banner { display: flex; justify-content: center; align-items: center; text-align: center; padding: 15px !important; font-size: 12px; font-weight: 600; color: var(--text-muted); background-color: #e2e8f0; margin-top: auto; letter-spacing: 0.5px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.03); padding-bottom: calc(15px + env(safe-area-inset-bottom)) !important; width: 100%; z-index: 80; }
+    @media (min-width: 769px) { .tech-support-banner { margin-top: 5px !important; } }
 </style>
 </head>
 <body>
@@ -59,15 +72,17 @@
 <div class="header">
     <div class="header-left">
         <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCImo3zo7iCeo1quGZKt4c0GTrh_uSg3mSfQ&s" class="logo">
-        <div class="hotel-name">出/退勤打卡系統</div>
+        <div class="hotel-name">出退勤管理系統</div>
     </div>
     <a href="dashboard.html" class="nav-btn">返回控制台</a>
 </div>
 
 <div class="container">
+    <h2 style="text-align:center; color: var(--primary-dark); margin: 0 0 20px 0; font-weight: 700;">👤 <span id="displayUserName">載入中...</span> 的專屬打卡面板</h2>
+
     <div class="card">
-        <div class="status-badge" id="currentStatus">當前狀態：尚未打卡</div>
-        <div class="date-display" id="dateDisplay">2026年04月08日 (週三)</div>
+        <div class="status-badge" id="currentStatus">當前狀態：尚未打卡 | 今天已出勤 0.0 小時</div>
+        <div class="date-display" id="dateDisplay">--</div>
         <div class="clock-display" id="clockDisplay">00:00:00</div>
         
         <div class="btn-group">
@@ -79,7 +94,7 @@
             </button>
         </div>
         <div style="margin-top: 15px; font-size: 12px; color: #94a3b8;">
-            * 系統已記錄您的 IP 與裝置資訊以核實打卡位置
+            * 系統已記錄您的時間戳記與帳號，作為打卡核實依據
         </div>
     </div>
 
@@ -92,22 +107,12 @@
                         <th>日期</th>
                         <th>上班時間</th>
                         <th>下班時間</th>
+                        <th>出勤時數</th>
                         <th>狀態判定</th>
                     </tr>
                 </thead>
                 <tbody id="historyBody">
-                    <tr>
-                        <td>2026-04-07</td>
-                        <td>08:55</td>
-                        <td>18:05</td>
-                        <td><span class="tag tag-normal">正常</span></td>
-                    </tr>
-                    <tr>
-                        <td>2026-04-06</td>
-                        <td>09:12</td>
-                        <td>18:10</td>
-                        <td><span class="tag tag-late">遲到</span></td>
-                    </tr>
+                    <tr><td colspan="5" style="text-align:center; color: var(--text-muted);">正在載入資料...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -118,10 +123,43 @@
     👨‍💻 來點子旅店資訊部 班長 所提供的技術支援
 </div>
 
-<script>
-    // 權限檢查
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCde1T_hHZOm7__3-1qcQ_NAeAbkz5MdFc",
+        authDomain: "lightnessgogo-2d757.firebaseapp.com",
+        projectId: "lightnessgogo-2d757",
+        storageBucket: "lightnessgogo-2d757.firebasestorage.app",
+        messagingSenderId: "1033105975068",
+        appId: "1:1033105975068:web:915882758685a0d668bcd9",
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // 權限檢查與初始化
     if(sessionStorage.getItem("isLoggedIn") !== "true") {
         window.location.href = "login.html";
+    }
+    const userName = sessionStorage.getItem("currentUser") || "管理員";
+    document.getElementById("displayUserName").innerText = userName;
+
+    function getDateString(d) {
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    function getTimeString(d) {
+        return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    }
+    
+    // 計算時數差
+    function calcHours(inTime, outTime) {
+        if (!inTime || !outTime) return "0.0";
+        const [inH, inM] = inTime.split(':').map(Number);
+        const [outH, outM] = outTime.split(':').map(Number);
+        let diff = (outH + outM / 60) - (inH + inM / 60);
+        if (diff < 0) diff += 24; // 跨夜
+        return diff.toFixed(1);
     }
 
     // 時鐘更新邏輯
@@ -130,35 +168,135 @@
         const days = ['日', '一', '二', '三', '四', '五', '六'];
         document.getElementById('dateDisplay').innerText = 
             `${now.getFullYear()}年${String(now.getMonth()+1).padStart(2,'0')}月${String(now.getDate()).padStart(2,'0')}日 (週${days[now.getDay()]})`;
-        
         document.getElementById('clockDisplay').innerText = 
             `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
     }
-    setInterval(updateClock, 1000);
-    updateClock();
+    setInterval(updateClock, 1000); updateClock();
 
-    // 模擬打卡邏輯
-    function clockAction(type) {
-        const now = new Date();
-        const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    // ⭐ 載入今日狀態與歷史紀錄
+    async function loadAttendanceData() {
+        const todayStr = getDateString(new Date());
         
-        if (type === 'in') {
-            alert(`✅ 上班打卡成功！時間：${timeStr}`);
-            document.getElementById('btnClockIn').disabled = true;
-            document.getElementById('btnClockOut').disabled = false;
-            document.getElementById('currentStatus').innerText = "當前狀態：🟢 執勤中";
-            document.getElementById('currentStatus').style.background = "#dcfce7";
-            document.getElementById('currentStatus').style.color = "#166534";
-            document.getElementById('currentStatus').style.borderColor = "#86efac";
-        } else {
-            alert(`🏠 下班打卡成功！辛苦了！時間：${timeStr}`);
-            document.getElementById('btnClockOut').disabled = true;
-            document.getElementById('currentStatus').innerText = "當前狀態：⚪ 已下班";
-            document.getElementById('currentStatus').style.background = "#f1f5f9";
-            document.getElementById('currentStatus').style.color = "#475569";
-            document.getElementById('currentStatus').style.borderColor = "#cbd5e1";
+        try {
+            // 讀取今天狀態 (按鈕控制)
+            const docRef = doc(db, "attendance", `${userName}_${todayStr}`);
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (data.clockIn && !data.clockOut) {
+                    document.getElementById('btnClockIn').disabled = true;
+                    document.getElementById('btnClockOut').disabled = false;
+                    document.getElementById('currentStatus').innerText = `當前狀態：🟢 執勤中 | 今天已出勤 (計算中) 小時`;
+                    document.getElementById('currentStatus').style.background = "#dcfce7";
+                    document.getElementById('currentStatus').style.color = "#166534";
+                    document.getElementById('currentStatus').style.borderColor = "#86efac";
+                } else if (data.clockIn && data.clockOut) {
+                    document.getElementById('btnClockIn').disabled = true;
+                    document.getElementById('btnClockOut').disabled = true;
+                    document.getElementById('currentStatus').innerText = `當前狀態：⚪ 已下班 | 今天已出勤 ${data.workHours} 小時`;
+                }
+            }
+
+            // 讀取歷史列表
+            const currentMonth = todayStr.substring(0, 7); // YYYY-MM
+            const q = query(collection(db, "attendance"), where("name", "==", userName));
+            const querySnapshot = await getDocs(q);
+            
+            let historyData = [];
+            querySnapshot.forEach(doc => {
+                if(doc.data().date.startsWith(currentMonth)) historyData.push(doc.data());
+            });
+            historyData.sort((a, b) => b.date.localeCompare(a.date)); // 日期遞減排序
+
+            const tbody = document.getElementById("historyBody");
+            if(historyData.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; color: var(--text-muted);'>本月尚無紀錄</td></tr>";
+                return;
+            }
+
+            let html = "";
+            historyData.forEach((row, index) => {
+                let tagClass = row.status === '正常' ? 'tag-normal' : (row.status === '遲到' ? 'tag-late' : 'tag-absent');
+                let logsHtml = (row.logs || []).map(l => `<div class="log-item">✏️ ${l}</div>`).join('');
+                if(logsHtml === '') logsHtml = `<div class="log-item">無詳細紀錄</div>`;
+
+                html += `
+                    <tr class="main-row" onclick="toggleExpandRow(${index}, this)">
+                        <td><b>${row.date}</b> <span class="expand-icon">▼</span></td>
+                        <td style="color:#10b981; font-weight:600;">${row.clockIn || '-'}</td>
+                        <td style="color:#f59e0b; font-weight:600;">${row.clockOut || '-'}</td>
+                        <td>${row.workHours || '0.0'} 小時</td>
+                        <td><span class="tag ${tagClass}">${row.status}</span></td>
+                    </tr>
+                    <tr class="log-row" id="logRow_${index}">
+                        <td colspan="5" style="padding: 0;">
+                            <div class="log-container">${logsHtml}</div>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+
+        } catch(e) { console.error("載入失敗", e); }
+    }
+
+    window.toggleExpandRow = function(index, element) {
+        const target = document.getElementById(`logRow_${index}`);
+        const icon = element.querySelector('.expand-icon');
+        target.classList.toggle('show');
+        icon.classList.toggle('open');
+    }
+
+    // ⭐ 打卡寫入邏輯
+    window.clockAction = async function(type) {
+        const now = new Date();
+        const todayStr = getDateString(now);
+        const timeStr = getTimeString(now);
+        const docRef = doc(db, "attendance", `${userName}_${todayStr}`);
+        
+        try {
+            const docSnap = await getDoc(docRef);
+            let existingData = docSnap.exists() ? docSnap.data() : { name: userName, date: todayStr, logs: [] };
+            let currentLogs = existingData.logs || [];
+
+            if (type === 'in') {
+                // 判斷遲到 (假設 09:00 為基準，大於 09:00 算遲到)
+                const isLate = parseInt(timeStr.replace(':','')) > 900;
+                const status = isLate ? "遲到" : "正常";
+                currentLogs.push(`[${timeStr}] 執行上班打卡 (${status})`);
+                
+                await setDoc(docRef, {
+                    ...existingData,
+                    clockIn: timeStr,
+                    status: status,
+                    logs: currentLogs
+                });
+                alert(`✅ 上班打卡成功！時間：${timeStr}`);
+
+            } else if (type === 'out') {
+                const workHrs = calcHours(existingData.clockIn, timeStr);
+                currentLogs.push(`[${timeStr}] 執行下班打卡，結算時數：${workHrs} 小時`);
+                
+                await setDoc(docRef, {
+                    ...existingData,
+                    clockOut: timeStr,
+                    workHours: workHrs,
+                    logs: currentLogs
+                });
+                alert(`🏠 下班打卡成功！辛苦了！時間：${timeStr}`);
+            }
+
+            // 重新載入畫面
+            loadAttendanceData();
+
+        } catch(e) {
+            console.error(e);
+            alert("打卡失敗，請檢查網路連線");
         }
     }
+
+    loadAttendanceData();
 </script>
 </body>
 </html>
