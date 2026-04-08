@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>個人設定 - 來點子站前旅店</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        var(--primary-dark): #163450;      
+        var(--primary-gold): #c1a13a;      
+        --bg-light: #f8fafc;          
+        --border-color: #e2e8f0;      
+        --text-main: #334155;
+        --text-muted: #64748b;
+    }
+    * { box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; }
+    body { margin: 0; background-color: var(--bg-light); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
+
+    .header { background-color: #163450; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
+    .header-left { display: flex; align-items: center; }
+    .logo { width: 40px; height: 40px; border-radius: 8px; margin-right: 12px; border: 2px solid #c1a13a; }
+    .hotel-name { font-size: 1.15rem; font-weight: 700; letter-spacing: 1.5px; color: #c1a13a; }
+    .nav-btn { background: transparent; border: 1px solid #c1a13a; color: #c1a13a; padding: 6px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; }
+    .nav-btn:hover { background: #c1a13a; color: #163450; }
+
+    .container { max-width: 800px; margin: 30px auto; padding: 0 15px; flex-grow: 1; width: 100%; }
+
+    .card { background: white; border-radius: 16px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 25px; border: 1px solid var(--border-color); }
+    .card-title { font-size: 1.1rem; font-weight: 700; color: #163450; margin: 0 0 20px 0; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--bg-light); padding-bottom: 10px; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media(max-width: 600px) { .form-grid { grid-template-columns: 1fr; gap: 15px; } }
+    
+    .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
+    .form-group input { width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; transition: 0.2s; color: var(--text-main); }
+    .form-group input:focus { outline: none; border-color: #c1a13a; box-shadow: 0 0 0 3px rgba(193, 161, 58, 0.1); }
+    .form-group input[readonly] { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+
+    .btn-save { background: #163450; color: #c1a13a; border: none; padding: 12px 25px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; width: 100%; font-size: 1rem; margin-top: 10px; }
+    .btn-save:hover { background: #0f253b; transform: translateY(-2px); }
+
+    /* Switch 開關樣式 */
+    .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--bg-light); }
+    .setting-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .setting-info h5 { margin: 0 0 4px 0; color: var(--text-main); font-size: 1rem; }
+    .setting-info p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+    
+    .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    input:checked + .slider { background-color: #10b981; }
+    input:checked + .slider:before { transform: translateX(24px); }
+
+    .tech-support-banner { display: flex; justify-content: center; align-items: center; text-align: center; padding: 15px !important; font-size: 12px; font-weight: 600; color: var(--text-muted); background-color: #e2e8f0; margin-top: auto; letter-spacing: 0.5px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.03); padding-bottom: calc(15px + env(safe-area-inset-bottom)); width: 100%; }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-left">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCImo3zo7iCeo1quGZKt4c0GTrh_uSg3mSfQ&s" class="logo">
+        <div class="hotel-name">個人設定中心</div>
+    </div>
+    <a href="dashboard.html" class="nav-btn">返回控制台</a>
+</div>
+
+<div class="container">
+    
+    <div class="card">
+        <div class="card-title"><span>👤</span> 員工基本資料</div>
+        <div class="form-grid">
+            <div class="form-group"><label>登入帳號 (不可修改)</label><input type="text" id="profileUser" value="載入中..." readonly></div>
+            <div class="form-group"><label>權限角色 (不可修改)</label><input type="text" value="櫃檯人員" readonly></div>
+            <div class="form-group"><label>顯示名稱</label><input type="text" id="profileName" placeholder="請輸入姓名"></div>
+            <div class="form-group"><label>聯絡電話</label><input type="text" placeholder="用於內部緊急聯絡"></div>
+        </div>
+        <button class="btn-save" onclick="alert('✅ 資料更新成功！')">儲存資料設定</button>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><span>🔒</span> 密碼與安全性</div>
+        <div class="form-grid">
+            <div class="form-group" style="grid-column: 1 / -1;"><label>目前密碼</label><input type="password" placeholder="請輸入當前密碼以驗證身分"></div>
+            <div class="form-group"><label>新密碼</label><input type="password" placeholder="輸入新密碼 (至少6碼)"></div>
+            <div class="form-group"><label>確認新密碼</label><input type="password" placeholder="再次輸入新密碼"></div>
+        </div>
+        <button class="btn-save" style="background:#f59e0b; color:white;" onclick="alert('✅ 密碼修改成功，下次請使用新密碼登入。')">更新密碼</button>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><span>⚙️</span> 系統偏好設定</div>
+        
+        <div class="setting-item">
+            <div class="setting-info">
+                <h5>LINE 換班與打卡通知</h5>
+                <p>綁定後可透過 LINE 接收個人打卡異常通知</p>
+            </div>
+            <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+        </div>
+
+        <div class="setting-item">
+            <div class="setting-info">
+                <h5>預設登入畫面</h5>
+                <p>登入控制台時，優先顯示「休息房況」而非住宿房況</p>
+            </div>
+            <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+        </div>
+        
+        <div class="setting-item">
+            <div class="setting-info">
+                <h5>深色模式 (即將推出)</h5>
+                <p>將系統介面切換為護眼深色外觀</p>
+            </div>
+            <label class="switch"><input type="checkbox" disabled><span class="slider" style="background:#e2e8f0;"></span></label>
+        </div>
+    </div>
+</div>
+
+<div class="tech-support-banner">
+    👨‍💻 來點子旅店資訊部 班長 所提供的技術支援
+</div>
+
+<script>
+    // 權限檢查與載入資料
+    if(sessionStorage.getItem("isLoggedIn") !== "true") {
+        window.location.href = "login.html";
+    } else {
+        const userName = sessionStorage.getItem("currentUser") || "管理員";
+        document.getElementById("profileName").value = userName;
+        document.getElementById("profileUser").value = "當前登入帳號"; // 實務上可從登入時存入的 ID 抓取
+    }
+</script>
+</body>
+</html>
