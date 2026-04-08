@@ -28,13 +28,13 @@
 
     * { box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
 
-    body { margin: 0; background-color: var(--bg-light); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; touch-action: pan-y; padding-bottom: 90px; }
+    /* ⭐ 修復橫幅懸空：移除 body padding-bottom */
+    body { margin: 0; background-color: var(--bg-light); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; touch-action: pan-y; }
 
     .header { background-color: var(--primary-dark); color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; }
     .header-left { display: flex; align-items: center; }
     .logo { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; margin-right: 12px; border: 2px solid var(--primary-gold); }
     
-    /* ⭐ Wix 風格滿版下拉選單 (Mega Menu) */
     .title-dropdown-container { position: static; } 
     .hotel-name { font-size: 1.15rem; font-weight: 700; letter-spacing: 1.5px; color: var(--primary-gold); cursor: pointer; display: flex; align-items: center; gap: 6px; user-select: none; }
     .hotel-name:hover { opacity: 0.8; }
@@ -47,44 +47,34 @@
         cursor: default;
     }
     .mega-menu.show { display: block; animation: fadeInDown 0.2s ease-out; }
-    .mega-menu-container {
-        max-width: 1100px; margin: 0 auto; padding: 0 20px;
-        display: flex; gap: 60px;
-    }
+    .mega-menu-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; display: flex; gap: 60px; }
     .mega-menu-column { display: flex; flex-direction: column; gap: 12px; min-width: 200px; }
-    .mega-menu-column h4 { 
-        margin: 0 0 10px 0; color: var(--text-muted); font-size: 0.85rem; 
-        text-transform: uppercase; letter-spacing: 1.5px; 
-        border-bottom: 2px solid var(--bg-light); padding-bottom: 8px;
-    }
-    .mega-menu-item { 
-        color: var(--primary-dark); text-decoration: none; font-size: 1rem; 
-        font-weight: 600; padding: 10px 15px; border-radius: 8px; 
-        transition: 0.2s; display: flex; align-items: center; gap: 8px; cursor: pointer;
-    }
+    .mega-menu-column h4 { margin: 0 0 10px 0; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 2px solid var(--bg-light); padding-bottom: 8px; }
+    .mega-menu-item { color: var(--primary-dark); text-decoration: none; font-size: 1rem; font-weight: 600; padding: 10px 15px; border-radius: 8px; transition: 0.2s; display: flex; align-items: center; gap: 8px; cursor: pointer; }
     .mega-menu-item:hover { background: var(--bg-light); color: var(--primary-gold); }
     .mega-menu-item.text-danger { color: #ef4444; }
     .mega-menu-item.text-danger:hover { background: #fef2f2; color: #dc2626; }
 
     @keyframes fadeInDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+    @media (max-width: 600px) { .mega-menu-container { flex-direction: column; gap: 30px; } .mega-menu { padding: 25px 0; border-radius: 0; } }
 
-    @media (max-width: 600px) {
-        .mega-menu-container { flex-direction: column; gap: 30px; }
-        .mega-menu { padding: 25px 0; border-radius: 0; }
-    }
-
-    /* ⭐ Mega Menu 專屬半透明遮罩 */
-    .mega-menu-overlay {
-        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(22, 52, 80, 0.4); z-index: 95; backdrop-filter: blur(2px);
-    }
+    .mega-menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(22, 52, 80, 0.4); z-index: 95; backdrop-filter: blur(2px); }
     .mega-menu-overlay.show { display: block; animation: fadeIn 0.2s ease-in-out; }
 
-    /* 右側使用者名稱 */
+    /* ⭐ 右側狀態指示燈 (取代原本的👋) */
     .header-right { display: flex; align-items: center; }
-    .user-greeting { font-size: 13px; color: white; background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 20px; font-weight: 600; letter-spacing: 0.5px; border: 1px solid rgba(255,255,255,0.1); }
+    .user-greeting { display: inline-flex; align-items: center; font-size: 13px; color: white; background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 20px; font-weight: 600; letter-spacing: 0.5px; border: 1px solid rgba(255,255,255,0.1); }
+    
+    .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; position: relative; }
+    .status-dot::after { content: ''; position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px; border-radius: 50%; opacity: 0.3; animation: pulse 2s infinite; }
+    
+    .status-green { background-color: #10b981; } .status-green::after { background-color: #10b981; }
+    .status-gray { background-color: #94a3b8; } .status-gray::after { background-color: #94a3b8; animation: none; }
+    .status-red { background-color: #ef4444; } .status-red::after { background-color: #ef4444; }
+    @keyframes pulse { 0% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(1.5); opacity: 0.1; } 100% { transform: scale(1); opacity: 0.4; } }
 
-    .main-content { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
+    /* ⭐ 留出底部空間給懸浮按鈕 */
+    .main-content { flex-grow: 1; display: flex; flex-direction: column; position: relative; padding-bottom: 80px; }
     .container { max-width: 1100px; margin: 0 auto; padding: 20px 15px 0 15px; width: 100%; flex-grow: 1; }
 
     .main-date-header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 10px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid var(--border-color); margin-bottom: 25px; white-space: nowrap; }
@@ -92,10 +82,8 @@
     .date-display-wrapper:active { background: var(--bg-light); }
     .date-title { font-size: 1.3rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 2px; }
     .date-subtitle { font-size: 0.8rem; color: var(--status-rest); font-weight: 600; }
-
     .icon-btn { background: var(--bg-light); border: 1px solid var(--border-color); color: var(--primary-dark); width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; font-size: 1.2rem; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
     .icon-btn:hover { background: var(--primary-dark); color: var(--primary-gold); }
-
     .invisible-date-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: none; padding: 0; margin: 0; z-index: 10; }
 
     @media (max-width: 768px) {
@@ -133,7 +121,6 @@
 
     .room-card { border-radius: 12px; padding: 18px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.04); display: flex; flex-direction: column; position: relative; overflow: hidden; transition: all 0.2s; min-height: 150px; }
     .room-card:active { transform: scale(0.98); }
-
     .room-card.status-booked { background: linear-gradient(145deg, #fffbeb, #ffffff); border: 1px solid #fcd34d; }
     .room-card.status-checkedin { background: linear-gradient(145deg, #ecfdf5, #ffffff); border: 1px solid #6ee7b7; }
     .room-card.status-stay { background: linear-gradient(145deg, #e0f2fe, #ffffff); border: 1px solid #7dd3fc; } 
@@ -168,15 +155,14 @@
     .highlight-note span { text-align: left; color: #92400e; font-weight: 500; }
 
     .rest-overlay-alert { margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.7); border: 1px solid #bbf7d0; border-radius: 8px; font-size: 12px; color: #166534; display: flex; flex-direction: column; gap: 4px; border-left: 4px solid #22c55e; }
-    .rest-overlay-alert strong { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #15803d; margin-bottom: 2px;}
 
-    .sticky-nav-container { position: sticky; bottom: 20px; display: flex; justify-content: space-between; padding: 0 15px; pointer-events: none; z-index: 90; width: 100%; max-width: 1100px; margin: 10px auto 35px auto; }
+    .sticky-nav-container { position: sticky; bottom: 20px; display: flex; justify-content: space-between; padding: 0 15px; pointer-events: none; z-index: 90; width: 100%; max-width: 1100px; margin: 10px auto 0 auto; }
     .date-nav-btn { pointer-events: auto; background: var(--primary-dark); color: var(--primary-gold); border: 1px solid rgba(255,255,255,0.1); padding: 10px 18px; border-radius: 30px; font-weight: 600; box-shadow: 0 6px 12px rgba(0,0,0,0.25); cursor: pointer; transition: all 0.2s; font-size: 13px; backdrop-filter: blur(5px); }
     .date-nav-btn:active { transform: scale(0.95); }
 
     @media (min-width: 769px) { .sticky-nav-container { display: none !important; } }
 
-    /* ⭐ 底部橫幅強制套用 15px */
+    /* ⭐ 橫幅修改：保證貼近最底部 */
     .tech-support-banner { 
         display: flex; justify-content: center; align-items: center; text-align: center; 
         padding: 15px !important; font-size: 12px; font-weight: 600; color: var(--text-muted); 
@@ -185,7 +171,6 @@
         padding-bottom: calc(15px + env(safe-area-inset-bottom)) !important; 
         width: 100%; z-index: 80; 
     }
-    @media (min-width: 769px) { .tech-support-banner { margin-top: 15px !important; } }
 
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(22, 52, 80, 0.6); backdrop-filter: blur(4px); z-index: 999; }
     .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 94%; max-width: 600px; background: var(--bg-light); border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); z-index: 1000; max-height: 88vh; overflow: hidden; flex-direction: column; }
@@ -215,7 +200,6 @@
     .log-details { display: none; padding: 10px 15px; border-top: 1px dashed var(--border-color); background: white; }
     .log-details.show { display: block; animation: fadeIn 0.2s ease-in-out; }
     .log-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; font-size: 13px; }
-    .log-row:last-child { border-bottom: none; padding-bottom: 0; }
     
     .log-changed { background: #fffbeb; border-radius: 6px; padding: 6px 8px; margin: 2px -8px; border-bottom: none !important; }
     .log-changed b { color: #b45309; }
@@ -223,8 +207,6 @@
     .log-changed strong { color: #dc2626; font-weight: bold; }
     .log-unchanged { color: #94a3b8; }
     .log-unchanged b { color: #94a3b8; font-weight: normal; }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
     .modal-footer { padding: 12px; background: white; border-top: 1px solid var(--border-color); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: space-between; }
     .btn { padding: 10px 0; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; font-size: 0.85rem; flex: 1; text-align: center; display: flex; justify-content: center; align-items: center; white-space: nowrap; }
@@ -236,18 +218,12 @@
 
     .modal.view-mode input, .modal.view-mode select, .modal.view-mode textarea { background: transparent !important; border-color: transparent !important; color: var(--text-main) !important; box-shadow: none !important; padding: 0; font-weight: 600; appearance: none; -webkit-appearance: none; }
     .modal.view-mode select { pointer-events: none; }
-    .modal.view-mode textarea { resize: none; }
-    .modal.view-mode .time-picker-group span { display: none; }
-    
     .modal.view-mode .checkbox-wrapper { display: none !important; }
-
-    select option:disabled { color: #94a3b8; background: #f1f5f9; font-style: italic; }
 
     .table-container { overflow-x: auto; background: white; border-radius: 8px; border: 1px solid var(--border-color); }
     .search-table { width: 100%; border-collapse: collapse; min-width: 500px; }
     .search-table th, .search-table td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 13px; }
     .search-table th { background: var(--bg-light); font-weight: 700; color: var(--primary-dark); white-space: nowrap; }
-    .batch-checkbox { transform: scale(1.3); cursor: pointer; }
 
     .no-scroll { overflow: hidden !important; height: 100vh !important; }
 </style>
@@ -266,8 +242,8 @@
                         <div class="mega-menu-column">
                             <h4>系統管理與操作</h4>
                             <a href="account-manager.html" class="mega-menu-item">⚙️ 帳號管理與權限設定</a>
-                            <a href="#" class="mega-menu-item" onclick="openExportModal()">📥 匯出系統財務報表</a>
-                            <a href="#" class="mega-menu-item" onclick="openBatchSearch()">📅 開啟月份批量系統</a>
+                            <a href="#" class="mega-menu-item" onclick="openExportModal(); toggleMenu(event);">📥 匯出系統財務報表</a>
+                            <a href="#" class="mega-menu-item" onclick="openBatchSearch(); toggleMenu(event);">📅 開啟月份批量系統</a>
                         </div>
                         <div class="mega-menu-column">
                             <h4>帳號安全</h4>
@@ -474,19 +450,16 @@
                     <div class="form-group"><label>備註</label><input id="restNote" placeholder="特殊需求"></div>
                 </div>
             </div>
-            
             <div class="form-section" id="restLogSection">
                 <div class="form-section-title">修改紀錄</div>
                 <div id="restLogs" class="log-container"></div>
             </div>
         </div>
-        
         <div id="restFooterView" class="modal-footer">
             <button class="btn btn-outline" onclick="closeModalRest()">關閉</button>
             <button class="btn btn-primary" onclick="toggleRestEditMode(true)">編輯</button>
             <button id="btnCheckoutRestView" class="btn btn-success" style="flex: 2; background:#ef4444;" onclick="checkoutRestAction()">結束休息</button>
         </div>
-
         <div id="restFooterEdit" class="modal-footer" style="display: none;">
             <button class="btn btn-outline" onclick="cancelRestEdit()">取消</button>
             <button id="btnDeleteRest" class="btn btn-danger" onclick="deleteRestAction()">刪除</button>
@@ -532,7 +505,6 @@
                     <div class="form-group"><label>入住人數</label><input id="people" type="number" value="2"></div>
                     <div class="form-group"><label>國籍</label><input id="country" placeholder="預設: 台灣"></div>
                 </div>
-                
                 <div class="checkbox-wrapper" style="margin-top: 10px; display: flex; align-items: center; gap: 6px;">
                     <input type="checkbox" id="saveFrequentGuest" style="width: auto; transform: scale(1.3); margin:0;">
                     <label for="saveFrequentGuest" style="margin: 0; font-size: 13px; color: #b45309; font-weight: 700; cursor: pointer;">儲存/更新為常用旅客 (以電話作為綁定帳號)</label>
@@ -545,7 +517,7 @@
                     <div class="form-group"><label>已付訂金</label><input id="deposit" type="number"></div>
                 </div>
                 <div class="grid-2">
-                    <div class="form-group"><label>應收尾款</label><input id="balance" type="number" readonly style="font-weight:bold; color:#ef4444; background:#fef2f2;"></div>
+                    <div class="form-group"><label>應收尾款</label><input id="balance" type="number" style="font-weight:bold; color:#ef4444; background:#fef2f2;"></div>
                     <div class="form-group">
                         <label>付款狀態</label>
                         <select id="payStatus">
@@ -558,20 +530,17 @@
                 <div class="form-group"><label>來源平台</label><input id="platform" placeholder="OTA (如 Booking, Agoda) 或 現場"></div>
                 <div class="form-group"><label>備註事項</label><textarea id="request" rows="2" placeholder="特殊需求..."></textarea></div>
             </div>
-            
             <div class="form-section" id="bookingLogSection">
                 <div class="form-section-title">修改紀錄</div>
                 <div id="bookingLogs" class="log-container"></div>
             </div>
         </div>
-
         <div id="modalFooterView" class="modal-footer">
             <button class="btn btn-outline" onclick="closeModal()">關閉</button>
             <button class="btn btn-primary" onclick="toggleEditMode(true)">編輯</button>
             <button id="btnCheckinView" class="btn btn-success" onclick="setStatus('checkedin')">入住</button>
             <button id="btnCheckoutView" class="btn btn-outline" onclick="setStatus('checkedout')">退房</button>
         </div>
-
         <div id="modalFooterEdit" class="modal-footer" style="display: none;">
             <button class="btn btn-outline" onclick="cancelEdit()">取消</button>
             <button id="btnDelete" class="btn btn-danger" onclick="deleteBooking()">刪除</button>
@@ -598,10 +567,33 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-if (sessionStorage.getItem("isLoggedIn") !== "true") { window.location.href = "login.html"; }
+// 防護牆與登入者狀態抓取
+if (sessionStorage.getItem("isLoggedIn") !== "true") {
+    window.location.href = "login.html";
+}
 const userName = sessionStorage.getItem("currentUser") || "管理員";
-document.getElementById("currentUserDisplay").innerText = `👋 ${userName}`;
-document.getElementById("currentUserDisplay").style.display = "inline-block";
+
+// ⭐ 連動檢測：讀取今日打卡狀態，切換右上角呼吸燈號
+async function loadAttendanceStatus() {
+    const todayStr = getDateString(new Date());
+    let dotClass = "status-gray"; // 預設灰燈
+    
+    try {
+        const docRef = doc(db, "attendance", `${userName}_${todayStr}`);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.clockIn && !data.clockOut) {
+                // 已上班但未下班，依據判定給燈號
+                dotClass = data.status === '遲到' ? "status-red" : "status-green";
+            }
+        }
+    } catch(e) { console.error("狀態讀取失敗", e); }
+
+    const userDisplay = document.getElementById("currentUserDisplay");
+    userDisplay.innerHTML = `<span class="status-dot ${dotClass}"></span> ${userName}`;
+    userDisplay.style.display = "inline-flex";
+}
 
 window.toggleMenu = function(e) {
     if(e) e.stopPropagation();
@@ -762,6 +754,9 @@ window.fillFrequentGuest = function() {
 }
 
 window.onload = async () => {
+    // 呼叫顯示上方燈號
+    loadAttendanceStatus();
+
     const grid = document.getElementById("roomGrid");
     rooms.forEach(room=>{
         const card = document.createElement("div");
@@ -920,7 +915,6 @@ window.openBatchSearch = function() {
     document.getElementById("batchResultsBody").innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px; color: var(--text-muted);">請設定條件後點擊篩選按鈕</td></tr>';
     document.getElementById("batchEditPanel").style.display = "none";
     document.getElementById("selectAllBatch").checked = false;
-    // 隱藏選單
     document.getElementById('headerDropdown').classList.remove('show');
     document.getElementById('megaMenuOverlay').classList.remove('show');
 }
@@ -1127,7 +1121,6 @@ window.openExportModal = function() {
     document.getElementById("exportModal").style.display = "flex";
     document.body.classList.add("no-scroll");
     setExportRange('month'); 
-    // 隱藏選單
     document.getElementById('headerDropdown').classList.remove('show');
     document.getElementById('megaMenuOverlay').classList.remove('show');
 }
