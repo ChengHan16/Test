@@ -10,8 +10,8 @@
 
 <style>
     :root {
-        var(--primary-dark): #163450;      
-        var(--primary-gold): #c1a13a;      
+        --primary-dark: #163450;      
+        --primary-gold: #c1a13a;      
         --bg-light: #f8fafc;          
         --card-bg: #ffffff;           
         --text-main: #334155;         
@@ -36,13 +36,7 @@
     .hotel-name { font-size: 1.15rem; font-weight: 700; letter-spacing: 1.5px; color: #c1a13a; cursor: pointer; display: flex; align-items: center; gap: 6px; user-select: none; }
     .hotel-name:hover { opacity: 0.8; }
     
-    .mega-menu {
-        display: none; position: absolute; top: 100%; left: 0; width: 100%;
-        background: #ffffff; border-top: 1px solid var(--border-color);
-        box-shadow: 0 15px 30px rgba(0,0,0,0.1); z-index: 200;
-        padding: 40px 0; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;
-        cursor: default;
-    }
+    .mega-menu { display: none; position: absolute; top: 100%; left: 0; width: 100%; background: #ffffff; border-top: 1px solid var(--border-color); box-shadow: 0 15px 30px rgba(0,0,0,0.1); z-index: 200; padding: 40px 0; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; cursor: default; }
     .mega-menu.show { display: block; animation: fadeInDown 0.2s ease-out; }
     .mega-menu-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; display: flex; gap: 60px; }
     .mega-menu-column { display: flex; flex-direction: column; gap: 12px; min-width: 200px; }
@@ -96,16 +90,16 @@
     
     .right-controls { display: flex; width: 100%; flex-direction: column; align-items: stretch; gap: 10px; }
     .search-box-wrapper { display: flex; gap: 8px; width: 100%; align-items: center; flex-wrap: wrap; }
-    .search-box { display: flex; align-items: center; background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 12px; flex-grow: 1; min-width: 200px; }
+    .search-box { display: flex; align-items: center; background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 12px; flex-grow: 1; min-width: 150px; }
     .search-box input { border: none; background: transparent; padding: 4px; font-size: 14px; outline: none; width: 100%; }
     .search-box button { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1rem; }
 
     .action-btn-group { display: flex; gap: 10px; width: 100%; }
-    .action-btn { background: #163450; color: #c1a13a; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; flex: 1; text-align: center; display: flex; justify-content: center; align-items: center; }
-    .action-btn.outline { background: white; color: #163450; border: 1px solid var(--border-color); }
+    .action-btn { background: var(--primary-dark); color: var(--primary-gold); border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; flex: 1; text-align: center; display: flex; justify-content: center; align-items: center; }
+    .action-btn.outline { background: white; color: var(--primary-dark); border: 1px solid var(--border-color); }
 
     #statsBox { font-size: 13px; line-height: 1.5; color: var(--text-muted); background: var(--bg-light); padding: 12px; border-radius: 8px; display: flex; justify-content: space-around; text-align: left; border: 1px solid var(--border-color); width: 100%; }
-    #statsBox b { color: #163450; font-size: 14px; }
+    #statsBox b { color: var(--primary-dark); font-size: 14px; }
     .stats-col { flex: 1; display: flex; flex-direction: column; gap: 4px; }
     .stats-divider { width: 1px; background: var(--border-color); margin: 0 15px; }
 
@@ -124,7 +118,7 @@
     .room-card.status-empty { background: #ffffff; border: 1px solid #e2e8f0; }
 
     .room-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .room-number { font-size: 1.15rem; font-weight: 700; color: #163450; }
+    .room-number { font-size: 1.15rem; font-weight: 700; color: var(--primary-dark); }
     
     .status-badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
     .badge-booked { background: #fef3c7; color: #b45309; }
@@ -142,7 +136,7 @@
     .detail-item b { color: var(--text-muted); font-weight: 500; white-space: nowrap; margin-right: 6px; }
     .detail-item span { color: var(--text-main); font-weight: 600; text-align: right; word-break: break-all; }
     
-    .full-width-item { display: flex; justify-content: space-between; gap: 10px; margin-top: 10px; font-size: 13px; }
+    .full-width-item { display: flex; justify-content: space-between; gap: 10px; margin-top: 10px; font-size: 13px; align-items: flex-start; }
     .full-width-item b { color: var(--text-muted); font-weight: 500; font-size: 12px; white-space: nowrap; }
     .full-width-item span { color: var(--text-main); font-weight: 600; text-align: right; word-break: break-all; flex-grow: 1; }
     .highlight-note { color: #b45309; background: rgba(254, 243, 199, 0.5); padding: 8px; border-radius: 6px; flex-direction: column; align-items: flex-start; }
@@ -151,8 +145,8 @@
 
     .rest-overlay-alert { margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.7); border: 1px solid #bbf7d0; border-radius: 8px; font-size: 12px; color: #166534; display: flex; flex-direction: column; gap: 4px; border-left: 4px solid #22c55e; }
 
-    .sticky-nav-container { position: sticky; bottom: 20px; display: flex; justify-content: space-between; padding: 0 15px; pointer-events: none; z-index: 90; width: 100%; max-width: 1100px; margin: 10px auto 0 auto; }
-    .date-nav-btn { pointer-events: auto; background: #163450; color: #c1a13a; border: 1px solid rgba(255,255,255,0.1); padding: 10px 18px; border-radius: 30px; font-weight: 600; box-shadow: 0 6px 12px rgba(0,0,0,0.25); cursor: pointer; transition: all 0.2s; font-size: 13px; backdrop-filter: blur(5px); }
+    .sticky-nav-container { position: sticky; bottom: 20px; display: flex; justify-content: space-between; padding: 0 15px; pointer-events: none; z-index: 90; width: 100%; max-width: 1100px; margin: 10px auto 35px auto; }
+    .date-nav-btn { pointer-events: auto; background: var(--primary-dark); color: var(--primary-gold); border: 1px solid rgba(255,255,255,0.1); padding: 10px 18px; border-radius: 30px; font-weight: 600; box-shadow: 0 6px 12px rgba(0,0,0,0.25); cursor: pointer; transition: all 0.2s; font-size: 13px; backdrop-filter: blur(5px); }
     .date-nav-btn:active { transform: scale(0.95); }
 
     @media (min-width: 769px) { .sticky-nav-container { display: none !important; } }
@@ -174,10 +168,8 @@
     .modal input:focus, .modal select:focus, .modal textarea:focus { outline: none; border-color: #c1a13a; box-shadow: 0 0 0 2px rgba(193, 161, 58, 0.2); }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     
-    /* ⭐ 客製化生日下拉選單樣式 */
     .custom-date-picker { display: flex; gap: 6px; }
     .custom-date-picker select { flex: 1; text-align: center; padding: 10px 5px; }
-
     .time-picker-group { display: flex; align-items: center; gap: 8px; }
     .time-picker-group input { flex: 1; text-align: center; }
 
@@ -199,6 +191,8 @@
     .log-unchanged { color: #94a3b8; }
     .log-unchanged b { color: #94a3b8; font-weight: normal; }
 
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
     .modal-footer { padding: 12px; background: white; border-top: 1px solid var(--border-color); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: space-between; }
     .btn { padding: 10px 0; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; font-size: 0.85rem; flex: 1; text-align: center; display: flex; justify-content: center; align-items: center; white-space: nowrap; }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -210,7 +204,6 @@
     .modal.view-mode input, .modal.view-mode select, .modal.view-mode textarea { background: transparent !important; border-color: transparent !important; color: var(--text-main) !important; box-shadow: none !important; padding: 0; font-weight: 600; appearance: none; -webkit-appearance: none; }
     .modal.view-mode select { pointer-events: none; }
     .modal.view-mode .checkbox-wrapper { display: none !important; }
-    /* 檢視模式下修正生日的顯示 */
     .modal.view-mode .custom-date-picker select { padding:0; text-align: left; }
 
     select option:disabled { color: #94a3b8; background: #f1f5f9; font-style: italic; }
@@ -283,8 +276,10 @@
                             <input type="text" id="searchInput" placeholder="全域搜尋 (姓名/電話)" onkeypress="if(event.key==='Enter') searchGuest()">
                             <button onclick="searchGuest()">🔍</button>
                         </div>
-                        <button class="btn btn-outline" style="flex: 0 0 auto; padding: 6px 12px; font-size: 13px; width: auto; border-radius: 8px;" onclick="openBatchSearch()">📅 月份批量</button>
-                        <button class="btn btn-outline" style="flex: 0 0 auto; padding: 6px 12px; font-size: 13px; width: auto; border-radius: 8px; background-color: var(--primary-gold); color: white; border: none;" onclick="openExportModal()">📥 匯出報表</button>
+                        <div style="display:flex; gap:8px; flex-shrink: 0;">
+                            <button class="btn btn-outline" style="padding: 6px 12px; font-size: 13px; border-radius: 8px; white-space: nowrap;" onclick="openBatchSearch()">📅 月份批量</button>
+                            <button class="btn btn-outline" style="padding: 6px 12px; font-size: 13px; border-radius: 8px; background-color: var(--primary-gold); color: white; border: none; white-space: nowrap;" onclick="openExportModal()">📥 匯出報表</button>
+                        </div>
                     </div>
                     
                     <div id="statsBox"></div>
@@ -493,9 +488,8 @@
                     <div class="form-group"><label>代表人姓名</label><input id="name" placeholder="Name"></div>
                     <div class="form-group"><label>聯絡電話</label><input id="phone" placeholder="Phone"></div>
                 </div>
-                
                 <div class="grid-2">
-                    <div class="form-group"><label>身分證</label><input id="idNumber" placeholder="ID Number"></div>
+                    <div class="form-group"><label>身分證/護照號碼</label><input id="idNumber" placeholder="必填 (常客綁定依據)"></div>
                     <div class="form-group">
                         <label>出生年月日</label>
                         <div class="custom-date-picker">
@@ -505,14 +499,18 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="grid-2">
                     <div class="form-group"><label>入住人數</label><input id="people" type="number" value="2"></div>
                     <div class="form-group"><label>國籍</label><input id="country" placeholder="預設: 台灣"></div>
                 </div>
+                <div class="form-group">
+                    <label>同住人員資料 (可選填)</label>
+                    <textarea id="coGuests" rows="2" placeholder="請輸入同住人姓名、電話或身分證號..."></textarea>
+                </div>
+                
                 <div class="checkbox-wrapper" style="margin-top: 10px; display: flex; align-items: center; gap: 6px;">
                     <input type="checkbox" id="saveFrequentGuest" style="width: auto; transform: scale(1.3); margin:0;">
-                    <label for="saveFrequentGuest" style="margin: 0; font-size: 13px; color: #b45309; font-weight: 700; cursor: pointer;">儲存/更新為常用旅客 (以電話作為綁定帳號)</label>
+                    <label for="saveFrequentGuest" style="margin: 0; font-size: 13px; color: #b45309; font-weight: 700; cursor: pointer;">儲存/更新為常用旅客 (以「身分證/護照號碼」作為綁定依據)</label>
                 </div>
             </div>
             <div class="form-section">
@@ -596,7 +594,6 @@ async function loadAttendanceStatus() {
     userDisplay.style.display = "inline-flex";
 }
 
-// ⭐ 初始化客製化生日選單
 function initBirthdaySelects() {
     const ySel = document.getElementById("birthYear");
     const mSel = document.getElementById("birthMonth");
@@ -730,7 +727,7 @@ function renderLogs(elementId, logsArray, fieldMap) {
     container.innerHTML = html;
 }
 
-const bookingFieldMap = { checkinDate: "入住日", checkoutDate: "退房日", orderNumber: "訂單編號", name: "姓名", phone: "電話", people: "人數", idNumber: "身分證", birthday: "生日", country: "國籍", total: "總金額", deposit: "訂金", payStatus: "付款狀態", platform: "來源平台", request: "備註", status: "房間狀態", balance: "應收尾款" };
+const bookingFieldMap = { checkinDate: "入住日", checkoutDate: "退房日", orderNumber: "訂單編號", name: "姓名", phone: "電話", people: "人數", idNumber: "身分證", birthday: "生日", country: "國籍", total: "總金額", deposit: "訂金", payStatus: "付款狀態", platform: "來源平台", request: "備註", status: "房間狀態", balance: "應收尾款", coGuests: "同住人員" };
 const restFieldMap = { room: "房號", time: "休息時段", name: "姓名", phone: "電話", people: "人數", price: "實收金額", id: "身分證", note: "備註", status: "房間狀態" };
 
 window.switchView = function(mode) {
@@ -772,23 +769,23 @@ async function loadFrequentGuests() {
         frequentGuests = {};
         snap.forEach(docSnap => {
             let data = docSnap.data();
-            frequentGuests[docSnap.id] = data; 
+            frequentGuests[docSnap.id] = data; // doc.id 現在是 身分證號
             let op = document.createElement("option");
             op.value = docSnap.id;
             op.textContent = `${data.name} (${docSnap.id})`;
             select.appendChild(op);
         });
-    } catch(e) { console.error(e); }
+    } catch(e) { console.error("載入常用旅客失敗", e); }
 }
 
 window.fillFrequentGuest = function() {
-    const phone = document.getElementById("frequentGuestSelect").value;
-    if(!phone) return;
-    const data = frequentGuests[phone];
+    const idVal = document.getElementById("frequentGuestSelect").value;
+    if(!idVal) return;
+    const data = frequentGuests[idVal];
     if(data) {
         document.getElementById("name").value = data.name || "";
         document.getElementById("phone").value = data.phone || "";
-        document.getElementById("idNumber").value = data.idNumber || "";
+        document.getElementById("idNumber").value = idVal; // 載入主鍵
         setBirthdaySelects(data.birthday || "");
         document.getElementById("country").value = data.country || "";
     }
@@ -796,7 +793,7 @@ window.fillFrequentGuest = function() {
 
 window.onload = async () => {
     loadAttendanceStatus();
-    initBirthdaySelects(); // 初始化生日選單
+    initBirthdaySelects(); 
 
     const grid = document.getElementById("roomGrid");
     rooms.forEach(room=>{
@@ -1203,7 +1200,8 @@ window.executeExport = async function() {
 
     try {
         let csvContent = "\uFEFF"; 
-        csvContent += "訂單類型,日期/時段,房號,住客姓名,聯絡電話,人數,身分證號,款項狀態,平台來源,房間狀態,備註\n";
+        // ⭐ 加入同住人員欄位匯出
+        csvContent += "訂單類型,日期/時段,房號,住客姓名,聯絡電話,人數,身分證號,款項狀態,平台來源,房間狀態,同住人員,備註\n";
 
         let exportData = [];
         
@@ -1221,7 +1219,7 @@ window.executeExport = async function() {
                     exportData.push([
                         "住宿", docDate, room, b.name || "-", b.phone || "-", 
                         b.people ? b.people + "人" : "-", b.idNumber || "-", moneyText, 
-                        b.platform || "現場", statusText, b.request || "-"
+                        b.platform || "現場", statusText, b.coGuests || "-", b.request || "-"
                     ]);
                 }
             }
@@ -1238,7 +1236,7 @@ window.executeExport = async function() {
                     exportData.push([
                         "休息", `${docDate} ${r.time||""}`, r.room, r.name || "-", r.phone || "-", 
                         r.people ? r.people + "人" : "-", r.id || "-", moneyText, 
-                        "現場", statusText, r.note || "-"
+                        "現場", statusText, "-", r.note || "-"
                     ]);
                 });
             }
@@ -1332,13 +1330,14 @@ function openModal(room) {
     document.getElementById("modalOverlay").style.display = "block"; document.getElementById("formModal").style.display = "flex"; document.body.classList.add("no-scroll");
 
     const data = bookings[selectedDate]?.[currentRoom];
-    const fields = ['orderNumber', 'name', 'phone', 'people', 'idNumber', 'orderDate', 'total', 'deposit', 'balance', 'country', 'platform', 'request', 'payStatus'];
+    // ⭐ 加入同住人員欄位
+    const fields = ['orderNumber', 'name', 'phone', 'people', 'idNumber', 'orderDate', 'total', 'deposit', 'balance', 'country', 'platform', 'request', 'payStatus', 'coGuests'];
     
     if (data) { 
         fields.forEach(id => { const el = document.getElementById(id); if (el) el.value = data[id] || ""; }); 
         document.getElementById("bookingCheckin").value = data.checkinDate || selectedDate;
         document.getElementById("checkoutDate").value = data.checkoutDate || "";
-        setBirthdaySelects(data.birthday || ""); // 載入生日
+        setBirthdaySelects(data.birthday || ""); 
         renderLogs('bookingLogs', data.updateLogs || [], bookingFieldMap);
         document.getElementById("bookingLogSection").style.display = "block";
     } else { 
@@ -1454,7 +1453,7 @@ window.save = async function(){
             name: document.getElementById("name").value.trim() || "", 
             phone: document.getElementById("phone").value || "",
             idNumber: document.getElementById("idNumber").value || "", 
-            birthday: getBirthdaySelects(), // 儲存客製化生日
+            birthday: getBirthdaySelects(), 
             orderDate: document.getElementById("orderDate").value || "", 
             people: document.getElementById("people").value || "", 
             total: document.getElementById("total").value || "",
@@ -1463,6 +1462,7 @@ window.save = async function(){
             country: document.getElementById("country").value || "", 
             platform: document.getElementById("platform").value || "",
             request: document.getElementById("request").value || "", 
+            coGuests: document.getElementById("coGuests").value || "", // ⭐ 儲存同住人
             payStatus: document.getElementById("payStatus").value || "",
             checkinDate: checkin, 
             checkoutDate: checkout,
@@ -1531,20 +1531,24 @@ window.save = async function(){
             dayIndex++;
         }
 
+        // ⭐ 儲存常客資料：現在強制使用 idNumber 作為資料庫主鍵
         const saveFreq = document.getElementById("saveFrequentGuest").checked;
-        const phoneVal = document.getElementById("phone").value.trim();
-        if (saveFreq && phoneVal) {
+        const idVal = document.getElementById("idNumber").value.trim();
+        
+        if (saveFreq && idVal) {
             const freqData = {
                 name: document.getElementById("name").value.trim(),
-                phone: phoneVal,
-                idNumber: document.getElementById("idNumber").value,
+                phone: document.getElementById("phone").value.trim(),
+                idNumber: idVal,
                 birthday: getBirthdaySelects(),
                 country: document.getElementById("country").value || "台灣"
             };
             try {
-                await setDoc(doc(db, "frequent_guests", phoneVal), freqData);
+                await setDoc(doc(db, "frequent_guests", idVal), freqData);
                 await loadFrequentGuests(); 
             } catch(e) { console.error("儲存常用旅客失敗", e); }
+        } else if (saveFreq && !idVal) {
+            alert("⚠️ 提醒：請填寫「身分證/護照號碼」，系統才能成功綁定並儲存常用旅客。本次未儲存旅客名單。");
         }
 
         saveBtn.innerHTML = "💾 儲存"; saveBtn.disabled = false;
@@ -1668,7 +1672,9 @@ function updateUI() {
                 html += `</div>`;
                 html += `</div>`;
                 if (bookingData.orderNumber) html += `<div class="full-width-item"><b>訂單編號</b><span>${bookingData.orderNumber}</span></div>`;
-                if (bookingData.request) html += `<div class="full-width-item highlight-note"><b>備註需求</b><span>${bookingData.request}</span></div>`;
+                // ⭐ 卡片呈現同住人員資訊
+                if (bookingData.coGuests) html += `<div class="full-width-item" style="margin-top:5px; flex-direction:column; gap:4px;"><b>同住人員</b><span style="font-weight:normal; color:var(--text-muted); text-align:left;">${bookingData.coGuests}</span></div>`;
+                if (bookingData.request) html += `<div class="full-width-item highlight-note" style="margin-top:8px;"><b>備註需求</b><span>${bookingData.request}</span></div>`;
 
             } else {
                 card.classList.add(`status-empty`);
