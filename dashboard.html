@@ -1309,7 +1309,7 @@ window.executeExport = async function(formatType) {
             if(isRest) return "-";
             if(b.coGuests && Array.isArray(b.coGuests) && b.coGuests.length > 0) {
                 // ⭐ 新格式: 1. 姓名 | 證號 | 電話 | 國籍 (\n 換行)
-                return b.coGuests.map((g, idx) => `${idx+1}. ${g.name||'-'} | ${g.id||'-'} | ${g.phone||'-'} | ${g.country||'台灣'}`).join("\n");
+                return b.coGuests.map((g, idx) => `${idx+1}. 姓名：${g.name||'-'} ID：${g.id||'-'} 電話：${g.phone||'-'} 國籍：${g.country||'台灣'}`).join("\n");
             }
             return "-";
         }},
@@ -1858,15 +1858,22 @@ function updateUI() {
                 html += `<div class="detail-item"><b>住宿人數</b><span>${bookingData.people || '-'}人</span></div>`;
                 html += `<div class="detail-item"><b>平台來源</b><span>${bookingData.platform || '現場'}</span></div>`;
                 html += `<div class="detail-item"><b>訂單總額</b><span>$${bookingData.total || 0}</span></div>`;
-                let payStatusText = bookingData.payStatus === 'paid' ? '已結清' : (bookingData.payStatus === 'platform' ? '平台代收' : '未付清');
-                let payColor = bookingData.payStatus === 'paid' ? '#10b981' : (bookingData.payStatus === 'platform' ? '#3b82f6' : '#ef4444');
+                
+                let payStatusText = '未付清';
+                let payColor = '#ef4444';
+                const payMap = { 'paid': {t:'現場已結清', c:'#10b981'}, 'platform': {t:'平台代收', c:'#3b82f6'}, 'creditcard': {t:'信用卡', c:'#8b5cf6'}, 'linepay': {t:'LINE Pay', c:'#06c755'}, 'taiwanpay': {t:'台灣 Pay', c:'#f97316'} };
+                if (bookingData.payStatus && payMap[bookingData.payStatus]) {
+                    payStatusText = payMap[bookingData.payStatus].t;
+                    payColor = payMap[bookingData.payStatus].c;
+                }
+                if (bookingData.payLast5) { payStatusText += ` (${bookingData.payLast5})`; }
+
                 html += `<div class="detail-item"><b>付款狀態</b><span style="color:${payColor}; font-weight:bold;">${payStatusText}</span></div>`;
                 html += `<div class="detail-item"><b>應收尾款</b><span style="color:#ef4444; font-weight:bold;">$${bookingData.balance || 0}</span></div>`;
                 html += `</div>`;
                 html += `</div>`;
                 if (bookingData.orderNumber) html += `<div class="full-width-item"><b>訂單編號</b><span>${bookingData.orderNumber}</span></div>`;
                 
-                // ⭐ 住宿人員卡片顯示格式 (符合要求)
                 if (bookingData.coGuests && Array.isArray(bookingData.coGuests) && bookingData.coGuests.length > 0) {
                     html += `<div class="full-width-item" style="margin-top:5px; flex-direction:column; gap:4px;"><b>住宿人員資料</b><div style="font-weight:normal; color:var(--text-main); text-align:left; font-size:12px; line-height:1.6;">`;
                     bookingData.coGuests.forEach((g) => {
