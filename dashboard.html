@@ -370,6 +370,9 @@
                         <select id="batchPayStatus" disabled>
                             <option value="paid">現場已結清</option>
                             <option value="platform">訂房平台已收</option>
+                            <option value="creditcard">信用卡</option>
+                            <option value="linepay">LINE Pay</option>
+                            <option value="taiwanpay">台灣 Pay</option>
                             <option value="">未付清</option>
                         </select>
                     </div>
@@ -434,7 +437,7 @@
                     <label><input type="checkbox" class="export-field" value="money" checked> 款項狀態</label>
                     <label><input type="checkbox" class="export-field" value="platform" checked> 平台來源</label>
                     <label><input type="checkbox" class="export-field" value="status" checked> 房間狀態</label>
-                    <label><input type="checkbox" class="export-field" value="coguests" checked> 住宿人員</label>
+                    <label><input type="checkbox" class="export-field" value="coguests" checked> 住宿人員資料</label>
                     <label><input type="checkbox" class="export-field" value="note" checked> 備註</label>
                 </div>
             </div>
@@ -570,10 +573,16 @@
                             <option value="">未付清</option>
                             <option value="paid">現場已結清</option>
                             <option value="platform">訂房平台已收</option>
+                            <option value="creditcard">信用卡</option>
+                            <option value="linepay">LINE Pay</option>
+                            <option value="taiwanpay">台灣 Pay</option>
                         </select>
                     </div>
                 </div>
-                <div class="form-group"><label>來源平台</label><input id="platform" placeholder="OTA (如 Booking, Agoda) 或 現場"></div>
+                <div class="grid-2">
+                    <div class="form-group"><label>後五碼 (可選填)</label><input id="payLast5" type="text" placeholder="例: 12345" maxlength="5"></div>
+                    <div class="form-group"><label>來源平台</label><input id="platform" placeholder="OTA (如 Booking, Agoda) 或 現場"></div>
+                </div>
                 <div class="form-group"><label>備註事項</label><textarea id="request" rows="2" placeholder="特殊需求..."></textarea></div>
             </div>
             <div class="form-section" id="bookingLogSection">
@@ -617,6 +626,8 @@ const db = getFirestore(app);
 
 if (sessionStorage.getItem("isLoggedIn") !== "true") { window.location.href = "login.html"; }
 const userName = sessionStorage.getItem("currentUser") || "管理員";
+document.getElementById("currentUserDisplay").innerText = `👋 ${userName}`;
+document.getElementById("currentUserDisplay").style.display = "inline-block";
 
 async function loadAttendanceStatus() {
     const todayStr = getDateString(new Date());
@@ -731,7 +742,10 @@ function renderLogs(elementId, logsArray, fieldMap) {
     let html = '';
     const formatVal = (v, k) => {
         if(v === "" || v === undefined || v === null) return "-";
-        if(k === 'payStatus') return v === 'paid' ? '現場已結清' : v === 'platform' ? '平台已收' : '未付清';
+        if(k === 'payStatus') {
+            const map = { 'paid': '現場已結清', 'platform': '平台已收', 'creditcard': '信用卡', 'linepay': 'LINE Pay', 'taiwanpay': '台灣 Pay', '': '未付清' };
+            return map[v] || '未付清';
+        }
         if(k === 'status') return v === 'checkedin' ? '入住中' : v === 'checkedout' ? '已退房' : v === 'stay' ? '續住' : v === 'booked' ? '已預訂' : v === 'resting' ? '休息中' : v === 'checkout' ? '結束休息' : v;
         if(k === 'people') return v + "位";
         if(k === 'coGuests' && Array.isArray(v)) return v.map(g => `${g.name||'-'}(${g.id||'-'})`).join(", ");
@@ -771,7 +785,7 @@ function renderLogs(elementId, logsArray, fieldMap) {
     container.innerHTML = html;
 }
 
-const bookingFieldMap = { checkinDate: "入住日", checkoutDate: "退房日", orderNumber: "訂單編號", name: "姓名", phone: "電話", people: "人數", idNumber: "身分證", birthday: "生日", country: "國籍", total: "總金額", deposit: "訂金", payStatus: "付款狀態", platform: "來源平台", request: "備註", status: "房間狀態", balance: "應收尾款", coGuests: "住宿人員" };
+const bookingFieldMap = { checkinDate: "入住日", checkoutDate: "退房日", orderNumber: "訂單編號", name: "姓名", phone: "電話", people: "人數", idNumber: "身分證", birthday: "生日", country: "國籍", total: "總金額", deposit: "訂金", payStatus: "付款狀態", payLast5: "後五碼", platform: "來源平台", request: "備註", status: "房間狀態", balance: "應收尾款", coGuests: "住宿人員" };
 const restFieldMap = { room: "房號", time: "休息時段", name: "姓名", phone: "電話", people: "人數", price: "實收金額", id: "身分證", note: "備註", status: "房間狀態" };
 
 window.switchView = function(mode) {
@@ -905,7 +919,8 @@ function calcBalance() {
     const payStatusEl = document.getElementById("payStatus");
     
     if (totalEl && depositEl && balanceEl && payStatusEl) {
-        if (payStatusEl.value === 'paid' || payStatusEl.value === 'platform') {
+        // ⭐ 如果有選擇任何付款狀態，尾款自動歸零
+        if (payStatusEl.value !== '') {
             balanceEl.value = 0;
         } else {
             balanceEl.value = (Number(totalEl.value) || 0) - (Number(depositEl.value) || 0);
@@ -1173,7 +1188,7 @@ window.confirmBatchEdit = async function() {
                         if (doPay && roomData.payStatus !== newPay) {
                             changes.payStatus = { old: roomData.payStatus, new: newPay };
                             roomData.payStatus = newPay;
-                            if(newPay === 'paid' || newPay === 'platform') {
+                            if(newPay === 'paid' || newPay === 'platform' || newPay === 'creditcard' || newPay === 'linepay' || newPay === 'taiwanpay') {
                                 changes.balance = { old: roomData.balance, new: 0 };
                                 roomData.balance = 0;
                             }
@@ -1221,6 +1236,7 @@ window.confirmBatchEdit = async function() {
     } catch(e) { alert("修改過程發生錯誤"); }
 }
 
+// ⭐ CSV / PDF 智慧分離匯出
 window.openExportModal = function() {
     document.getElementById("modalOverlayExport").style.display = "block";
     document.getElementById("exportModal").style.display = "flex";
@@ -1259,7 +1275,7 @@ window.setExportRange = function(type) {
     document.getElementById("exportEndDate").value = getDateString(end);
 }
 
-// ⭐ CSV / PDF 智慧分離匯出
+// ⭐ 執行匯出 (Excel / PDF)
 window.executeExport = async function(formatType) {
     const startDateStr = document.getElementById("exportStartDate").value;
     const endDateStr = document.getElementById("exportEndDate").value;
@@ -1269,6 +1285,7 @@ window.executeExport = async function(formatType) {
     const selectedFields = Array.from(document.querySelectorAll('.export-field:checked')).map(cb => cb.value);
     if(selectedFields.length === 0) { alert("請至少勾選一個匯出欄位"); return; }
 
+    // 定義欄位取值邏輯 (支援換行符號 \n)
     const fieldDefs = {
         type: { header: "訂單類型", getVal: (b, isRest) => isRest ? "休息" : "住宿" },
         date: { header: "日期/時段", getVal: (b, isRest, d) => isRest ? `${d} ${b.time||""}` : d },
@@ -1279,8 +1296,11 @@ window.executeExport = async function(formatType) {
         id: { header: "身分證號", getVal: (b, isRest) => isRest ? (b.id || "-") : (b.idNumber || "-") },
         money: { header: "款項狀態", getVal: (b, isRest) => {
             if(isRest) return `已結清 (實收: $${b.price||0})`;
-            let pt = b.payStatus === 'paid' ? '已結清' : (b.payStatus === 'platform' ? '平台代收' : '未付清');
-            return `${pt} (尾款: $${b.balance||0})`;
+            const map = { 'paid': '現場已結清', 'platform': '平台代收', 'creditcard': '信用卡', 'linepay': 'LINE Pay', 'taiwanpay': '台灣 Pay' };
+            let pt = map[b.payStatus] || '未付清';
+            let res = `${pt} (尾款: $${b.balance||0})`;
+            if (b.payLast5) res += ` / 後五碼: ${b.payLast5}`;
+            return res;
         }},
         platform: { header: "平台來源", getVal: (b, isRest) => isRest ? "現場" : (b.platform || "現場") },
         status: { header: "房間狀態", getVal: (b, isRest) => {
@@ -1290,7 +1310,8 @@ window.executeExport = async function(formatType) {
         coguests: { header: "住宿人員", getVal: (b, isRest) => {
             if(isRest) return "-";
             if(b.coGuests && Array.isArray(b.coGuests) && b.coGuests.length > 0) {
-                return b.coGuests.map((g, idx) => `${idx+1}. ${g.name||'-'} | ${g.id||'-'} | ${g.phone||'-'} | ${g.country||'台灣'}`).join(" ； ");
+                // ⭐ 輸出為多行格式 \n
+                return b.coGuests.map((g, idx) => `${idx+1}. ${g.name||'-'} | ${g.id||'-'} | ${g.phone||'-'} | ${g.country||'台灣'}`).join("\n");
             }
             return "-";
         }},
@@ -1365,7 +1386,7 @@ window.executeExport = async function(formatType) {
                 <table style="width:100%; border-collapse: collapse; font-family: 'Microsoft JhengHei', sans-serif; font-size:12px; margin-top:10px;">
                     <thead><tr>${headers.map(h => `<th style="border:1px solid #cbd5e1; padding:8px; background:#f1f5f9; text-align:left; white-space:nowrap;">${h}</th>`).join('')}</tr></thead>
                     <tbody>
-                        ${rows.map(row => `<tr>${row.map(cell => `<td style="border:1px solid #e2e8f0; padding:6px; white-space:nowrap;">${cell}</td>`).join('')}</tr>`).join('')}
+                        ${rows.map(row => `<tr>${row.map(cell => `<td style="border:1px solid #e2e8f0; padding:6px; white-space:nowrap; vertical-align:top;">${String(cell).replace(/\n/g, '<br>')}</td>`).join('')}</tr>`).join('')}
                     </tbody>
                 </table>`;
             };
@@ -1463,7 +1484,7 @@ function openModal(room) {
     document.getElementById("modalOverlay").style.display = "block"; document.getElementById("formModal").style.display = "flex"; document.body.classList.add("no-scroll");
 
     const data = bookings[selectedDate]?.[currentRoom];
-    const fields = ['orderNumber', 'name', 'phone', 'people', 'idNumber', 'orderDate', 'total', 'deposit', 'balance', 'country', 'platform', 'request', 'payStatus'];
+    const fields = ['orderNumber', 'name', 'phone', 'people', 'idNumber', 'orderDate', 'total', 'deposit', 'balance', 'country', 'platform', 'request', 'payStatus', 'payLast5'];
     
     const list = document.getElementById('coGuestsList');
     list.innerHTML = '';
@@ -1616,6 +1637,7 @@ window.save = async function(){
             request: document.getElementById("request").value || "", 
             coGuests: coGuestsArr, 
             payStatus: document.getElementById("payStatus").value || "",
+            payLast5: document.getElementById("payLast5").value.trim() || "",
             checkinDate: checkin, 
             checkoutDate: checkout,
             everCheckedIn: false 
@@ -1815,19 +1837,29 @@ function updateUI() {
                 html += `<div class="detail-item"><b>住宿人數</b><span>${bookingData.people || '-'}人</span></div>`;
                 html += `<div class="detail-item"><b>平台來源</b><span>${bookingData.platform || '現場'}</span></div>`;
                 html += `<div class="detail-item"><b>訂單總額</b><span>$${bookingData.total || 0}</span></div>`;
-                let payStatusText = bookingData.payStatus === 'paid' ? '已結清' : (bookingData.payStatus === 'platform' ? '平台代收' : '未付清');
-                let payColor = bookingData.payStatus === 'paid' ? '#10b981' : (bookingData.payStatus === 'platform' ? '#3b82f6' : '#ef4444');
+                
+                // ⭐ 處理卡片顯示的付款狀態文字與後五碼
+                let payStatusText = '未付清';
+                let payColor = '#ef4444';
+                const payMap = { 'paid': {t:'現場已結清', c:'#10b981'}, 'platform': {t:'平台代收', c:'#3b82f6'}, 'creditcard': {t:'信用卡', c:'#8b5cf6'}, 'linepay': {t:'LINE Pay', c:'#06c755'}, 'taiwanpay': {t:'台灣 Pay', c:'#f97316'} };
+                if (bookingData.payStatus && payMap[bookingData.payStatus]) {
+                    payStatusText = payMap[bookingData.payStatus].t;
+                    payColor = payMap[bookingData.payStatus].c;
+                }
+                if (bookingData.payLast5) { payStatusText += ` (${bookingData.payLast5})`; }
+
                 html += `<div class="detail-item"><b>付款狀態</b><span style="color:${payColor}; font-weight:bold;">${payStatusText}</span></div>`;
                 html += `<div class="detail-item"><b>應收尾款</b><span style="color:#ef4444; font-weight:bold;">$${bookingData.balance || 0}</span></div>`;
                 html += `</div>`;
                 html += `</div>`;
+                
                 if (bookingData.orderNumber) html += `<div class="full-width-item"><b>訂單編號</b><span>${bookingData.orderNumber}</span></div>`;
                 
-                // ⭐ 住宿人員條列顯示格式修正
+                // ⭐ 住宿人員卡片顯示格式
                 if (bookingData.coGuests && Array.isArray(bookingData.coGuests) && bookingData.coGuests.length > 0) {
-                    html += `<div class="full-width-item" style="margin-top:5px; flex-direction:column; gap:4px;"><b>住宿人員資料</b><div style="font-weight:normal; color:var(--text-muted); text-align:left; font-size:12px;">`;
-                    bookingData.coGuests.forEach((g, idx) => {
-                        html += `<div>${idx + 1}. ${g.name || '-'} | ${g.id || '-'} | ${g.phone || '-'} | ${g.country || '台灣'}</div>`;
+                    html += `<div class="full-width-item" style="margin-top:5px; flex-direction:column; gap:4px;"><b>住宿人員資料</b><div style="font-weight:normal; color:var(--text-main); text-align:left; font-size:12px; line-height:1.6;">`;
+                    bookingData.coGuests.forEach((g) => {
+                        html += `<div style="margin-bottom:2px;"><b>姓名：</b>${g.name || '-'} &nbsp;<b>ID：</b>${g.id || '-'} &nbsp;<b>電話：</b>${g.phone || '-'} &nbsp;<b>國籍：</b>${g.country || '台灣'}</div>`;
                     });
                     html += `</div></div>`;
                 }
