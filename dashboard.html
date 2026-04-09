@@ -743,7 +743,7 @@ function renderLogs(elementId, logsArray, fieldMap) {
     const formatVal = (v, k) => {
         if(v === "" || v === undefined || v === null) return "-";
         if(k === 'payStatus') {
-            const map = { 'paid': '現場已結清', 'platform': '平台已收', 'creditcard': '信用卡', 'linepay': 'LINE Pay', 'taiwanpay': '台灣 Pay', '': '未付清' };
+            const map = { 'paid': '現場已結清', 'platform': '平台代收', 'creditcard': '信用卡', 'linepay': 'LINE Pay', 'taiwanpay': '台灣 Pay', '': '未付清' };
             return map[v] || '未付清';
         }
         if(k === 'status') return v === 'checkedin' ? '入住中' : v === 'checkedout' ? '已退房' : v === 'stay' ? '續住' : v === 'booked' ? '已預訂' : v === 'resting' ? '休息中' : v === 'checkout' ? '結束休息' : v;
@@ -919,7 +919,6 @@ function calcBalance() {
     const payStatusEl = document.getElementById("payStatus");
     
     if (totalEl && depositEl && balanceEl && payStatusEl) {
-        // ⭐ 如果有選擇任何付款狀態，尾款自動歸零
         if (payStatusEl.value !== '') {
             balanceEl.value = 0;
         } else {
@@ -1236,7 +1235,6 @@ window.confirmBatchEdit = async function() {
     } catch(e) { alert("修改過程發生錯誤"); }
 }
 
-// ⭐ CSV / PDF 智慧分離匯出
 window.openExportModal = function() {
     document.getElementById("modalOverlayExport").style.display = "block";
     document.getElementById("exportModal").style.display = "flex";
@@ -1285,9 +1283,11 @@ window.executeExport = async function(formatType) {
     const selectedFields = Array.from(document.querySelectorAll('.export-field:checked')).map(cb => cb.value);
     if(selectedFields.length === 0) { alert("請至少勾選一個匯出欄位"); return; }
 
+    // 定義欄位取值邏輯
     const fieldDefs = {
         type: { header: "訂單類型", getVal: (b, isRest) => isRest ? "休息" : "住宿" },
-        date: { header: "日期/時段", getVal: (b, isRest, d) => isRest ? `${d} ${b.time||""}` : d },
+        // ⭐ 日期顯示優化：住宿客直接顯示 入住日 ~ 退房日
+        date: { header: "日期/時段", getVal: (b, isRest, d) => isRest ? `${d} ${b.time||""}` : `${b.checkinDate||d} ~ ${b.checkoutDate||d}` },
         room: { header: "房號", getVal: (b) => b.room },
         name: { header: "住客姓名", getVal: (b) => b.name || "-" },
         phone: { header: "聯絡電話", getVal: (b) => b.phone || "-" },
@@ -1309,8 +1309,8 @@ window.executeExport = async function(formatType) {
         coguests: { header: "住宿人員", getVal: (b, isRest) => {
             if(isRest) return "-";
             if(b.coGuests && Array.isArray(b.coGuests) && b.coGuests.length > 0) {
-                // ⭐ 格式化同住人員：姓名：丁俊齊 ID：R123456789 電話：0911222333 國籍：台灣
-                return b.coGuests.map((g, idx) => `${idx+1}. 姓名：${g.name||'-'} ID：${g.id||'-'} 電話：${g.phone||'-'} 國籍：${g.country||'台灣'}`).join("\n");
+                // ⭐ 格式優化並支援換行
+                return b.coGuests.map((g, idx) => `${idx+1}. ${g.name||'-'} | ${g.id||'-'} | ${g.phone||'-'} | ${g.country||'台灣'}`).join("\n");
             }
             return "-";
         }},
@@ -1319,6 +1319,7 @@ window.executeExport = async function(formatType) {
 
     let exportBookingRows = [];
     let exportRestRows = [];
+    let seenBookings = new Set(); // 用於去除跨天數重複匯出同一張訂單
 
     try {
         const bookingsSnap = await getDocs(collection(db, "bookings"));
@@ -1328,8 +1329,13 @@ window.executeExport = async function(formatType) {
                 const dailyData = docSnap.data();
                 for (let room in dailyData) {
                     let b = dailyData[room]; b.room = room;
-                    let row = selectedFields.map(field => fieldDefs[field].getVal(b, false, docDate));
-                    exportBookingRows.push(row);
+                    // 利用 入住日+房號 當唯一值，避免同一筆連續訂房重複出現在報表
+                    let uniqueKey = `${b.checkinDate}_${room}_${b.name}`;
+                    if(!seenBookings.has(uniqueKey)) {
+                        seenBookings.add(uniqueKey);
+                        let row = selectedFields.map(field => fieldDefs[field].getVal(b, false, docDate));
+                        exportBookingRows.push(row);
+                    }
                 }
             }
         });
@@ -1620,6 +1626,25 @@ window.save = async function(){
             }
         });
 
+        // ⭐ 如果沒有填寫住宿人員，自動將代表人資料帶入
+        if (coGuestsArr.length === 0) {
+            const mainName = document.getElementById("name").value.trim();
+            const mainPhone = document.getElementById("phone").value.trim();
+            const mainId = document.getElementById("idNumber").value.trim();
+            const mainBirth = getBirthdaySelects();
+            const mainCountry = document.getElementById("country").value.trim() || "台灣";
+            
+            if (mainName || mainPhone || mainId) {
+                coGuestsArr.push({
+                    name: mainName,
+                    phone: mainPhone,
+                    id: mainId,
+                    birth: mainBirth,
+                    country: mainCountry
+                });
+            }
+        }
+
         const orderData = {
             orderNumber: document.getElementById("orderNumber").value.trim() || "",
             name: document.getElementById("name").value.trim() || "", 
@@ -1836,25 +1861,14 @@ function updateUI() {
                 html += `<div class="detail-item"><b>住宿人數</b><span>${bookingData.people || '-'}人</span></div>`;
                 html += `<div class="detail-item"><b>平台來源</b><span>${bookingData.platform || '現場'}</span></div>`;
                 html += `<div class="detail-item"><b>訂單總額</b><span>$${bookingData.total || 0}</span></div>`;
-                
-                // ⭐ 處理卡片顯示的付款狀態文字與後五碼
-                let payStatusText = '未付清';
-                let payColor = '#ef4444';
-                const payMap = { 'paid': {t:'現場已結清', c:'#10b981'}, 'platform': {t:'平台代收', c:'#3b82f6'}, 'creditcard': {t:'信用卡', c:'#8b5cf6'}, 'linepay': {t:'LINE Pay', c:'#06c755'}, 'taiwanpay': {t:'台灣 Pay', c:'#f97316'} };
-                if (bookingData.payStatus && payMap[bookingData.payStatus]) {
-                    payStatusText = payMap[bookingData.payStatus].t;
-                    payColor = payMap[bookingData.payStatus].c;
-                }
-                if (bookingData.payLast5) { payStatusText += ` (${bookingData.payLast5})`; }
-
+                let payStatusText = bookingData.payStatus === 'paid' ? '已結清' : (bookingData.payStatus === 'platform' ? '平台代收' : '未付清');
+                let payColor = bookingData.payStatus === 'paid' ? '#10b981' : (bookingData.payStatus === 'platform' ? '#3b82f6' : '#ef4444');
                 html += `<div class="detail-item"><b>付款狀態</b><span style="color:${payColor}; font-weight:bold;">${payStatusText}</span></div>`;
                 html += `<div class="detail-item"><b>應收尾款</b><span style="color:#ef4444; font-weight:bold;">$${bookingData.balance || 0}</span></div>`;
                 html += `</div>`;
                 html += `</div>`;
-                
                 if (bookingData.orderNumber) html += `<div class="full-width-item"><b>訂單編號</b><span>${bookingData.orderNumber}</span></div>`;
                 
-                // ⭐ 住宿人員卡片顯示格式
                 if (bookingData.coGuests && Array.isArray(bookingData.coGuests) && bookingData.coGuests.length > 0) {
                     html += `<div class="full-width-item" style="margin-top:5px; flex-direction:column; gap:4px;"><b>住宿人員資料</b><div style="font-weight:normal; color:var(--text-main); text-align:left; font-size:12px; line-height:1.6;">`;
                     bookingData.coGuests.forEach((g) => {
@@ -1915,152 +1929,6 @@ function updateUI() {
         }
     });
     updateStats();
-}
-
-window.addRest = async function(){
-    const date = getCurrentDate(); if(!date){ alert("請選日期"); return; }
-    const room = document.getElementById("restRoom").value;
-    const name = document.getElementById("restName").value;
-    if(!name || !room){ alert("請填寫房號與姓名"); return; }
-
-    const btn = document.getElementById("btnSaveRest");
-    btn.innerText = "處理中..."; btn.disabled = true;
-
-    let st = document.getElementById("restStartTime").value;
-    let et = document.getElementById("restEndTime").value;
-    let combinedTime = (st || et) ? `${st}~${et}` : "";
-
-    let existingData = currentRestIndex >= 0 ? restData[date][currentRestIndex] : {};
-    
-    let restObj = { 
-        room: room, name: name, phone: document.getElementById("restPhone").value, 
-        people: String(Number(document.getElementById("restPeople").value) || 2), 
-        time: combinedTime, price: String(Number(document.getElementById("restPrice").value) || 0), 
-        id: document.getElementById("restID").value, note: document.getElementById("restNote").value, 
-        status: (currentRestIndex >= 0 && existingData) ? existingData.status : "resting"
-    };
-
-    let changes = {};
-    let hasChanges = false;
-    Object.keys(restFieldMap).forEach(key => {
-        let oldVal = String(existingData[key] || "");
-        let newVal = String(restObj[key] || "");
-        if (oldVal !== newVal && Object.keys(existingData).length > 0) { 
-            changes[key] = { old: oldVal, new: newVal };
-            hasChanges = true;
-        }
-    });
-
-    let logs = existingData.updateLogs ? [...existingData.updateLogs] : [];
-    if (hasChanges) {
-        let snapshotData = { ...restObj };
-        delete snapshotData.updateLogs; 
-        logs.push({ timestamp: getLogTimestamp(), changes: changes, snapshot: snapshotData });
-    }
-    restObj.updateLogs = logs;
-
-    if(!restData[date]){ restData[date]=[]; }
-    
-    if (currentRestIndex >= 0) { restData[date][currentRestIndex] = restObj; } 
-    else { restData[date].push(restObj); }
-    
-    try { 
-        await setDoc(doc(db, "restData", date), { data: restData[date] }); 
-        updateUI(); closeModalRest();
-    } catch(e) { alert("儲存失敗"); } finally { btn.innerText = "確認建立"; btn.disabled = false; }
-}
-
-window.checkoutRestAction = async function() {
-    if (currentRestIndex >= 0) {
-        const date = getCurrentDate();
-        let currentData = restData[date][currentRestIndex];
-        let logs = currentData.updateLogs ? [...currentData.updateLogs] : [];
-        
-        if(currentData.status === "resting") {
-            if (confirm("確定要「結束休息」嗎？")) {
-                let snapshotData = { ...currentData, status: "checkout" };
-                delete snapshotData.updateLogs;
-                logs.push({ timestamp: getLogTimestamp(), changes: { status: { old: "resting", new: "checkout" } }, snapshot: snapshotData });
-                restData[date][currentRestIndex].status = "checkout";
-                restData[date][currentRestIndex].updateLogs = logs;
-                await setDoc(doc(db, "restData", date), { data: restData[date] }); 
-                updateUI(); closeModalRest();
-            }
-        } else {
-            if (confirm("此房已結束。\n是否要「恢復為休息中」(誤觸恢復)？")) {
-                let snapshotData = { ...currentData, status: "resting" };
-                delete snapshotData.updateLogs;
-                logs.push({ timestamp: getLogTimestamp(), changes: { status: { old: "checkout", new: "resting" } }, snapshot: snapshotData });
-                restData[date][currentRestIndex].status = "resting";
-                restData[date][currentRestIndex].updateLogs = logs;
-                await setDoc(doc(db, "restData", date), { data: restData[date] }); 
-                updateUI(); closeModalRest();
-            }
-        }
-    }
-}
-
-window.deleteRestAction = async function() {
-    if (currentRestIndex >= 0 && confirm("確定要刪除這筆休息資料嗎？")) {
-        const date = getCurrentDate();
-        restData[date].splice(currentRestIndex, 1);
-        await setDoc(doc(db, "restData", date), { data: restData[date] }); 
-        updateUI(); closeModalRest();
-    }
-}
-window.saveRestAction = window.addRest;
-
-async function loadData() {
-    const date = document.getElementById("selectedDate").value; 
-    try { const docSnap = await getDoc(doc(db, "bookings", date)); bookings[date] = docSnap.exists() ? docSnap.data() : {}; } catch(e) { bookings[date] = {}; }
-}
-async function loadRestData() {
-    const date = document.getElementById("selectedDate").value;
-    try { const docSnap = await getDoc(doc(db, "restData", date)); restData[date] = docSnap.exists() ? docSnap.data().data || [] : []; } catch(e) { restData[date] = []; }
-}
-
-function updateStats() {
-    const date = document.getElementById("selectedDate").value; const statsBox = document.getElementById("statsBox");
-    if (!date) { statsBox.innerHTML = "<div style='text-align:center;'>資料載入中...</div>"; return; }
-
-    let dailyTotalPeople = 0, currentInHousePeople = 0;  
-    let countryStats = {}; 
-
-    if (bookings[date]) { 
-        Object.values(bookings[date]).forEach(data => { 
-            let p = Number(data.people) || 0; 
-            let c = data.country || "台灣";
-            if (!countryStats[c]) countryStats[c] = { daily: 0, inHouse: 0 };
-
-            if (data.everCheckedIn) {
-                dailyTotalPeople += p; 
-                countryStats[c].daily += p;
-            }
-            if (data.status === 'checkedin') {
-                currentInHousePeople += p; 
-                countryStats[c].inHouse += p;
-            }
-        }); 
-    }
-
-    let dailyHtml = `<b>當日人數 (${dailyTotalPeople})</b><div style="margin-top:4px; font-size:12px; display:flex; flex-direction:column; gap:2px;">`;
-    let inHouseHtml = `<b>住宿在店人數 (${currentInHousePeople})</b><div style="margin-top:4px; font-size:12px; display:flex; flex-direction:column; gap:2px;">`;
-    
-    let hasDaily = false; let hasInHouse = false;
-    for (let c in countryStats) {
-        if (countryStats[c].daily > 0) { dailyHtml += `<div>${c}：${countryStats[c].daily} 位</div>`; hasDaily = true; }
-        if (countryStats[c].inHouse > 0) { inHouseHtml += `<div>${c}：${countryStats[c].inHouse} 位</div>`; hasInHouse = true; }
-    }
-    if (!hasDaily) dailyHtml += `<div style="color:var(--text-muted)">無資料</div>`;
-    if (!hasInHouse) inHouseHtml += `<div style="color:var(--text-muted)">無資料</div>`;
-    
-    dailyHtml += `</div>`; inHouseHtml += `</div>`;
-
-    statsBox.innerHTML = `<div style="display:flex; justify-content:space-around; width:100%; text-align:left; gap:10px;">
-        <div class="stats-col">${dailyHtml}</div>
-        <div class="stats-divider" style="width:1px; background:var(--border-color); margin:0 15px;"></div>
-        <div class="stats-col">${inHouseHtml}</div>
-    </div>`;
 }
 
 function updateRestRoomOptions(prefillRoom = "") {
