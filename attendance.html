@@ -172,7 +172,6 @@
         window.location.href = "login.html";
     }
     const userName = sessionStorage.getItem("currentUser") || "管理員";
-    const userLoginId = sessionStorage.getItem("currentUserId") || "admin"; 
     document.getElementById("displayUserName").innerText = userName;
 
     let pendingActionType = ""; 
@@ -203,25 +202,38 @@
     }
     setInterval(updateClock, 1000); updateClock();
 
+    // UI 強制切換狀態的副程式
+    function setUIStatus(type, hours = "0.0") {
+        const statusEl = document.getElementById('currentStatus');
+        if (type === 'in') {
+            statusEl.innerText = `當前狀態：🟢 執勤中 | 今天已出勤 (計算中) 小時`;
+            statusEl.style.background = "#dcfce7";
+            statusEl.style.color = "#166534";
+            statusEl.style.borderColor = "#86efac";
+        } else if (type === 'out') {
+            statusEl.innerText = `當前狀態：⚪ 已下班 | 今天已出勤 ${hours} 小時`;
+            statusEl.style.background = "#f1f5f9";
+            statusEl.style.color = "#475569";
+            statusEl.style.borderColor = "#cbd5e1";
+        }
+    }
+
     async function loadAttendanceData() {
         const todayStr = getDateString(new Date());
         
         try {
+            // 讀取今天狀態 (強制顯示最後一次的操作狀態)
             const docRef = doc(db, "attendance", `${userName}_${todayStr}`);
             const docSnap = await getDoc(docRef);
             
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                if (data.clockIn && !data.clockOut) {
-                    document.getElementById('currentStatus').innerText = `當前狀態：🟢 執勤中 | 今天已出勤 (計算中) 小時`;
-                    document.getElementById('currentStatus').style.background = "#dcfce7";
-                    document.getElementById('currentStatus').style.color = "#166534";
-                    document.getElementById('currentStatus').style.borderColor = "#86efac";
-                } else if (data.clockIn && data.clockOut) {
-                    document.getElementById('currentStatus').innerText = `當前狀態：⚪ 已下班 | 今天已出勤 ${data.workHours} 小時`;
-                    document.getElementById('currentStatus').style.background = "#f1f5f9";
-                    document.getElementById('currentStatus').style.color = "#475569";
-                    document.getElementById('currentStatus').style.borderColor = "#cbd5e1";
+                // 根據最後修改的狀態欄位 (如果我們有存) 或是根據 in/out 來判斷
+                // 這裡改為：如果有存取最新的 lastAction，就用它，否則用舊邏輯
+                if (data.lastAction === 'in' || (data.clockIn && !data.clockOut)) {
+                    setUIStatus('in');
+                } else if (data.lastAction === 'out' || (data.clockIn && data.clockOut)) {
+                    setUIStatus('out', data.workHours);
                 }
             }
 
@@ -305,12 +317,10 @@
 
         try {
             let isAuthValid = false;
-            
             const querySnapshot = await getDocs(query(collection(db, "admin_users"), where("name", "==", userName)));
             querySnapshot.forEach((doc) => {
                 if(doc.data().password === pwd) isAuthValid = true;
             });
-
             if (pwd === "admin123") isAuthValid = true;
 
             if(!isAuthValid) {
@@ -337,9 +347,10 @@
                 if(existingData.clockIn) logMsg += ` (覆寫原紀錄 ${existingData.clockIn})`;
                 currentLogs.push(logMsg);
                 
-                await setDoc(docRef, { ...existingData, clockIn: timeStr, status: status, logs: currentLogs });
-                // 使用預設的系統提示，但不會有 prompt 的輸入框
-                alert(`✅ 打卡成功！已將狀態更新為：出勤`);
+                await setDoc(docRef, { ...existingData, clockIn: timeStr, status: status, logs: currentLogs, lastAction: 'in' });
+                
+                // ⭐ 強制 UI 即時變更
+                setUIStatus('in');
 
             } else if (pendingActionType === 'out') {
                 const workHrs = calcHours(existingData.clockIn, timeStr);
@@ -347,8 +358,10 @@
                 if(existingData.clockOut) logMsg += ` (覆寫原紀錄 ${existingData.clockOut})`;
                 currentLogs.push(logMsg);
                 
-                await setDoc(docRef, { ...existingData, clockOut: timeStr, workHours: workHrs, logs: currentLogs });
-                alert(`🏠 打卡成功！已將狀態更新為：退勤`);
+                await setDoc(docRef, { ...existingData, clockOut: timeStr, workHours: workHrs, logs: currentLogs, lastAction: 'out' });
+                
+                // ⭐ 強制 UI 即時變更
+                setUIStatus('out', workHrs);
             }
 
             closeAuthModal();
