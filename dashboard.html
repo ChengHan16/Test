@@ -624,10 +624,78 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// =============== 系統防呆與初始載入 ===============
 if (sessionStorage.getItem("isLoggedIn") !== "true") { window.location.href = "login.html"; }
 const userName = sessionStorage.getItem("currentUser") || "管理員";
 document.getElementById("currentUserDisplay").innerText = `👋 ${userName}`;
 document.getElementById("currentUserDisplay").style.display = "inline-block";
+
+// ⭐ [修復區] 確保 loadData 等函數在全域可用
+window.loadData = async function() {
+    const date = document.getElementById("selectedDate").value; 
+    try { const docSnap = await getDoc(doc(db, "bookings", date)); bookings[date] = docSnap.exists() ? docSnap.data() : {}; } catch(e) { bookings[date] = {}; }
+}
+window.loadRestData = async function() {
+    const date = document.getElementById("selectedDate").value;
+    try { const docSnap = await getDoc(doc(db, "restData", date)); restData[date] = docSnap.exists() ? docSnap.data().data || [] : []; } catch(e) { restData[date] = []; }
+}
+window.updateStats = function() {
+    const date = document.getElementById("selectedDate").value; const statsBox = document.getElementById("statsBox");
+    if (!date) { statsBox.innerHTML = "<div style='text-align:center;'>資料載入中...</div>"; return; }
+
+    let dailyTotalPeople = 0, currentInHousePeople = 0;  
+    let countryStats = {}; 
+
+    if (bookings[date]) { 
+        Object.values(bookings[date]).forEach(data => { 
+            let p = Number(data.people) || 0; 
+            let c = data.country || "台灣";
+            if (!countryStats[c]) countryStats[c] = { daily: 0, inHouse: 0 };
+
+            if (data.everCheckedIn) {
+                dailyTotalPeople += p; 
+                countryStats[c].daily += p;
+            }
+            if (data.status === 'checkedin') {
+                currentInHousePeople += p; 
+                countryStats[c].inHouse += p;
+            }
+        }); 
+    }
+
+    let dailyHtml = `<b>當日人數 (${dailyTotalPeople})</b><div style="margin-top:4px; font-size:12px; display:flex; flex-direction:column; gap:2px;">`;
+    let inHouseHtml = `<b>住宿在店人數 (${currentInHousePeople})</b><div style="margin-top:4px; font-size:12px; display:flex; flex-direction:column; gap:2px;">`;
+    
+    let hasDaily = false; let hasInHouse = false;
+    for (let c in countryStats) {
+        if (countryStats[c].daily > 0) { dailyHtml += `<div>${c}：${countryStats[c].daily} 位</div>`; hasDaily = true; }
+        if (countryStats[c].inHouse > 0) { inHouseHtml += `<div>${c}：${countryStats[c].inHouse} 位</div>`; hasInHouse = true; }
+    }
+    if (!hasDaily) dailyHtml += `<div style="color:var(--text-muted)">無資料</div>`;
+    if (!hasInHouse) inHouseHtml += `<div style="color:var(--text-muted)">無資料</div>`;
+    
+    dailyHtml += `</div>`; inHouseHtml += `</div>`;
+
+    statsBox.innerHTML = `<div style="display:flex; justify-content:space-around; width:100%; text-align:left; gap:10px;">
+        <div class="stats-col">${dailyHtml}</div>
+        <div class="stats-divider" style="width:1px; background:var(--border-color); margin:0 15px;"></div>
+        <div class="stats-col">${inHouseHtml}</div>
+    </div>`;
+}
+window.updateRestRoomOptions = function(prefillRoom = "") {
+    const date = document.getElementById("selectedDate").value; const restRoomSelect = document.getElementById("restRoom"); const currentBookings = bookings[date] || {};
+    restRoomSelect.innerHTML = '<option value="">選擇房號</option>';
+    rooms.forEach(room => { 
+        if (!currentBookings[room] || currentBookings[room].status !== 'checkedin' || currentBookings[room].status === 'checkedout' || room === prefillRoom) { 
+            const op = document.createElement("option"); op.value = room; op.textContent = room; 
+            if (currentRoom === "" && currentBookings[room] && currentBookings[room].status !== 'checkedout') {
+                op.disabled = true; op.textContent = room + " (已佔用)";
+            }
+            restRoomSelect.appendChild(op); 
+        } 
+    });
+}
+// ===============================================
 
 async function loadAttendanceStatus() {
     const todayStr = getDateString(new Date());
@@ -887,7 +955,7 @@ window.onload = async () => {
         locale: "zh_tw", dateFormat: "Y-m-d", defaultDate: "today", disableMobile: true,
         onChange: async function(selectedDates) {
             if (selectedDates[0]) updateDateDisplay(selectedDates[0]);
-            await Promise.all([loadData(), loadRestData()]);
+            await Promise.all([window.loadData(), window.loadRestData()]);
             updateUI();
         }
     });
@@ -908,7 +976,7 @@ window.onload = async () => {
         document.getElementById("batchStatus").disabled = !this.checked;
     });
 
-    await Promise.all([loadData(), loadRestData(), loadFrequentGuests()]);
+    await Promise.all([window.loadData(), window.loadRestData(), loadFrequentGuests()]);
     updateUI();
 };
 
@@ -1151,7 +1219,7 @@ window.confirmBatchDelete = async function() {
         }
         alert("✅ 批量刪除完成");
         await executeBatchSearch(); 
-        await loadData(); await loadRestData(); updateUI();
+        await window.loadData(); await window.loadRestData(); updateUI();
     } catch(e) { alert("刪除過程發生錯誤"); }
 }
 
@@ -1231,7 +1299,7 @@ window.confirmBatchEdit = async function() {
         alert("✅ 批量覆寫完成");
         document.getElementById('batchEditPanel').style.display = 'none';
         await executeBatchSearch(); 
-        await loadData(); await loadRestData(); updateUI();
+        await window.loadData(); await window.loadRestData(); updateUI();
     } catch(e) { alert("修改過程發生錯誤"); }
 }
 
@@ -1273,7 +1341,6 @@ window.setExportRange = function(type) {
     document.getElementById("exportEndDate").value = getDateString(end);
 }
 
-// ⭐ CSV / PDF 智慧分離匯出與排版優化 (住宿人員換行)
 window.executeExport = async function(formatType) {
     const startDateStr = document.getElementById("exportStartDate").value;
     const endDateStr = document.getElementById("exportEndDate").value;
@@ -1283,7 +1350,6 @@ window.executeExport = async function(formatType) {
     const selectedFields = Array.from(document.querySelectorAll('.export-field:checked')).map(cb => cb.value);
     if(selectedFields.length === 0) { alert("請至少勾選一個匯出欄位"); return; }
 
-    // ⭐ 定義欄位取值邏輯 (住宿人員格式修改為換行)
     const fieldDefs = {
         type: { header: "訂單類型", getVal: (b, isRest) => isRest ? "休息" : "住宿" },
         date: { header: "日期/時段", getVal: (b, isRest, d) => isRest ? `${d} ${b.time||""}` : `${b.checkinDate||d} ~ ${b.checkoutDate||d}` },
@@ -1308,7 +1374,6 @@ window.executeExport = async function(formatType) {
         coguests: { header: "住宿人員", getVal: (b, isRest) => {
             if(isRest) return "-";
             if(b.coGuests && Array.isArray(b.coGuests) && b.coGuests.length > 0) {
-                // ⭐ 新格式: 1. 姓名 | 證號 | 電話 | 國籍 (\n 換行)
                 return b.coGuests.map((g, idx) => `${idx+1}. 姓名：${g.name||'-'} ID：${g.id||'-'} 電話：${g.phone||'-'} 國籍：${g.country||'台灣'}`).join("\n");
             }
             return "-";
@@ -1547,7 +1612,7 @@ window.openRestModal = function(index = -1, prefillRoom = "") {
     
     currentRestIndex = index;
     currentRoom = prefillRoom;
-    updateRestRoomOptions(prefillRoom);
+    window.updateRestRoomOptions(prefillRoom);
     
     const roomSelect = document.getElementById("restRoom");
 
@@ -1933,21 +1998,7 @@ function updateUI() {
             card.innerHTML = html;
         }
     });
-    updateStats();
-}
-
-function updateRestRoomOptions(prefillRoom = "") {
-    const date = document.getElementById("selectedDate").value; const restRoomSelect = document.getElementById("restRoom"); const currentBookings = bookings[date] || {};
-    restRoomSelect.innerHTML = '<option value="">選擇房號</option>';
-    rooms.forEach(room => { 
-        if (!currentBookings[room] || currentBookings[room].status !== 'checkedin' || currentBookings[room].status === 'checkedout' || room === prefillRoom) { 
-            const op = document.createElement("option"); op.value = room; op.textContent = room; 
-            if (currentRoom === "" && currentBookings[room] && currentBookings[room].status !== 'checkedout') {
-                op.disabled = true; op.textContent = room + " (已佔用)";
-            }
-            restRoomSelect.appendChild(op); 
-        } 
-    });
+    window.updateStats();
 }
 </script>
 </body>
