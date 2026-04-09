@@ -1273,7 +1273,7 @@ window.setExportRange = function(type) {
     document.getElementById("exportEndDate").value = getDateString(end);
 }
 
-// ⭐ CSV / PDF 智慧分離匯出與排版優化
+// ⭐ CSV / PDF 智慧分離匯出與排版優化 (住宿人員換行)
 window.executeExport = async function(formatType) {
     const startDateStr = document.getElementById("exportStartDate").value;
     const endDateStr = document.getElementById("exportEndDate").value;
@@ -1283,10 +1283,9 @@ window.executeExport = async function(formatType) {
     const selectedFields = Array.from(document.querySelectorAll('.export-field:checked')).map(cb => cb.value);
     if(selectedFields.length === 0) { alert("請至少勾選一個匯出欄位"); return; }
 
-    // 定義欄位取值邏輯
+    // ⭐ 定義欄位取值邏輯 (住宿人員格式修改為換行)
     const fieldDefs = {
         type: { header: "訂單類型", getVal: (b, isRest) => isRest ? "休息" : "住宿" },
-        // ⭐ 日期顯示優化：住宿客直接顯示 入住日 ~ 退房日
         date: { header: "日期/時段", getVal: (b, isRest, d) => isRest ? `${d} ${b.time||""}` : `${b.checkinDate||d} ~ ${b.checkoutDate||d}` },
         room: { header: "房號", getVal: (b) => b.room },
         name: { header: "住客姓名", getVal: (b) => b.name || "-" },
@@ -1309,7 +1308,7 @@ window.executeExport = async function(formatType) {
         coguests: { header: "住宿人員", getVal: (b, isRest) => {
             if(isRest) return "-";
             if(b.coGuests && Array.isArray(b.coGuests) && b.coGuests.length > 0) {
-                // ⭐ 格式優化並支援換行
+                // ⭐ 新格式: 1. 姓名 | 證號 | 電話 | 國籍 (\n 換行)
                 return b.coGuests.map((g, idx) => `${idx+1}. ${g.name||'-'} | ${g.id||'-'} | ${g.phone||'-'} | ${g.country||'台灣'}`).join("\n");
             }
             return "-";
@@ -1319,7 +1318,7 @@ window.executeExport = async function(formatType) {
 
     let exportBookingRows = [];
     let exportRestRows = [];
-    let seenBookings = new Set(); // 用於去除跨天數重複匯出同一張訂單
+    let seenBookings = new Set();
 
     try {
         const bookingsSnap = await getDocs(collection(db, "bookings"));
@@ -1329,7 +1328,6 @@ window.executeExport = async function(formatType) {
                 const dailyData = docSnap.data();
                 for (let room in dailyData) {
                     let b = dailyData[room]; b.room = room;
-                    // 利用 入住日+房號 當唯一值，避免同一筆連續訂房重複出現在報表
                     let uniqueKey = `${b.checkinDate}_${room}_${b.name}`;
                     if(!seenBookings.has(uniqueKey)) {
                         seenBookings.add(uniqueKey);
@@ -1626,7 +1624,6 @@ window.save = async function(){
             }
         });
 
-        // ⭐ 如果沒有填寫住宿人員，自動將代表人資料帶入
         if (coGuestsArr.length === 0) {
             const mainName = document.getElementById("name").value.trim();
             const mainPhone = document.getElementById("phone").value.trim();
@@ -1869,6 +1866,7 @@ function updateUI() {
                 html += `</div>`;
                 if (bookingData.orderNumber) html += `<div class="full-width-item"><b>訂單編號</b><span>${bookingData.orderNumber}</span></div>`;
                 
+                // ⭐ 住宿人員卡片顯示格式 (符合要求)
                 if (bookingData.coGuests && Array.isArray(bookingData.coGuests) && bookingData.coGuests.length > 0) {
                     html += `<div class="full-width-item" style="margin-top:5px; flex-direction:column; gap:4px;"><b>住宿人員資料</b><div style="font-weight:normal; color:var(--text-main); text-align:left; font-size:12px; line-height:1.6;">`;
                     bookingData.coGuests.forEach((g) => {
