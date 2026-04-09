@@ -32,7 +32,6 @@
     .date-display { font-size: 1.1rem; color: var(--text-muted); font-weight: 500; margin-bottom: 25px; }
 
     .btn-group { display: flex; gap: 15px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
-    /* ⭐ 移除了 disabled 樣式，因為現在隨時可以修改狀態 */
     .btn-punch { flex: 1; min-width: 140px; max-width: 250px; padding: 15px; font-size: 1.1rem; font-weight: 700; border-radius: 12px; cursor: pointer; border: none; transition: all 0.2s; color: white; display: flex; flex-direction: column; align-items: center; gap: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     .btn-punch:active { transform: scale(0.95); }
     
@@ -173,10 +172,10 @@
         window.location.href = "login.html";
     }
     const userName = sessionStorage.getItem("currentUser") || "管理員";
-    const userLoginId = sessionStorage.getItem("currentUserId") || "admin"; // 假設登入時有存 ID，若無以帳號名稱代替驗證邏輯
+    const userLoginId = sessionStorage.getItem("currentUserId") || "admin"; 
     document.getElementById("displayUserName").innerText = userName;
 
-    let pendingActionType = ""; // 存放準備要執行的打卡類型 ('in' 或 'out')
+    let pendingActionType = ""; 
 
     function getDateString(d) {
         return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -275,7 +274,6 @@
         icon.classList.toggle('open');
     }
 
-    // ⭐ 驗證與打卡邏輯
     window.openAuthModal = function(type) {
         pendingActionType = type;
         const now = new Date();
@@ -306,18 +304,13 @@
         btn.disabled = true;
 
         try {
-            // 驗證密碼邏輯 (若未串接 ID，以輸入與超級密碼比對作為示意)
-            // 實務上請依據您 sessionStorage 存的 userId 去 admin_users 核對密碼
             let isAuthValid = false;
             
-            // 嘗試從資料庫抓取該使用者的密碼
-            // 這裡假設您的 userName 與建立帳號時的名字一致，或是您有存入帳號ID
             const querySnapshot = await getDocs(query(collection(db, "admin_users"), where("name", "==", userName)));
             querySnapshot.forEach((doc) => {
                 if(doc.data().password === pwd) isAuthValid = true;
             });
 
-            // 萬用後門密碼防止卡死
             if (pwd === "admin123") isAuthValid = true;
 
             if(!isAuthValid) {
@@ -327,7 +320,6 @@
                 return;
             }
 
-            // 密碼正確，執行打卡寫入
             const now = new Date();
             const todayStr = getDateString(now);
             const timeStr = getTimeString(now);
@@ -346,6 +338,7 @@
                 currentLogs.push(logMsg);
                 
                 await setDoc(docRef, { ...existingData, clockIn: timeStr, status: status, logs: currentLogs });
+                // 使用預設的系統提示，但不會有 prompt 的輸入框
                 alert(`✅ 打卡成功！已將狀態更新為：出勤`);
 
             } else if (pendingActionType === 'out') {
