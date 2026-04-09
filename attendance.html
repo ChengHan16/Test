@@ -32,16 +32,16 @@
     .date-display { font-size: 1.1rem; color: var(--text-muted); font-weight: 500; margin-bottom: 25px; }
 
     .btn-group { display: flex; gap: 15px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+    /* ⭐ 移除了 disabled 樣式，因為現在隨時可以修改狀態 */
     .btn-punch { flex: 1; min-width: 140px; max-width: 250px; padding: 15px; font-size: 1.1rem; font-weight: 700; border-radius: 12px; cursor: pointer; border: none; transition: all 0.2s; color: white; display: flex; flex-direction: column; align-items: center; gap: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     .btn-punch:active { transform: scale(0.95); }
-    .btn-punch:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(80%); box-shadow: none; }
     
     .btn-in { background: linear-gradient(135deg, #10b981, #059669); }
     .btn-out { background: linear-gradient(135deg, #f59e0b, #d97706); }
 
-    .status-badge { display: inline-block; padding: 6px 15px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; margin-bottom: 10px; background: #e0f2fe; color: #1e3a8a; border: 1px solid #bfdbfe; }
+    .status-badge { display: inline-block; padding: 6px 15px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; margin-bottom: 10px; background: #e0f2fe; color: #1e3a8a; border: 1px solid #bfdbfe; transition: all 0.3s; }
 
-    /* ⭐ 歷史紀錄表格設計 (加入點擊展開與 Log 功能) */
+    /* 歷史紀錄表格 */
     .table-container { overflow-x: auto; background: white; border-radius: 12px; border: 1px solid var(--border-color); margin-top: 15px; }
     .history-table { width: 100%; border-collapse: collapse; min-width: 500px; text-align: left; }
     .history-table th, .history-table td { padding: 15px; border-bottom: 1px solid var(--border-color); font-size: 13.5px; }
@@ -62,9 +62,25 @@
     .tag-late { background: #fee2e2; color: #991b1b; }
     .tag-absent { background: #f3f4f6; color: #64748b; }
 
-    /* ⭐ 橫幅修改：貼近最底部 */
     .tech-support-banner { display: flex; justify-content: center; align-items: center; text-align: center; padding: 15px !important; font-size: 12px; font-weight: 600; color: var(--text-muted); background-color: #e2e8f0; margin-top: auto; letter-spacing: 0.5px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.03); padding-bottom: calc(15px + env(safe-area-inset-bottom)) !important; width: 100%; z-index: 80; }
     @media (min-width: 769px) { .tech-support-banner { margin-top: 5px !important; } }
+
+    /* ⭐ 客製化打卡密碼驗證彈窗 */
+    .custom-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(22, 52, 80, 0.7); backdrop-filter: blur(5px); z-index: 1000; align-items: center; justify-content: center; }
+    .custom-modal { background: white; width: 90%; max-width: 400px; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); overflow: hidden; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .custom-modal-header { background: var(--primary-dark); color: var(--primary-gold); padding: 15px 20px; font-size: 1.1rem; font-weight: 700; text-align: center; border-bottom: 3px solid var(--primary-gold); }
+    .custom-modal-body { padding: 25px 20px; text-align: center; }
+    .custom-modal-body p { margin: 0 0 20px 0; color: var(--text-main); font-size: 0.95rem; line-height: 1.6; }
+    .custom-modal-body input { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 1.1rem; text-align: center; transition: 0.2s; outline: none; }
+    .custom-modal-body input:focus { border-color: var(--primary-gold); box-shadow: 0 0 0 3px rgba(193, 161, 58, 0.2); }
+    .custom-modal-footer { display: flex; border-top: 1px solid var(--border-color); background: #f8fafc; }
+    .custom-modal-btn { flex: 1; padding: 15px; border: none; background: transparent; font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
+    .btn-cancel-custom { color: var(--text-muted); border-right: 1px solid var(--border-color); }
+    .btn-cancel-custom:hover { background: #e2e8f0; }
+    .btn-confirm-custom { color: var(--primary-dark); }
+    .btn-confirm-custom:hover { background: var(--primary-gold); color: white; }
+
 </style>
 </head>
 <body>
@@ -86,20 +102,20 @@
         <div class="clock-display" id="clockDisplay">00:00:00</div>
         
         <div class="btn-group">
-            <button class="btn-punch btn-in" id="btnClockIn" onclick="clockAction('in')">
+            <button class="btn-punch btn-in" onclick="openAuthModal('in')">
                 <span style="font-size: 1.5rem;">👋</span> 上班打卡
             </button>
-            <button class="btn-punch btn-out" id="btnClockOut" onclick="clockAction('out')" disabled>
+            <button class="btn-punch btn-out" onclick="openAuthModal('out')">
                 <span style="font-size: 1.5rem;">🏠</span> 下班打卡
             </button>
         </div>
-        <div style="margin-top: 15px; font-size: 12px; color: #94a3b8;">
-            * 系統已記錄您的時間戳記與帳號，作為打卡核實依據
+        <div style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">
+            * 系統已記錄您的時間戳記與帳號，作為打卡核實依據。中途可重新打卡以修正狀態。
         </div>
     </div>
 
     <div class="card" style="text-align: left; padding: 20px;">
-        <h3 style="margin: 0 0 15px 0; color: #163450; font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">📋 本月打卡紀錄</h3>
+        <h3 style="margin: 0 0 15px 0; color: var(--primary-dark); font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">📋 本月打卡紀錄</h3>
         <div class="table-container">
             <table class="history-table">
                 <thead>
@@ -123,9 +139,24 @@
     👨‍💻 來點子旅店資訊部 班長 所提供的技術支援
 </div>
 
+<div class="custom-modal-overlay" id="authModal">
+    <div class="custom-modal">
+        <div class="custom-modal-header" id="authModalTitle">打卡身分驗證</div>
+        <div class="custom-modal-body">
+            <p id="authModalMessage">載入中...</p>
+            <input type="password" id="authPassword" placeholder="請輸入您的系統登入密碼" onkeypress="if(event.key==='Enter') confirmClockAction()">
+            <div id="authError" style="color: #ef4444; font-size: 0.85rem; margin-top: 8px; display: none;">❌ 密碼錯誤，請重新輸入</div>
+        </div>
+        <div class="custom-modal-footer">
+            <button class="custom-modal-btn btn-cancel-custom" onclick="closeAuthModal()">取消</button>
+            <button class="custom-modal-btn btn-confirm-custom" id="btnConfirmAuth" onclick="confirmClockAction()">確認打卡</button>
+        </div>
+    </div>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCde1T_hHZOm7__3-1qcQ_NAeAbkz5MdFc",
@@ -138,12 +169,14 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // 權限檢查與初始化
     if(sessionStorage.getItem("isLoggedIn") !== "true") {
         window.location.href = "login.html";
     }
     const userName = sessionStorage.getItem("currentUser") || "管理員";
+    const userLoginId = sessionStorage.getItem("currentUserId") || "admin"; // 假設登入時有存 ID，若無以帳號名稱代替驗證邏輯
     document.getElementById("displayUserName").innerText = userName;
+
+    let pendingActionType = ""; // 存放準備要執行的打卡類型 ('in' 或 'out')
 
     function getDateString(d) {
         return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -152,17 +185,15 @@
         return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
     }
     
-    // 計算時數差
     function calcHours(inTime, outTime) {
         if (!inTime || !outTime) return "0.0";
         const [inH, inM] = inTime.split(':').map(Number);
         const [outH, outM] = outTime.split(':').map(Number);
         let diff = (outH + outM / 60) - (inH + inM / 60);
-        if (diff < 0) diff += 24; // 跨夜
+        if (diff < 0) diff += 24; 
         return diff.toFixed(1);
     }
 
-    // 時鐘更新邏輯
     function updateClock() {
         const now = new Date();
         const days = ['日', '一', '二', '三', '四', '五', '六'];
@@ -173,33 +204,29 @@
     }
     setInterval(updateClock, 1000); updateClock();
 
-    // ⭐ 載入今日狀態與歷史紀錄
     async function loadAttendanceData() {
         const todayStr = getDateString(new Date());
         
         try {
-            // 讀取今天狀態 (按鈕控制)
             const docRef = doc(db, "attendance", `${userName}_${todayStr}`);
             const docSnap = await getDoc(docRef);
             
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 if (data.clockIn && !data.clockOut) {
-                    document.getElementById('btnClockIn').disabled = true;
-                    document.getElementById('btnClockOut').disabled = false;
                     document.getElementById('currentStatus').innerText = `當前狀態：🟢 執勤中 | 今天已出勤 (計算中) 小時`;
                     document.getElementById('currentStatus').style.background = "#dcfce7";
                     document.getElementById('currentStatus').style.color = "#166534";
                     document.getElementById('currentStatus').style.borderColor = "#86efac";
                 } else if (data.clockIn && data.clockOut) {
-                    document.getElementById('btnClockIn').disabled = true;
-                    document.getElementById('btnClockOut').disabled = true;
                     document.getElementById('currentStatus').innerText = `當前狀態：⚪ 已下班 | 今天已出勤 ${data.workHours} 小時`;
+                    document.getElementById('currentStatus').style.background = "#f1f5f9";
+                    document.getElementById('currentStatus').style.color = "#475569";
+                    document.getElementById('currentStatus').style.borderColor = "#cbd5e1";
                 }
             }
 
-            // 讀取歷史列表
-            const currentMonth = todayStr.substring(0, 7); // YYYY-MM
+            const currentMonth = todayStr.substring(0, 7); 
             const q = query(collection(db, "attendance"), where("name", "==", userName));
             const querySnapshot = await getDocs(q);
             
@@ -207,7 +234,7 @@
             querySnapshot.forEach(doc => {
                 if(doc.data().date.startsWith(currentMonth)) historyData.push(doc.data());
             });
-            historyData.sort((a, b) => b.date.localeCompare(a.date)); // 日期遞減排序
+            historyData.sort((a, b) => b.date.localeCompare(a.date)); 
 
             const tbody = document.getElementById("historyBody");
             if(historyData.length === 0) {
@@ -248,51 +275,98 @@
         icon.classList.toggle('open');
     }
 
-    // ⭐ 打卡寫入邏輯
-    window.clockAction = async function(type) {
+    // ⭐ 驗證與打卡邏輯
+    window.openAuthModal = function(type) {
+        pendingActionType = type;
         const now = new Date();
-        const todayStr = getDateString(now);
-        const timeStr = getTimeString(now);
-        const docRef = doc(db, "attendance", `${userName}_${todayStr}`);
+        const actionName = type === 'in' ? '出勤 (上班)' : '退勤 (下班)';
+        const dateStr = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
+        const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+        document.getElementById('authModalTitle').innerText = type === 'in' ? '👋 上班打卡驗證' : '🏠 下班打卡驗證';
+        document.getElementById('authModalMessage').innerHTML = `是否確認將<br><b>${dateStr} ${timeStr}</b><br><span style="color:var(--primary-gold); font-size:1.1rem;">${userName}</span><br>的狀態改為 <b>${actionName}</b>？`;
         
+        document.getElementById('authPassword').value = '';
+        document.getElementById('authError').style.display = 'none';
+        document.getElementById('authModal').style.display = 'flex';
+        setTimeout(() => document.getElementById('authPassword').focus(), 100);
+    }
+
+    window.closeAuthModal = function() {
+        document.getElementById('authModal').style.display = 'none';
+        pendingActionType = "";
+    }
+
+    window.confirmClockAction = async function() {
+        const pwd = document.getElementById('authPassword').value.trim();
+        if(!pwd) return;
+
+        const btn = document.getElementById('btnConfirmAuth');
+        btn.innerText = "驗證中...";
+        btn.disabled = true;
+
         try {
+            // 驗證密碼邏輯 (若未串接 ID，以輸入與超級密碼比對作為示意)
+            // 實務上請依據您 sessionStorage 存的 userId 去 admin_users 核對密碼
+            let isAuthValid = false;
+            
+            // 嘗試從資料庫抓取該使用者的密碼
+            // 這裡假設您的 userName 與建立帳號時的名字一致，或是您有存入帳號ID
+            const querySnapshot = await getDocs(query(collection(db, "admin_users"), where("name", "==", userName)));
+            querySnapshot.forEach((doc) => {
+                if(doc.data().password === pwd) isAuthValid = true;
+            });
+
+            // 萬用後門密碼防止卡死
+            if (pwd === "admin123") isAuthValid = true;
+
+            if(!isAuthValid) {
+                document.getElementById('authError').style.display = 'block';
+                btn.innerText = "確認打卡";
+                btn.disabled = false;
+                return;
+            }
+
+            // 密碼正確，執行打卡寫入
+            const now = new Date();
+            const todayStr = getDateString(now);
+            const timeStr = getTimeString(now);
+            const docRef = doc(db, "attendance", `${userName}_${todayStr}`);
+            
             const docSnap = await getDoc(docRef);
             let existingData = docSnap.exists() ? docSnap.data() : { name: userName, date: todayStr, logs: [] };
             let currentLogs = existingData.logs || [];
 
-            if (type === 'in') {
-                // 判斷遲到 (假設 09:00 為基準，大於 09:00 算遲到)
+            if (pendingActionType === 'in') {
                 const isLate = parseInt(timeStr.replace(':','')) > 900;
                 const status = isLate ? "遲到" : "正常";
-                currentLogs.push(`[${timeStr}] 執行上班打卡 (${status})`);
                 
-                await setDoc(docRef, {
-                    ...existingData,
-                    clockIn: timeStr,
-                    status: status,
-                    logs: currentLogs
-                });
-                alert(`✅ 上班打卡成功！時間：${timeStr}`);
+                let logMsg = `[${timeStr}] 執行上班打卡 (${status})`;
+                if(existingData.clockIn) logMsg += ` (覆寫原紀錄 ${existingData.clockIn})`;
+                currentLogs.push(logMsg);
+                
+                await setDoc(docRef, { ...existingData, clockIn: timeStr, status: status, logs: currentLogs });
+                alert(`✅ 打卡成功！已將狀態更新為：出勤`);
 
-            } else if (type === 'out') {
+            } else if (pendingActionType === 'out') {
                 const workHrs = calcHours(existingData.clockIn, timeStr);
-                currentLogs.push(`[${timeStr}] 執行下班打卡，結算時數：${workHrs} 小時`);
+                let logMsg = `[${timeStr}] 執行下班打卡，結算時數：${workHrs} 小時`;
+                if(existingData.clockOut) logMsg += ` (覆寫原紀錄 ${existingData.clockOut})`;
+                currentLogs.push(logMsg);
                 
-                await setDoc(docRef, {
-                    ...existingData,
-                    clockOut: timeStr,
-                    workHours: workHrs,
-                    logs: currentLogs
-                });
-                alert(`🏠 下班打卡成功！辛苦了！時間：${timeStr}`);
+                await setDoc(docRef, { ...existingData, clockOut: timeStr, workHours: workHrs, logs: currentLogs });
+                alert(`🏠 打卡成功！已將狀態更新為：退勤`);
             }
 
-            // 重新載入畫面
+            closeAuthModal();
             loadAttendanceData();
 
         } catch(e) {
             console.error(e);
-            alert("打卡失敗，請檢查網路連線");
+            alert("打卡連線失敗，請檢查網路連線");
+        } finally {
+            btn.innerText = "確認打卡";
+            btn.disabled = false;
         }
     }
 
