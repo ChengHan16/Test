@@ -542,7 +542,16 @@
                 </div>
                 <div class="grid-2">
                     <div class="form-group"><label>入住人數</label><input id="people" type="number" value="2"></div>
-                    <div class="form-group"><label>國籍</label><input id="country" placeholder="預設: 台灣"></div>
+                    <div class="form-group">
+                        <label>國籍</label>
+                        <input id="country" list="countryOptions" placeholder="請選擇或輸入國籍">
+                        <datalist id="countryOptions">
+                            <option value="台灣"></option><option value="日本"></option><option value="韓國"></option>
+                            <option value="香港"></option><option value="中國"></option><option value="新加坡"></option>
+                            <option value="馬來西亞"></option><option value="印尼"></option><option value="印度"></option>
+                            <option value="泰國"></option><option value="越南"></option><option value="尼泊爾"></option>
+                        </datalist>
+                    </div>
                 </div>
                 <div class="checkbox-wrapper" style="margin-top: 10px; display: flex; align-items: center; gap: 6px;">
                     <input type="checkbox" id="saveFrequentGuest" style="width: auto; transform: scale(1.3); margin:0;">
@@ -624,13 +633,30 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// =============== 系統防呆與初始載入 ===============
+// =============== 全局與 UI 邏輯 ===============
 if (sessionStorage.getItem("isLoggedIn") !== "true") { window.location.href = "login.html"; }
 const userName = sessionStorage.getItem("currentUser") || "管理員";
-document.getElementById("currentUserDisplay").innerText = `👋 ${userName}`;
-document.getElementById("currentUserDisplay").style.display = "inline-block";
 
-// ⭐ [修復區] 確保 loadData 等函數在全域可用
+// ⭐ 統一呼吸燈狀態讀取邏輯
+async function loadAttendanceStatus() {
+    const todayStr = getDateString(new Date());
+    let dotClass = "status-gray"; 
+    try {
+        const docRef = doc(db, "attendance", `${userName}_${todayStr}`);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.lastAction === 'in' || (data.clockIn && !data.clockOut)) {
+                dotClass = data.status === '遲到' ? "status-red" : "status-green";
+            }
+        }
+    } catch(e) { console.error(e); }
+
+    const userDisplay = document.getElementById("currentUserDisplay");
+    userDisplay.innerHTML = `<span class="status-dot ${dotClass}"></span> ${userName}`;
+    userDisplay.style.display = "inline-flex";
+}
+
 window.loadData = async function() {
     const date = document.getElementById("selectedDate").value; 
     try { const docSnap = await getDoc(doc(db, "bookings", date)); bookings[date] = docSnap.exists() ? docSnap.data() : {}; } catch(e) { bookings[date] = {}; }
@@ -639,6 +665,7 @@ window.loadRestData = async function() {
     const date = document.getElementById("selectedDate").value;
     try { const docSnap = await getDoc(doc(db, "restData", date)); restData[date] = docSnap.exists() ? docSnap.data().data || [] : []; } catch(e) { restData[date] = []; }
 }
+
 window.updateStats = function() {
     const date = document.getElementById("selectedDate").value; const statsBox = document.getElementById("statsBox");
     if (!date) { statsBox.innerHTML = "<div style='text-align:center;'>資料載入中...</div>"; return; }
@@ -682,6 +709,7 @@ window.updateStats = function() {
         <div class="stats-col">${inHouseHtml}</div>
     </div>`;
 }
+
 window.updateRestRoomOptions = function(prefillRoom = "") {
     const date = document.getElementById("selectedDate").value; const restRoomSelect = document.getElementById("restRoom"); const currentBookings = bookings[date] || {};
     restRoomSelect.innerHTML = '<option value="">選擇房號</option>';
@@ -694,26 +722,6 @@ window.updateRestRoomOptions = function(prefillRoom = "") {
             restRoomSelect.appendChild(op); 
         } 
     });
-}
-// ===============================================
-
-async function loadAttendanceStatus() {
-    const todayStr = getDateString(new Date());
-    let dotClass = "status-gray"; 
-    try {
-        const docRef = doc(db, "attendance", `${userName}_${todayStr}`);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            if (data.clockIn && !data.clockOut) {
-                dotClass = data.status === '遲到' ? "status-red" : "status-green";
-            }
-        }
-    } catch(e) { console.error(e); }
-
-    const userDisplay = document.getElementById("currentUserDisplay");
-    userDisplay.innerHTML = `<span class="status-dot ${dotClass}"></span> ${userName}`;
-    userDisplay.style.display = "inline-flex";
 }
 
 function initBirthdaySelects() {
@@ -733,6 +741,7 @@ function initBirthdaySelects() {
         let op = document.createElement("option"); op.value = val; op.text = val; dSel.appendChild(op);
     }
 }
+
 function setBirthdaySelects(dateString) {
     if (!dateString) {
         document.getElementById("birthYear").value = "";
@@ -747,6 +756,7 @@ function setBirthdaySelects(dateString) {
         document.getElementById("birthDay").value = parts[2];
     }
 }
+
 function getBirthdaySelects() {
     const y = document.getElementById("birthYear").value;
     const m = document.getElementById("birthMonth").value;
@@ -800,6 +810,20 @@ window.toggleLogDetails = function(element) {
     icon.classList.toggle('open');
 }
 
+// ⭐ 修復 Log 顯示亂碼問題的解析器
+function parseCoGuestsForLog(valString) {
+    if (!valString || valString === "[]" || valString === "") return "-";
+    try {
+        const arr = JSON.parse(valString);
+        if (Array.isArray(arr) && arr.length > 0) {
+            return arr.map((g, i) => `${i+1}. ${g.name||'-'} (${g.id||'-'})`).join("，");
+        }
+    } catch (e) {
+        return valString; // 如果解析失敗就回傳原字串防崩潰
+    }
+    return "-";
+}
+
 function renderLogs(elementId, logsArray, fieldMap) {
     const container = document.getElementById(elementId);
     if (!logsArray || logsArray.length === 0) {
@@ -816,7 +840,8 @@ function renderLogs(elementId, logsArray, fieldMap) {
         }
         if(k === 'status') return v === 'checkedin' ? '入住中' : v === 'checkedout' ? '已退房' : v === 'stay' ? '續住' : v === 'booked' ? '已預訂' : v === 'resting' ? '休息中' : v === 'checkout' ? '結束休息' : v;
         if(k === 'people') return v + "位";
-        if(k === 'coGuests' && Array.isArray(v)) return v.map(g => `${g.name||'-'}(${g.id||'-'})`).join(", ");
+        // ⭐ 這裡調用上面的專屬解析器
+        if(k === 'coGuests') return parseCoGuestsForLog(v);
         return v;
     };
 
@@ -836,7 +861,9 @@ function renderLogs(elementId, logsArray, fieldMap) {
                     let newVal = formatVal(log.changes[key].new, key);
                     detailsHtml += `<div class="log-row log-changed"><b>${label}</b><span>${oldVal} ➔ <strong>${newVal}</strong></span></div>`;
                 } else {
-                    detailsHtml += `<div class="log-row log-unchanged"><b>${label}</b><span>${formatVal(currentVal, key)}</span></div>`;
+                    // 如果 snapshot 的 coGuests 已經是陣列，要先轉字串再解析以防格式不一
+                    let printVal = key === 'coGuests' && Array.isArray(currentVal) ? JSON.stringify(currentVal) : currentVal;
+                    detailsHtml += `<div class="log-row log-unchanged"><b>${label}</b><span>${formatVal(printVal, key)}</span></div>`;
                 }
             }
             
@@ -917,9 +944,11 @@ window.fillFrequentGuest = function() {
     }
 }
 
+// ⭐ 修改此處，將國籍改為 datalist 支援輸入與選擇
 window.createCoGuestRow = function(data = {}) {
     const div = document.createElement('div');
     div.className = 'co-guest-row';
+    const rowId = 'cg_country_' + Math.random().toString(36).substring(7); // 產生隨機 ID 綁定 datalist
     div.innerHTML = `
         <button type="button" class="remove-btn" onclick="this.parentElement.remove()">&times;</button>
         <div class="grid-2" style="margin-bottom:10px;">
@@ -930,7 +959,16 @@ window.createCoGuestRow = function(data = {}) {
             <div class="form-group" style="margin-bottom:0;"><label>身分證/護照號碼</label><input type="text" class="cg-id" value="${data.id || ''}" placeholder="證號"></div>
             <div class="form-group" style="margin-bottom:0;"><label>出生年月日</label><input type="date" class="cg-birth" value="${data.birth || ''}"></div>
         </div>
-        <div class="form-group" style="margin-bottom:0;"><label>國籍</label><input type="text" class="cg-country" value="${data.country || '台灣'}" placeholder="國籍"></div>
+        <div class="form-group" style="margin-bottom:0;">
+            <label>國籍</label>
+            <input type="text" class="cg-country" value="${data.country || '台灣'}" list="${rowId}" placeholder="請選擇或輸入">
+            <datalist id="${rowId}">
+                <option value="台灣"></option><option value="日本"></option><option value="韓國"></option>
+                <option value="香港"></option><option value="中國"></option><option value="新加坡"></option>
+                <option value="馬來西亞"></option><option value="印尼"></option><option value="印度"></option>
+                <option value="泰國"></option><option value="越南"></option><option value="尼泊爾"></option>
+            </datalist>
+        </div>
     `;
     return div;
 }
@@ -1884,121 +1922,6 @@ window.deleteBooking = async function(){
         }
         updateUI(); closeModal();
     }
-}
-
-function updateUI() {
-    const date = document.getElementById("selectedDate").value;
-    const roomCards = document.querySelectorAll(".room-card");
-    const currentRestData = restData[date] || [];
-
-    roomCards.forEach((card, i) => {
-        const room = rooms[i]; 
-        const bookingData = bookings[date]?.[room]; 
-        const restInfos = currentRestData.filter(r => r.room === room);
-        const activeRest = restInfos.find(r => r.status === 'resting') || restInfos[restInfos.length - 1];
-
-        card.className = "room-card"; 
-        let html = `<div class="room-header"><span class="room-number">${room}</span>`;
-
-        if (currentViewMode === 'booking') {
-            if (bookingData) {
-                let checkin = new Date(bookingData.checkinDate || date);
-                let checkout = new Date(bookingData.checkoutDate || date);
-                const nights = Math.max(1, Math.round((checkout - checkin) / (1000*60*60*24)));
-                
-                card.classList.add(`status-${bookingData.status || "booked"}`);
-                let statusName = bookingData.status === 'checkedin' ? '入住中' : (bookingData.status === 'checkedout' ? '已退房' : (bookingData.status === 'stay' ? '續住中' : '已預訂'));
-                let badgeClass = bookingData.status === 'checkedin' ? 'badge-checkedin' : (bookingData.status === 'checkedout' ? 'badge-checkedout' : (bookingData.status === 'stay' ? 'badge-stay' : 'badge-booked'));
-                
-                html += `<span class="status-badge ${badgeClass}">${statusName}</span></div>`;
-                html += `<div class="guest-name-row">${bookingData.name || '未填寫'}</div>`;
-                
-                html += `<div class="detail-grid-split">`;
-                html += `<div class="detail-col">`;
-                html += `<div class="detail-item"><b>聯絡電話</b><span>${bookingData.phone || '-'}</span></div>`;
-                html += `<div class="detail-item"><b>證件號碼</b><span>${bookingData.idNumber || '-'}</span></div>`;
-                html += `<div class="detail-item"><b>旅客國籍</b><span>${bookingData.country || '台灣'}</span></div>`;
-                html += `</div>`;
-                html += `<div class="detail-col">`;
-                html += `<div class="detail-item"><b>住宿人數</b><span>${bookingData.people || '-'}人</span></div>`;
-                html += `<div class="detail-item"><b>平台來源</b><span>${bookingData.platform || '現場'}</span></div>`;
-                html += `<div class="detail-item"><b>訂單總額</b><span>$${bookingData.total || 0}</span></div>`;
-                
-                let payStatusText = '未付清';
-                let payColor = '#ef4444';
-                const payMap = { 'paid': {t:'現場已結清', c:'#10b981'}, 'platform': {t:'平台代收', c:'#3b82f6'}, 'creditcard': {t:'信用卡', c:'#8b5cf6'}, 'linepay': {t:'LINE Pay', c:'#06c755'}, 'taiwanpay': {t:'台灣 Pay', c:'#f97316'} };
-                if (bookingData.payStatus && payMap[bookingData.payStatus]) {
-                    payStatusText = payMap[bookingData.payStatus].t;
-                    payColor = payMap[bookingData.payStatus].c;
-                }
-                if (bookingData.payLast5) { payStatusText += ` (${bookingData.payLast5})`; }
-
-                html += `<div class="detail-item"><b>付款狀態</b><span style="color:${payColor}; font-weight:bold;">${payStatusText}</span></div>`;
-                html += `<div class="detail-item"><b>應收尾款</b><span style="color:#ef4444; font-weight:bold;">$${bookingData.balance || 0}</span></div>`;
-                html += `</div>`;
-                html += `</div>`;
-                if (bookingData.orderNumber) html += `<div class="full-width-item"><b>訂單編號</b><span>${bookingData.orderNumber}</span></div>`;
-                
-                if (bookingData.coGuests && Array.isArray(bookingData.coGuests) && bookingData.coGuests.length > 0) {
-                    html += `<div class="full-width-item" style="margin-top:5px; flex-direction:column; gap:4px;"><b>住宿人員資料</b><div style="font-weight:normal; color:var(--text-main); text-align:left; font-size:12px; line-height:1.6;">`;
-                    bookingData.coGuests.forEach((g) => {
-                        html += `<div style="margin-bottom:2px;"><b>姓名：</b>${g.name || '-'} &nbsp;<b>ID：</b>${g.id || '-'} &nbsp;<b>電話：</b>${g.phone || '-'} &nbsp;<b>國籍：</b>${g.country || '台灣'}</div>`;
-                    });
-                    html += `</div></div>`;
-                }
-
-                if (bookingData.request) html += `<div class="full-width-item highlight-note" style="margin-top:8px;"><b>備註需求</b><span>${bookingData.request}</span></div>`;
-
-            } else {
-                card.classList.add(`status-empty`);
-                html += `<span class="status-badge badge-empty">空房</span></div>`;
-                html += `<div class="guest-name-row" style="color:var(--border-color);">--</div>`;
-            }
-
-            if (activeRest && activeRest.status === 'resting') {
-                html += `<div class="rest-overlay-alert"><strong>🕒 休息佔用中</strong><span>時段：${activeRest.time || '未填寫'}</span><span>房客：${activeRest.name} (${activeRest.people}人)</span></div>`;
-            }
-
-            card.innerHTML = html;
-            card.onclick = () => openModal(room);
-
-        } else {
-            if (activeRest) {
-                card.classList.add(activeRest.status === "resting" ? "status-resting" : "status-checkedout");
-                let statusName = activeRest.status === "resting" ? "休息中" : "已結束";
-                let badgeClass = activeRest.status === "resting" ? "badge-resting" : "badge-checkedout";
-                
-                html += `<span class="status-badge ${badgeClass}">${statusName}</span></div>`;
-                html += `<div class="guest-name-row">${activeRest.name}</div>`;
-                
-                html += `<div class="detail-grid-split">`;
-                html += `<div class="detail-col">`;
-                html += `<div class="detail-item"><b>聯絡電話</b><span>${activeRest.phone || '-'}</span></div>`;
-                html += `<div class="detail-item"><b>證件號碼</b><span>${activeRest.id || '-'}</span></div>`;
-                html += `</div>`;
-                html += `<div class="detail-col">`;
-                html += `<div class="detail-item"><b>休息人數</b><span>${activeRest.people || '-'}人</span></div>`;
-                html += `<div class="detail-item"><b>休息時段</b><span>${activeRest.time || '-'}</span></div>`;
-                html += `<div class="detail-item"><b>實收金額</b><span>$${activeRest.price || 0}</span></div>`;
-                html += `</div>`;
-                html += `</div>`;
-                if (activeRest.note) html += `<div class="full-width-item highlight-note"><b>備註</b><span>${activeRest.note}</span></div>`;
-                
-                card.onclick = () => {
-                    const idx = currentRestData.findIndex(r => r === activeRest);
-                    openRestModal(idx, room); 
-                };
-            } else {
-                card.classList.add(`status-empty`);
-                html += `<span class="status-badge badge-empty">未排休息</span></div>`;
-                if(bookingData) { html += `<div class="guest-name-row" style="color:var(--status-booked); font-size:14px;">(本日有住宿預訂)</div>`; } 
-                else { html += `<div class="guest-name-row" style="color:var(--border-color);">--</div>`; }
-                card.onclick = () => showRestForm(room);
-            }
-            card.innerHTML = html;
-        }
-    });
-    window.updateStats();
 }
 </script>
 </body>
