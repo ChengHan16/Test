@@ -38,7 +38,6 @@
     .btn-edit { background: var(--primary-dark); color: var(--primary-gold); border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
     .btn-delete { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
 
-    /* Modal */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(22, 52, 80, 0.6); z-index: 999; backdrop-filter: blur(4px); }
     .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 92%; max-width: 500px; background: white; border-radius: 16px; z-index: 1000; overflow: hidden; flex-direction: column; }
     .modal-header { padding: 15px 20px; background: white; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
@@ -72,7 +71,7 @@
             <thead>
                 <tr>
                     <th>姓名</th>
-                    <th>身分證/護照 (帳號ID)</th>
+                    <th>身分證/護照 (系統主鍵)</th>
                     <th>聯絡電話</th>
                     <th>生日</th>
                     <th>國籍</th>
@@ -98,9 +97,18 @@
             <input type="text" id="editIdNumber" readonly style="background:#f1f5f9; color:#94a3b8;">
         </div>
         <div class="form-group"><label>住客姓名</label><input type="text" id="editName"></div>
-        <div class="form-group"><label>聯絡電話</label><input type="text" id="editPhone"></div>
+        <div class="form-group"><label>聯絡電話 (可修改)</label><input type="text" id="editPhone"></div>
         <div class="form-group"><label>出生年月日 (YYYY-MM-DD)</label><input type="text" id="editBirthday" placeholder="例如：1990-01-01"></div>
-        <div class="form-group"><label>旅客國籍</label><input type="text" id="editCountry"></div>
+        <div class="form-group">
+            <label>旅客國籍</label>
+            <input type="text" id="editCountry" list="guestCountryOptions">
+            <datalist id="guestCountryOptions">
+                <option value="台灣"></option><option value="日本"></option><option value="韓國"></option>
+                <option value="香港"></option><option value="中國"></option><option value="新加坡"></option>
+                <option value="馬來西亞"></option><option value="印尼"></option><option value="印度"></option>
+                <option value="泰國"></option><option value="越南"></option><option value="尼泊爾"></option>
+            </datalist>
+        </div>
     </div>
     <div class="modal-footer">
         <button class="btn-cancel" onclick="closeModal()">取消</button>
@@ -132,7 +140,6 @@ window.loadGuests = async function() {
     try {
         const snap = await getDocs(collection(db, "frequent_guests"));
         guestsData = [];
-        // doc.id 現在是身分證號/護照
         snap.forEach(doc => guestsData.push({ id: doc.id, ...doc.data() }));
         renderTable(guestsData);
     } catch(e) {
@@ -149,7 +156,8 @@ function renderTable(data) {
     tbody.innerHTML = data.map(g => `
         <tr>
             <td><b>${g.name || '-'}</b></td>
-            <td>${g.id}</td> <td>${g.phone || '-'}</td>
+            <td>${g.id}</td> 
+            <td>${g.phone || '-'}</td>
             <td>${g.birthday || '-'}</td>
             <td>${g.country || '台灣'}</td>
             <td class="action-cell">
@@ -173,10 +181,9 @@ window.filterGuests = function() {
 window.openEdit = function(idVal) {
     const g = guestsData.find(x => x.id === idVal);
     if(g) {
-        // 將 ID 代入唯讀欄位
         document.getElementById("editIdNumber").value = g.id;
         document.getElementById("editName").value = g.name || "";
-        document.getElementById("editPhone").value = g.phone || "";
+        document.getElementById("editPhone").value = g.phone || ""; 
         document.getElementById("editBirthday").value = g.birthday || "";
         document.getElementById("editCountry").value = g.country || "";
         
@@ -191,7 +198,6 @@ window.closeModal = function() {
 }
 
 window.saveGuest = async function() {
-    // 主鍵是 idNumber
     const idVal = document.getElementById("editIdNumber").value;
     const newData = {
         name: document.getElementById("editName").value,
