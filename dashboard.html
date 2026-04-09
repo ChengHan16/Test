@@ -1275,7 +1275,7 @@ window.setExportRange = function(type) {
     document.getElementById("exportEndDate").value = getDateString(end);
 }
 
-// ⭐ 執行匯出 (Excel / PDF)
+// ⭐ CSV / PDF 智慧分離匯出與排版優化
 window.executeExport = async function(formatType) {
     const startDateStr = document.getElementById("exportStartDate").value;
     const endDateStr = document.getElementById("exportEndDate").value;
@@ -1285,7 +1285,6 @@ window.executeExport = async function(formatType) {
     const selectedFields = Array.from(document.querySelectorAll('.export-field:checked')).map(cb => cb.value);
     if(selectedFields.length === 0) { alert("請至少勾選一個匯出欄位"); return; }
 
-    // 定義欄位取值邏輯 (支援換行符號 \n)
     const fieldDefs = {
         type: { header: "訂單類型", getVal: (b, isRest) => isRest ? "休息" : "住宿" },
         date: { header: "日期/時段", getVal: (b, isRest, d) => isRest ? `${d} ${b.time||""}` : d },
@@ -1310,8 +1309,8 @@ window.executeExport = async function(formatType) {
         coguests: { header: "住宿人員", getVal: (b, isRest) => {
             if(isRest) return "-";
             if(b.coGuests && Array.isArray(b.coGuests) && b.coGuests.length > 0) {
-                // ⭐ 輸出為多行格式 \n
-                return b.coGuests.map((g, idx) => `${idx+1}. ${g.name||'-'} | ${g.id||'-'} | ${g.phone||'-'} | ${g.country||'台灣'}`).join("\n");
+                // ⭐ 格式化同住人員：姓名：丁俊齊 ID：R123456789 電話：0911222333 國籍：台灣
+                return b.coGuests.map((g, idx) => `${idx+1}. 姓名：${g.name||'-'} ID：${g.id||'-'} 電話：${g.phone||'-'} 國籍：${g.country||'台灣'}`).join("\n");
             }
             return "-";
         }},
@@ -1386,7 +1385,7 @@ window.executeExport = async function(formatType) {
                 <table style="width:100%; border-collapse: collapse; font-family: 'Microsoft JhengHei', sans-serif; font-size:12px; margin-top:10px;">
                     <thead><tr>${headers.map(h => `<th style="border:1px solid #cbd5e1; padding:8px; background:#f1f5f9; text-align:left; white-space:nowrap;">${h}</th>`).join('')}</tr></thead>
                     <tbody>
-                        ${rows.map(row => `<tr>${row.map(cell => `<td style="border:1px solid #e2e8f0; padding:6px; white-space:nowrap; vertical-align:top;">${String(cell).replace(/\n/g, '<br>')}</td>`).join('')}</tr>`).join('')}
+                        ${rows.map(row => `<tr>${row.map(cell => `<td style="border:1px solid #e2e8f0; padding:6px; vertical-align:top; white-space:nowrap;">${String(cell).replace(/\n/g, '<br>')}</td>`).join('')}</tr>`).join('')}
                     </tbody>
                 </table>`;
             };
