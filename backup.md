@@ -1,0 +1,135 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>系統登入 - 來點子站前旅店</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --primary-dark: #163450;      
+        --primary-gold: #c1a13a;      
+        --bg-light: #f8fafc;          
+    }
+    * { box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; }
+    body { 
+        margin: 0; 
+        background: linear-gradient(135deg, var(--primary-dark) 0%, #0a192f 100%); 
+        min-height: 100vh; 
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        padding: 20px;
+    }
+    .login-container {
+        background: white;
+        border-radius: 20px;
+        padding: 40px 30px;
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        text-align: center;
+    }
+    .logo { width: 80px; height: 80px; border-radius: 12px; border: 2px solid var(--primary-gold); margin-bottom: 15px; }
+    h2 { color: var(--primary-dark); margin: 0 0 5px 0; font-size: 1.5rem; }
+    p { color: #64748b; font-size: 0.9rem; margin-bottom: 30px; }
+    
+    .form-group { margin-bottom: 20px; text-align: left; }
+    .form-group label { display: block; font-size: 0.85rem; color: #475569; margin-bottom: 8px; font-weight: 600; }
+    .form-group input { 
+        width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; 
+        border-radius: 10px; font-size: 1rem; transition: all 0.3s; 
+    }
+    .form-group input:focus { outline: none; border-color: var(--primary-gold); box-shadow: 0 0 0 3px rgba(193, 161, 58, 0.2); }
+    
+    .login-btn {
+        width: 100%; background: var(--primary-dark); color: var(--primary-gold);
+        border: none; padding: 14px; border-radius: 10px; font-size: 1.1rem;
+        font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 10px;
+    }
+    .login-btn:hover { background: #0f253b; transform: translateY(-2px); }
+    .login-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<div class="login-container">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCImo3zo7iCeo1quGZKt4c0GTrh_uSg3mSfQ&s" class="logo">
+    <h2>來點子站前旅店</h2>
+    <p>房況與帳務管理系統</p>
+
+    <div class="form-group">
+        <label>使用者帳號</label>
+        <input type="text" id="username" placeholder="請輸入帳號" onkeypress="if(event.key==='Enter') login()">
+    </div>
+    <div class="form-group">
+        <label>使用者密碼</label>
+        <input type="password" id="password" placeholder="請輸入密碼" onkeypress="if(event.key==='Enter') login()">
+    </div>
+
+    <button class="login-btn" id="btnLogin" onclick="login()">登入系統</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCde1T_hHZOm7__3-1qcQ_NAeAbkz5MdFc",
+    authDomain: "lightnessgogo-2d757.firebaseapp.com",
+    projectId: "lightnessgogo-2d757",
+    storageBucket: "lightnessgogo-2d757.firebasestorage.app",
+    messagingSenderId: "1033105975068",
+    appId: "1:1033105975068:web:915882758685a0d668bcd9",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// 檢查是否已經登入過
+if(sessionStorage.getItem("isLoggedIn") === "true") {
+    window.location.href = "dashboard.html"; // 如果已經登入，自動跳轉到主控制台
+}
+
+window.login = async function() {
+    const user = document.getElementById("username").value.trim();
+    const pass = document.getElementById("password").value.trim();
+    const btn = document.getElementById("btnLogin");
+
+    if(!user || !pass) { alert("請輸入帳號與密碼！"); return; }
+
+    btn.innerText = "驗證中..."; btn.disabled = true;
+
+    try {
+        // 第一個預設超級管理員 (避免資料庫還沒建立時無法登入)
+        if(user === "admin" && pass === "admin123") {
+            sessionStorage.setItem("isLoggedIn", "true");
+            sessionStorage.setItem("currentUser", "超級管理員");
+            window.location.href = "dashboard.html";
+            return;
+        }
+
+        // 從 Firebase 的 admin_users 集合中驗證帳號
+        const docRef = doc(db, "admin_users", user);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists() && docSnap.data().password === pass) {
+            sessionStorage.setItem("isLoggedIn", "true");
+            sessionStorage.setItem("currentUser", docSnap.data().name);
+            window.location.href = "dashboard.html"; // 登入成功，跳轉到房況頁面
+        } else {
+            alert("❌ 帳號或密碼錯誤！");
+        }
+    } catch (e) {
+        console.error(e);
+        alert("系統連線錯誤，請稍後再試！");
+    } finally {
+        btn.innerText = "登入系統"; btn.disabled = false;
+    }
+}
+</script>
+</body>
+</html>
+
+```
